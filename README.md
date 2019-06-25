@@ -84,7 +84,7 @@ go build
 
 Create .env file:
 ```
-# cat .env
+# cat $GOPATH/src/github.com/softlayer/packer-builder-ibmcloud/.env
 export SL_USERNAME="devtest@.ibm.com"
 export SL_API_KEY="f940986bdfcc34....7fb50b23e3c77acae"
 export ANSIBLE_INVENTORY_FILE="provisioner/hosts"
