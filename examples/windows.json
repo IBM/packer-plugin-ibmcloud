@@ -1,0 +1,54 @@
+{
+  "variables": {
+    "sl_username": "{{env `SL_USERNAME`}}",
+    "sl_api_key": "{{env `SL_API_KEY`}}",
+    "ansible_inventory_file": "{{env `ANSIBLE_INVENTORY_FILE`}}"
+  },
+
+  "post-processors": [
+    {
+      "output": "files/artifacts/build.json",
+      "strip_path": true,
+      "type": "manifest"
+    }
+  ],
+
+  "provisioners": [
+    {
+      "type": "powershell",
+      "scripts": ["scripts/Installpackages.ps1"]
+    },
+    {
+      "type": "ansible",
+      "playbook_file": "provisioner/playbook.yml",
+      "inventory_file": "{{user `ansible_inventory_file`}}",
+      "extra_arguments": [
+        "--extra-vars",
+        "ansible_user=Administrator ansible_password={{ .WinRMPassword }} ansible_connection=winrm ansible_winrm_server_cert_validation=ignore ansible_shell_type=powershell ansible_shell_executable=None"
+      ]
+    }
+  ],
+
+  "builders": [{
+    "api_key": "{{user `sl_api_key`}}",
+    "username": "{{user `sl_username`}}",
+    "image_name": "",
+    "instance_name": "",
+    "instance_flavor": "",
+    "type": "ibmcloud",
+    "datacenter_name": "wdc01",
+    "base_image_id":"8ad331d9-199f-4416-abae-f7ca408c1128",
+    "image_description": "Windows image created by packer at {{isotime}}",
+    "image_type": "standard",
+    "upload_to_datacenters": [
+      "352494"
+    ],
+    "instance_domain": "provisioning.com",
+    "instance_network_speed": 10,
+    "instance_state_timeout": "60m",
+    "winrm_timeout": "30m",
+    "winrm_use_ssl": true,
+    "winrm_insecure": true,
+    "communicator": "winrm"
+  }]
+}
