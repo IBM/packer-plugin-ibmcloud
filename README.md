@@ -72,21 +72,35 @@ Download and configure
 ```
 mkdir -p $GOPATH/src/github.com/softlayer
 cd $GOPATH/src/github.com/softlayer
-git clone git@github.ibm.com:GCAT/packer-builder-softlayer.git
+git clone git@github.ibm.com:GCAT/packer-builder-ibmcloud.git
 ```
 
 Build the plugin
 ```
-cd $GOPATH/src/github.com/softlayer/packer-builder-softlayer
+cd $GOPATH/src/github.com/softlayer/packer-builder-ibmcloud
 go build
 ```
 ## Important Note - Save your existing SSH keypair(id_rsa and is_rsa.pub) before you run Packer. Ansible provisioner is going to overwrite SSH keypair with its own.
+
+Create .env file:
+```
+# cat .env
+export SL_USERNAME="devtest@.ibm.com"
+export SL_API_KEY="f940986bdfcc34....7fb50b23e3c77acae"
+export ANSIBLE_INVENTORY_FILE="provisioner/hosts"
+export PRIVATEKEY="$HOME/.ssh/id_rsa" <<<< Specific to linux plugin with ansible support
+export PUBLICKEY="$HOME/.ssh/id_rsa.pub" <<<< Specific to linux plugin with ansible support
+export ANSIBLE_HOST_KEY_CHECKING=False
+export PACKER_LOG=1
+export PACKER_LOG_PATH="packerlog.txt"
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES  <<<< Specific to MAC client 
+```
 
 Run Packer:
 ```
 source .env
 packer validate examples/linux.json
-packer build examples/windows.json
+packer build examples/linux.json
 ```
 
 If you are willing to use your own image as your starting point, you can specify `base_image_id` instead of `base_os_code`.
