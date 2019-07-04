@@ -26,7 +26,16 @@
       "artifact_id": "1c0984df-96c6-4047-bd25-bb585c186e03",
       "packer_run_uuid": "1c756ae5-aa04-3b41-b139-faf20e33e5b0",
       "custom_data": null
+    },
+    {
+      "name": "ibmcloud",
+      "builder_type": "ibmcloud",
+      "build_time": 1562179747,
+      "files": null,
+      "artifact_id": "743b8821-bd8b-4968-a6e6-f9201125d20d",
+      "packer_run_uuid": "9864e561-8a12-505e-956e-e0baf4cc0b5f",
+      "custom_data": null
     }
   ],
-  "last_run_uuid": "1c756ae5-aa04-3b41-b139-faf20e33e5b0"
+  "last_run_uuid": "9864e561-8a12-505e-956e-e0baf4cc0b5f"
 }

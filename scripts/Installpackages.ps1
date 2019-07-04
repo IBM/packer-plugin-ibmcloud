@@ -6,4 +6,4 @@ choco feature enable -n allowGlobalConfirmation
 
 # Install developer packages
 
-choco install python slack notepadplusplus googlechrome atom 7zip
+choco install python slack
