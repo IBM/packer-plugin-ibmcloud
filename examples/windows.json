@@ -26,15 +26,19 @@
         "--extra-vars",
         "ansible_user=Administrator ansible_password={{ .WinRMPassword }} ansible_connection=winrm ansible_winrm_server_cert_validation=ignore ansible_shell_type=powershell ansible_shell_executable=None"
       ]
+    },
+    {
+      "type": "windows-restart",
+      "restart_check_command": "powershell -command \"& {Write-Output 'restarted.'}\""
     }
   ],
 
   "builders": [{
     "api_key": "{{user `sl_api_key`}}",
     "username": "{{user `sl_username`}}",
-    "image_name": "",
-    "instance_name": "",
-    "instance_flavor": "",
+    "image_name": "packer-winVSI",
+    "instance_name": "packer-winAMI",
+    "instance_flavor": "B1_2X4X100",
     "type": "ibmcloud",
     "datacenter_name": "wdc01",
     "base_image_id":"8ad331d9-199f-4416-abae-f7ca408c1128",
@@ -52,3 +56,4 @@
     "communicator": "winrm"
   }]
 }
+
