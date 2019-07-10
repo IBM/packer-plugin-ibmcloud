@@ -78,6 +78,8 @@ git clone git@github.ibm.com:GCAT/packer-builder-ibmcloud.git
 Build the plugin
 ```
 cd $GOPATH/src/github.com/softlayer/packer-builder-ibmcloud
+# make sure you update the version under version/version.go if code has changes/features are added 
+# Eg - current version is 0.1.0. When a new feature added to plugin then the new version should be 0.1.1
 go build
 ```
 ## Important Note - Save your existing SSH keypair(id_rsa and is_rsa.pub) before you run Packer. Ansible provisioner is going to overwrite SSH keypair with its own.
