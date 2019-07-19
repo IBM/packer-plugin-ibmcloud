@@ -1,11 +1,11 @@
 # IBM Packer Plugin
-The IBM packer plugin is able to create new image template for use with IBMCloud 
+The IBM packer plugin is able to create new Virtual Server Image template for use with IBMCloud 
 
 ## IBM Packer Builder
-The builder takes a source image (identified by it's global ID), provisions an Instance and generate Image out of the Instance on different platforms. These generated Images can be reused to launch new Instances within IBMCloud.
-The builder does not manage images. Once it creates an image, it is up to you to use it or delete it.
+The builder takes a source OS base Linux or Windows image (identified by it's global ID), provisions an Instance, adds additional applications & services to it and generates an Image Template out of the Instance on different platforms. These generated Images can be reused to launch new VSI Instances within IBMCloud.
+The builder does not manage VSI images. Once it creates an image, it is up to you to use it or delete it.
 ## IBM Packer Provisioner
-The provisioners use buildin software or software like ansible to install packages or configure the Image after booting
+The provisioners use builtin software or software like ansible to install packages or configure the Image after booting
 ## IBM Packer Post-Provisoners
 Post-processors are optional, and they can be used to upload artifacts.
 
@@ -65,19 +65,19 @@ cd $GOPATH/src
 go get -u cloud.google.com/go/compute/metadata
 ```
 
-3) **SoftLayer Packer-Builder**
+3) **IBM Cloud Packer-Builder**
 
 Download and configure
 
 ```
-mkdir -p $GOPATH/src/github.com/softlayer
-cd $GOPATH/src/github.com/softlayer
+mkdir -p $GOPATH/src/github.com/ibmcloud
+cd $GOPATH/src/github.com/ibmcloud
 git clone git@github.ibm.com:GCAT/packer-builder-ibmcloud.git
 ```
 
 Build the plugin
 ```
-cd $GOPATH/src/github.com/softlayer/packer-builder-ibmcloud
+cd $GOPATH/src/github.com/ibmcloud/packer-builder-ibmcloud
 # make sure you update the version under version/version.go if code has changes/features are added 
 # Eg - current version is 0.1.0. When a new feature added to plugin then the new version should be 0.1.1
 go build
@@ -86,7 +86,7 @@ go build
 
 Create .env file:
 ```
-# cat $GOPATH/src/github.com/softlayer/packer-builder-ibmcloud/.env
+# cat $GOPATH/src/github.com/ibmcloud/packer-builder-ibmcloud/.env
 export SL_USERNAME="devtest@.ibm.com"
 export SL_API_KEY="f940986bdfcc34....7fb50b23e3c77acae"
 export ANSIBLE_INVENTORY_FILE="provisioner/hosts"
@@ -102,8 +102,8 @@ Run Packer:
 ```
 source .env
 # Edit the json file with proper mandatory and optional feilds 
-packer validate examples/linux.json
-packer build examples/linux.json
+packer validate examples/linux.json or examples/windows.json
+packer build examples/linux.json or examples/windows.json
 ```
 
 If you are willing to use your own image as your starting point, you can specify `base_image_id` instead of `base_os_code`.
