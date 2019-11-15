@@ -118,7 +118,8 @@ The reference of available configuration options is listed below.
  * `api_key` (string) - The api key defined for the chosen user name. You can find what is your api key at the account->users tab of the SoftLayer web console. If unspecified, the value is taken from the SOFTLAYER_API_KEY environment variable.
  * `image_name` (string) - The name of the resulting image that will appear in your account. This must be unique. To help make this unique, use a function like timestamp.
  * `base_image_id` (string) - The ID of the base image to use (usually defined by the `globalIdentifier` or the `uuid` fields in SoftLayer API). This is the image that will be used for launching a new instance.
- To view all of your currently available images, run: curl -X GET --user <username>:<api_key> "https://api.softlayer.com/rest/v3/SoftLayer_Account/getVirtualDiskImages.json
+ To view all of your currently available images, 
+* `run: curl -X GET --user <username>:<api_key> "https://api.softlayer.com/rest/v3/SoftLayer_Account/getVirtualDiskImages.json"`
 * `instance_name` (string) - The name assigned to the instance.
 * `instance_flavor` (string) - The flavor to opt for the instance (type_coreXmemoryXdisk Eg: B1_2X4X100)
 * `instance_cpu` (string) - The amount of CPUs assigned to the instance. Defaults to 1
