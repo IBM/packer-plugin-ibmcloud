@@ -47,5 +47,5 @@ You can include this automatically when you commit a change to your local git re
 
 ## Communication
 
-Please feel free to connect at nhuralik@us.ibm.com.
+For any questions, please feel free to connect with us via email - nhuralik@us.ibm.com
 
