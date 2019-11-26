@@ -4,8 +4,10 @@ The IBM packer plugin creates Image template(.VHD) with pre-configured OS and in
 ## IBM Packer Builder
 The builder takes a source OS base Linux or Windows image (identified by it's global ID), provisions an Instance, adds additional applications & services to it and generates an Image Template out of the Instance on different platforms. These generated Images can be reused to launch new VSI Instances within IBMCloud.
 The builder does not manage VSI images. Once it creates an image, it is up to you to use it or delete it.
+
 ## IBM Packer Provisioner
 The provisioners use builtin software or software like ansible to install packages or configure the Image after booting
+
 ## IBM Packer Post-Provisoners
 Post-processors are optional, and they can be used to upload artifacts.
 
