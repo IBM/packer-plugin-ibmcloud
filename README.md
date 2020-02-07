@@ -21,7 +21,7 @@ Post-processors are optional, and they can be used to upload artifacts.
 
    Create your Go Workspace
    ```
-   $ mkdir $GOPATH/go/src/github.com
+   $ mkdir $GOPATH/src/github.com
    ```
 
    Set environment variables. For example, in MacOS
@@ -41,10 +41,10 @@ Post-processors are optional, and they can be used to upload artifacts.
    Download Packer dependencies
    ```
    $ go get github.com/hashicorp/packer
-   $ cd $GOPATH/go/src/github.com/hashicorp/packer/vendor
+   $ cd $GOPATH/src/github.com/hashicorp/packer/vendor
    $ rm -r golang.org
-   $ mkdir -p $GOPATH/go/src/golang.org/x/
-   $ cd $GOPATH/go/src/golang.org/x/
+   $ mkdir -p $GOPATH/src/golang.org/x/
+   $ cd $GOPATH/src/golang.org/x/
    $ git clone https://github.com/golang/crypto.git
    $ git clone https://github.com/golang/oauth2.git
    $ git clone https://github.com/golang/net.git
