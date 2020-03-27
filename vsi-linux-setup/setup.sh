@@ -131,7 +131,9 @@ echo "$green [INFO]: Done setup the golang.org directory $white"
 echo "$cyan [Step 6]:  Access IBM Cloud Packer plugin $white"
 mkdir -p $GOPATH/src/github.com/ibmcloud > /dev/null
 cd $GOPATH/src/github.com/ibmcloud > /dev/null
-git clone https://github.com/IBM/packer-plugin-ibmcloud.git > /dev/null
+# git clone https://github.com/IBM/packer-plugin-ibmcloud.git > /dev/null
+# only current branch
+git clone -b i-4-jp --single-branch https://github.com/IBM/packer-plugin-ibmcloud.git
 cd $GOPATH/src/github.com/ibmcloud/packer-plugin-ibmcloud
 # Install dependencies for Generate the HCL2 code of a plugin 
 go get github.com/cweill/gotests/... > /dev/null
