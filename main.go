@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/hashicorp/packer/packer/plugin"
-	"github.com/ibmcloud/packer-builder-ibmcloud/builder/ibmcloud"
-	"github.com/ibmcloud/packer-builder-ibmcloud/version"
+	"github.com/ibmcloud/packer-plugin-ibmcloud/builder/ibmcloud"
+	"github.com/ibmcloud/packer-plugin-ibmcloud/version"
 )
 
 func main() {
