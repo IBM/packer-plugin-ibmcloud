@@ -8,54 +8,8 @@ cyan=$'\e[1;36m'
 white=$'\e[0m'
 yellow=$'\e[1;33m'
 
-go_tar="go1.12.2.linux-amd64.tar.gz"
+go_tar="go1.14.1.linux-amd64.tar.gz"
 go_url="https://dl.google.com/go/$go_tar"
 
-packer_zip="packer_1.4.1_linux_amd64.zip"
-packer_url="https://releases.hashicorp.com/packer/1.4.1/$packer_zip"
-
-
-windows_test='{
-  "variables": {
-    "sl_username": "{{env  `SL_USERNAME`}}",
-    "sl_api_key": "{{env `SL_API_KEY`}}"
-  },
-
-  "post-processors": [
-    {
-      "output": "files/artifacts/build.json",
-      "strip_path": true,
-      "type": "manifest"
-    }
-  ],
-
-  "provisioners": [
-    {
-    "type": "powershell",
-    "scripts": [
-        "scripts/Installpackages.ps1"
-    ]
-  }],
-
-  "builders": [{
-    "api_key": "",
-    "username": "",
-    "image_name": "seismic-win-linux",
-    "instance_name": "seismic-win-linux",
-    "type": "softlayer",
-    "datacenter_name": "wdc01",
-    "base_image_id":"8ad331d9-199f-4416-abae-f7ca408c1128",
-    "image_description": "Windows image created by packer at {{isotime}}",
-    "image_type": "standard",
-    "upload_to_datacenters": ["352494", "449506", "2017395", "814994", "449596", "1541257"],
-    "instance_domain": "provisioning.com",
-    "instance_cpu": 2,
-    "instance_memory": 4096,
-    "instance_network_speed": 10,
-    "instance_disk_capacity": 100,
-    "instance_state_timeout": "30m",
-    "winrm_timeout": "15m",
-    "winrm_use_ssl": true,
-    "winrm_insecure": true
-  }]
-}'
+packer_zip="packer_1.5.4_linux_amd64.zip"
+packer_url="https://releases.hashicorp.com/packer/1.5.4/$packer_zip"
