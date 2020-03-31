@@ -116,9 +116,8 @@ git clone https://go.googlesource.com/text > /dev/null
 go get github.com/agext/levenshtein > /dev/null
 go get github.com/apparentlymart/go-textseg/textseg > /dev/null
 go get github.com/mitchellh/go-wordwrap > /dev/null
-go get github.com/zclconf/go-cty/cty > /dev/null
-go get github.com/zclconf/go-cty/cty/convert > /dev/null
-go get github.com/zclconf/go-cty/cty/function > /dev/null
+mv $GOPATH/src/github.com/hashicorp/packer/vendor/github.com/zclconf $GOPATH/src/github.com
+
 cd $GOPATH/src > /dev/null
 go get -u cloud.google.com/go/compute/metadata > /dev/null
 echo "$green [INFO]: Done setup the golang.org directory $white"
@@ -127,17 +126,17 @@ echo "$green [INFO]: Done setup the golang.org directory $white"
 echo "$cyan [Step 6]:  Access IBM Cloud Packer plugin $white"
 mkdir -p $GOPATH/src/github.com/ibmcloud > /dev/null
 cd $GOPATH/src/github.com/ibmcloud > /dev/null
+# main repo
 # git clone https://github.com/IBM/packer-plugin-ibmcloud.git > /dev/null
-# only current branch
+# issue branch
 git clone -b i-4-jp --single-branch https://github.com/IBM/packer-plugin-ibmcloud.git
 cd $GOPATH/src/github.com/ibmcloud/packer-plugin-ibmcloud
-# Install dependencies for Generate the HCL2 code of a plugin 
+# Install dependencies for Generate the HCL2 code of a plugin
 go get github.com/cweill/gotests/... > /dev/null
 go install github.com/hashicorp/packer/cmd/mapstructure-to-hcl2 > /dev/null
-go get -u github.com/hashicorp/terraform/vendor/github.com/hashicorp/hcl/v2/hcldec > /dev/null
-mv $GOPATH/src/github.com/hashicorp/terraform/vendor/github.com/hashicorp/hcl $GOPATH/src/github.com/hashicorp > /dev/null
+mv $GOPATH/src/github.com/hashicorp/packer/vendor/github.com/hashicorp/hcl $GOPATH/src/github.com/hashicorp > /dev/null
 go generate ./builder/ibmcloud/...
-go build 
+go build
 echo "$green [INFO]: success doing $ go build $white"
 
 
