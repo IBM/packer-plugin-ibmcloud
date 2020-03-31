@@ -67,14 +67,15 @@ func (self *Builder) ConfigSpec() hcldec.ObjectSpec {
 }
 
 // Prepare processes the build configuration parameters.
-func (self *Builder) Prepare(raws ...interface{}) (parms []string, retErr error) {
+func (self *Builder) Prepare(raws ...interface{}) (parms []string, param2 []string, retErr error) {
 	err := config.Decode(&self.config, &config.DecodeOpts{
-		Interpolate:        true,
-		InterpolateContext: &self.config.ctx,
+			Interpolate:        true,
+			InterpolateContext: &self.config.ctx,
+			InterpolateFilter: &interpolate.RenderFilter{ },
 	}, raws...)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Assign default values if possible
@@ -184,7 +185,7 @@ func (self *Builder) Prepare(raws ...interface{}) (parms []string, retErr error)
 		retErr = errors.New(errs.Error())
 	}
 
-	return nil, retErr
+	return nil, nil, retErr
 }
 
 // Run executes a SoftLayer Packer build and returns a packer.Artifact
