@@ -30,13 +30,11 @@ echo "$green [INFO] go installed and Create Workspace successfully$white"
 
 echo "$cyan [Step 1-2]: Set go Environment variables $white"
 GOPATH="$HOME/go"
-GOROOT="/usr/local/go/bin"
-PATH=$PATH:$GOPATH:$GOROOT
-export PATH=$PATH:$GOPATH:$GOROOT:$GOPATH/bin
+GOROOT="/usr/local/go"
+export PATH=$PATH:$GOPATH:$GOROOT/bin:$GOPATH/bin
 cd $HOME
-echo export GOROOT=/usr/local/go/bin >> .profile
+echo export GOROOT=/usr/local/go >> .profile
 echo export GOPATH=$HOME/go >> .profile
-echo export PATH=$PATH:$GOPATH:$GOROOT >> .profile
 echo "$green [INFO] Successfully set of go Environment variables and Created Workspace$white"
 
 
@@ -55,14 +53,12 @@ else
 fi
 
 
-
 echo "$cyan [Step 2-2]: Set packer Environment variables $white"
-PACKERPATH=/usr/local/packer
-PATH=$PATH:$PACKERPATH
+PACKERPATH="/usr/local/packer"
 export PATH=$PATH:$PACKERPATH
 cd $HOME
 echo export PACKERPATH=/usr/local/packer >> .profile
-echo export PATH=$PATH:$PACKERPATH >> .profile
+echo export PATH=$PATH:$GOPATH:$GOROOT/bin:$GOPATH/bin:$PACKERPATH >> .profile
 echo "$green [INFO] Successfully set of packer Environment variables $white"
 
 
