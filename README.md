@@ -61,7 +61,7 @@ Post-processors are optional, and they can be used to upload artifacts.
    ```
    $ mkdir -p $GOPATH/src/github.com/ibmcloud
    $ cd $GOPATH/src/github.com/ibmcloud
-   $ git clone git@github.com:IBM/packer-plugin-ibmcloud.git
+   $ git clone https://github.com/IBM/packer-plugin-ibmcloud.git
    ```
 
    Build the plugin
