@@ -11,16 +11,14 @@ echo "| [Step 2-2]: Set packer Environment variables              |"
 echo "| [Step 3]: Setup git                                       |"
 echo "| [Step 4]: Setup Packer                                    |"
 echo "| [Step 4-1]: Download Packer dependencies                  |"
-echo "| [Step 4-2]: Remove vendor golang.org|"
-echo "| [Step 5]: Setup the golang.org directory|"
-echo "||"
-echo "||"
-echo "||"
-echo "||"
-
-echo "| Make sure you have Packer installed on this machine        |"
-echo "| Make sure you have git installed on this machine           |"
-echo "+============================================================+"
+echo "| [Step 4-2]: Remove vendor golang.org                      |"
+echo "| [Step 5]: Setup the golang.org directory                  |"
+echo "| [Step 6]: Setup Ansible                                   |"
+echo "| [Step 7]: Access IBM Cloud Packer plugin                  |"
+echo "| [Step 8]: packer validate ....                            |"
+echo "| Make sure you have Packer installed on this machine       |"
+echo "| Make sure you have git installed on this machine          |"
+echo "+===========================================================+"
 source stuff            # import stuff
 
 sleep 4
@@ -140,9 +138,9 @@ echo "$green [INFO]: Done setup the golang.org directory $white"
 
 echo "$cyan [Step 6]: Setup Ansible $white"
 sudo apt update
-sudo apt install software-properties-common
+sudo apt --yes install software-properties-common
 sudo apt-add-repository --yes --update ppa:ansible/ansible
-sudo apt install ansible
+sudo apt --yes install ansible
 echo "$green [INFO]: Done setup Ansible $white"
 
 
