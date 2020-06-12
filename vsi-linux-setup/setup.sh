@@ -1,8 +1,23 @@
 #!/bin/bash
 # run it as . ./setup.sh  === source ./seup.sh    -> Setup ENV variables
-echo "+============================================================+"
-echo "|                   Pre Requisites                           |"
-echo "| Make sure you have GO installed on this machine            |"
+echo "+===========================================================+"
+echo "|                   IBM Packer Plugin                       |"
+echo "| [Step 1]: Setup Go                                        |"
+echo "| [Step 1-1]: Install go and Create Workspace               |"
+echo "| [Step 1-2]: Set go Environment variables                  |"
+echo "| [Step 2]: Setup Packer                                    |"
+echo "| [Step 2-1]: Download and install Packer                   |"
+echo "| [Step 2-2]: Set packer Environment variables              |"
+echo "| [Step 3]: Setup git                                       |"
+echo "| [Step 4]: Setup Packer                                    |"
+echo "| [Step 4-1]: Download Packer dependencies                  |"
+echo "| [Step 4-2]: Remove vendor golang.org|"
+echo "| [Step 5]: Setup the golang.org directory|"
+echo "||"
+echo "||"
+echo "||"
+echo "||"
+
 echo "| Make sure you have Packer installed on this machine        |"
 echo "| Make sure you have git installed on this machine           |"
 echo "+============================================================+"
@@ -123,24 +138,34 @@ go get -u cloud.google.com/go/compute/metadata > /dev/null
 echo "$green [INFO]: Done setup the golang.org directory $white"
 
 
-echo "$cyan [Step 6]:  Access IBM Cloud Packer plugin $white"
+echo "$cyan [Step 6]: Setup Ansible $white"
+sudo apt update
+sudo apt install software-properties-common
+sudo apt-add-repository --yes --update ppa:ansible/ansible
+sudo apt install ansible
+echo "$green [INFO]: Done setup Ansible $white"
+
+
+echo "$cyan [Step 7]: Access IBM Cloud Packer plugin $white"
 mkdir -p $GOPATH/src/github.com/ibmcloud > /dev/null
 cd $GOPATH/src/github.com/ibmcloud > /dev/null
 # main repo
 # git clone https://github.com/IBM/packer-plugin-ibmcloud.git > /dev/null
 # issue branch
 git clone -b i-4-jp --single-branch https://github.com/IBM/packer-plugin-ibmcloud.git
-cd $GOPATH/src/github.com/ibmcloud/packer-plugin-ibmcloud
+mv $GOPATH/src/github.com/ibmcloud/packer-plugin-ibmcloud $GOPATH/src/github.com/ibmcloud/packer-builder-ibmcloud
+cd $GOPATH/src/github.com/ibmcloud/packer-builder-ibmcloud
 # Install dependencies for Generate the HCL2 code of a plugin
 go get github.com/cweill/gotests/... > /dev/null
 go install github.com/hashicorp/packer/cmd/mapstructure-to-hcl2 > /dev/null
 mv $GOPATH/src/github.com/hashicorp/packer/vendor/github.com/hashicorp/hcl $GOPATH/src/github.com/hashicorp > /dev/null
 go generate ./builder/ibmcloud/...
+
 go build
 echo "$green [INFO]: success doing $ go build $white"
 
 
-echo "$cyan [Step 7]: packer validate ....$white"
+echo "$cyan [Step 8]: packer validate ....$white"
 source .env
 packer validate examples/linux.json > /dev/null
 echo "$green [INFO]: Packer successfully validated json script $white"
