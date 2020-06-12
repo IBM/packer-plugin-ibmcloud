@@ -13,7 +13,7 @@
     },
     {
       "type": "ansible",
-      "playbook_file": "provisioner/site.yml",
+      "playbook_file": "provisioner/playbooklinux.yml",
       "inventory_file": "{{user `ansible_inventory_file`}}",
       "ssh_host_key_file": "{{user `private_key_file`}}",
       "ssh_authorized_key_file": "{{user `public_key_file`}}",
@@ -31,8 +31,8 @@
       "username": "{{user `sl_username`}}",
       "datacenter_name": "dal12",
       "base_image_id": "7dc5cda7-808f-4a66-985d-7f9a77920683",
-      "image_name": "",
-      "instance_name": "",
+      "image_name": "packer-image",
+      "instance_name": "packer-vsi",
       "image_description": "Centos image created by packer at {{isotime}}",
       "image_type": "standard",
       "upload_to_datacenters": [
