@@ -11,5 +11,5 @@ yellow=$'\e[1;33m'
 go_tar="go1.14.1.linux-amd64.tar.gz"
 go_url="https://dl.google.com/go/$go_tar"
 
-packer_zip="packer_1.5.4_linux_amd64.zip"
-packer_url="https://releases.hashicorp.com/packer/1.5.4/$packer_zip"
+packer_zip="packer_1.6.1_linux_amd64.zip"
+packer_url="https://releases.hashicorp.com/packer/1.6.1/$packer_zip"

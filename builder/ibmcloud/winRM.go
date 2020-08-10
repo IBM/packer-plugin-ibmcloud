@@ -3,7 +3,6 @@ package ibmcloud
 import (
 	"fmt"
 
-	commonhelper "github.com/hashicorp/packer/helper/common"
 	"github.com/hashicorp/packer/helper/communicator"
 	"github.com/hashicorp/packer/helper/multistep"
 	"github.com/hashicorp/packer/packer"
@@ -40,7 +39,7 @@ func winRMConfig(state multistep.StateBag) (*communicator.WinRMConfig, error) {
 	config.Comm.WinRMUser = username
 	config.Comm.WinRMPassword = password
 	state.Put("config", config)
-	commonhelper.SetSharedState("winrm_password", password, config.PackerBuildName)
+	state.Put("winrm_password", password)
 
 	return &comm, nil
 }
