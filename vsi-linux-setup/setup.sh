@@ -150,8 +150,7 @@ cd $GOPATH/src/github.com/ibmcloud > /dev/null
 # main repo
 # git clone https://github.com/IBM/packer-plugin-ibmcloud.git > /dev/null
 # issue branch
-git clone -b i-4-jp --single-branch https://github.com/IBM/packer-plugin-ibmcloud.git
-mv $GOPATH/src/github.com/ibmcloud/packer-plugin-ibmcloud $GOPATH/src/github.com/ibmcloud/packer-builder-ibmcloud
+git clone -b i-4-jp --single-branch https://github.com/IBM/packer-plugin-ibmcloud.git packer-builder-ibmcloud
 cd $GOPATH/src/github.com/ibmcloud/packer-builder-ibmcloud
 # Install dependencies for Generate the HCL2 code of a plugin
 go get github.com/cweill/gotests/... > /dev/null

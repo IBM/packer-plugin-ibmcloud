@@ -55,7 +55,12 @@ Post-processors are optional, and they can be used to upload artifacts.
    $ go get -u cloud.google.com/go/compute/metadata
    ```
 
-3) **IBM Cloud Packer-Builder**
+3) **Permission Enforcement in the SoftLayer API - Update July 2020** 
+   Add Compute with Public Network Port: Classic infrastructure > Permissions > Network
+   or
+   ibmcloud sl user permission-edit <user_id> --permission PUBLIC_NETWORK_COMPUTE --enable true
+
+4) **IBM Cloud Packer-Builder**
 
    Clone this repository 
    ```
@@ -75,7 +80,7 @@ Post-processors are optional, and they can be used to upload artifacts.
    ```
 
    **Important Note - Save your existing SSH keypair(id_rsa and is_rsa.pub) before you run Packer. Ansible provisioner is going to overwrite SSH keypair with its own.**
-   
+  
    Create .env file:
    ```
    $ cat $GOPATH/src/github.com/ibmcloud/packer-builder-ibmcloud/.env
