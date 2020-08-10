@@ -30,7 +30,7 @@
       "api_key": "{{user `sl_api_key`}}",
       "username": "{{user `sl_username`}}",
       "datacenter_name": "dal12",
-      "base_image_id": "7dc5cda7-808f-4a66-985d-7f9a77920683",
+      "base_image_id": "5586378f-5f4f-4eac-9aa2-199fa53bb15e",
       "image_name": "packer-image",
       "instance_name": "packer-vsi",
       "image_description": "Centos image created by packer at {{isotime}}",
