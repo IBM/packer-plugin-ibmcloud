@@ -18,7 +18,7 @@
       "ssh_host_key_file": "{{user `private_key_file`}}",
       "ssh_authorized_key_file": "{{user `public_key_file`}}",
       "extra_arguments": [
-	"-vvvv",
+	      "-vvvv",
         "--extra-vars",
         "ansible_user=root --private-key={{user `private_key_file`}}"
       ]
