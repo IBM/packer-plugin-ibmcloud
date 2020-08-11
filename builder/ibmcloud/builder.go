@@ -215,6 +215,7 @@ func (self *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (p
 				Host:        winRMCommHost,
 				WinRMConfig: winRMConfig,
 			},
+			new(stepWaitforInstance),
 			new(common.StepProvision),
 			new(stepCaptureImage),
 		}
