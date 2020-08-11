@@ -136,11 +136,14 @@ go get -u cloud.google.com/go/compute/metadata > /dev/null
 echo "$green [INFO]: Done setup the golang.org directory $white"
 
 
-echo "$cyan [Step 6]: Setup Ansible $white"
+echo "$cyan [Step 6-1]: Setup Ansible $white"
 sudo apt update
 sudo apt --yes install software-properties-common
 sudo apt-add-repository --yes --update ppa:ansible/ansible
 sudo apt --yes install ansible
+# Fix "winrm or requests is not installed: No module named winrm"
+sudo apt --yes install python-pip
+pip install --ignore-installed "pywinrm>=0.2.2"
 echo "$green [INFO]: Done setup Ansible $white"
 
 
