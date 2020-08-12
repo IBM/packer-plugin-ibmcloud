@@ -8,8 +8,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/hcl/v2/hcldec"
+  "github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer/common"
+	"github.com/hashicorp/packer/hcl2template"
 	"github.com/hashicorp/packer/helper/communicator"
 	"github.com/hashicorp/packer/helper/config"
 	"github.com/hashicorp/packer/helper/multistep"
@@ -21,8 +22,9 @@ import (
 const BuilderId = "packer.ibmcloud"
 
 type Config struct {
-	common.PackerConfig `mapstructure:",squash"`
-	Comm                communicator.Config `mapstructure:",squash"`
+	common.PackerConfig             `mapstructure:",squash"`
+	Comm                            communicator.Config `mapstructure:",squash"`
+	hcl2template.FlatKeyValueFilter `mapstructure:",squash"`
 
 	Username            string   `mapstructure:"username"`
 	APIKey              string   `mapstructure:"api_key"`

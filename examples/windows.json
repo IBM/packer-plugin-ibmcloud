@@ -41,7 +41,7 @@
     "instance_flavor": "B1_2X4X100",
     "type": "ibmcloud",
     "datacenter_name": "wdc01",
-    "base_image_id":"8ad331d9-199f-4416-abae-f7ca408c1128",
+    "base_image_id":"336695f9-a795-470a-9b44-a2df49388b04",
     "image_description": "Windows image created by packer at {{isotime}}",
     "image_type": "standard",
     "upload_to_datacenters": [
