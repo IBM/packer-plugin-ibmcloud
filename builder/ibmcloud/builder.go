@@ -24,7 +24,7 @@ const BuilderId = "packer.ibmcloud"
 type Config struct {
 	common.PackerConfig             `mapstructure:",squash"`
 	Comm                            communicator.Config `mapstructure:",squash"`
-	hcl2template.FlatKeyValueFilter `mapstructure:",squash"`
+	hcl2template.KeyValueFilter `mapstructure:",squash"`
 
 	Username            string   `mapstructure:"username"`
 	APIKey              string   `mapstructure:"api_key"`
