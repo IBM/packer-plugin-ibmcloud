@@ -127,9 +127,12 @@ git clone https://go.googlesource.com/text > /dev/null
 
 # below packages are required after change above packages source
 go get github.com/agext/levenshtein > /dev/null
-go get github.com/apparentlymart/go-textseg/textseg > /dev/null
 go get github.com/mitchellh/go-wordwrap > /dev/null
 mv $GOPATH/src/github.com/hashicorp/packer/vendor/github.com/zclconf $GOPATH/src/github.com
+go get github.com/apparentlymart/go-textseg/textseg > /dev/null
+cd /root/go/src/github.com/apparentlymart/go-textseg > /dev/null
+mkdir v12 > /dev/null
+cp -r textseg v12 > /dev/null
 
 cd $GOPATH/src > /dev/null
 go get -u cloud.google.com/go/compute/metadata > /dev/null
