@@ -13,7 +13,7 @@ Post-processors are optional, and they can be used to upload artifacts.
 
 ## Installation  
 
-### Using the Docker Container  
+### Using a Docker Container  
 1. Build the script from Dockerfile  
     `$ cd vsi-linux-setup`  
     `$ docker build -t ibmcloudvpc/packer-plugin-ibmcloud .`   
