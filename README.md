@@ -27,8 +27,8 @@ Post-processors are optional, and they can be used to upload artifacts.
 4. Copy/Create SSH Keys on /root/.ssh folder   
     - To create them run `$ ssh-keygen -t rsa` 
 5. Update .env file with your IBM Cloud credentials  
-    `$ cd $GOPATH/src/github.com/ibmcloud/packer-builder-ibmcloud`   
-    `$ vi .env`    
+    `$ cd $GOPATH/src/github.com/ibmcloud/packer-builder-ibmcloud`  
+    `$ vi .env`      
 6. Run Packer plugin commands  
     `$ source .env`  
     `$ packer validate examples/linux.json`  
