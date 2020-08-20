@@ -26,14 +26,16 @@ Post-processors are optional, and they can be used to upload artifacts.
 
    Set environment variables. For example, in MacOS
    ```
-   $ GOPATH="/Users/<users_home_dir>/go"
+   $ export GOROOT=/usr/local/go >> .profile  
+   $ export GOPATH=$HOME/go >> .profile   
    ```
 
 2) **Install Packer**
 
    Download the pre compiled binary from https://www.packer.io/downloads.html/. Unzip it into any directory. After unzipping, you should get the packer binary file. Add the location to the packer binary file to the PATH variable
    ```
-   $ export PATH=$PATH:/<path_to_packer_binary_file>
+   $ export PACKERPATH=/usr/local/packer  
+   $ export PATH=$PATH:$GOPATH:$GOROOT/bin:$GOPATH/bin:$PACKERPATH >> .profile  
    ```
 
    For more instructions on downloading and installing packer, refer https://www.packer.io/docs/install/index.html
@@ -45,34 +47,65 @@ Post-processors are optional, and they can be used to upload artifacts.
    $ rm -r golang.org
    $ mkdir -p $GOPATH/src/golang.org/x/
    $ cd $GOPATH/src/golang.org/x/
-   $ git clone https://github.com/golang/crypto.git
-   $ git clone https://github.com/golang/oauth2.git
-   $ git clone https://github.com/golang/net.git
-   $ git clone https://github.com/golang/sys.git
-   $ git clone https://github.com/golang/time.git
-   $ git clone https://github.com/golang/text.git
-   $ cd $GOPATH/src
-   $ go get -u cloud.google.com/go/compute/metadata
+   $ git clone https://go.googlesource.com/crypto  
+   $ git clone https://github.com/golang/oauth2.git  
+   $ git clone https://go.googlesource.com/net  
+   $ git clone https://go.googlesource.com/sys  
+   $ git clone https://go.googlesource.com/time  
+   $ git clone https://go.googlesource.com/text  
+   # below packages are required after change above packages source  
+   $ go get github.com/agext/levenshtein  
+   $ go get github.com/mitchellh/go-wordwrap  
+   $ go get github.com/google/go-cmp/cmp  
+   $ mv $GOPATH/src/github.com/hashicorp/packer/vendor/github.com/zclconf $GOPATH/src/github.com  
+   $ go get github.com/apparentlymart/go-textseg/textseg  
+   $ cd /root/go/src/github.com/apparentlymart/go-textseg  
+   $ mkdir v12   
+   $ cp -r textseg v12 
+   $ cd $GOPATH/src  
+   $ go get -u cloud.google.com/go/compute/metadata  
    ```
 
-3) **Permission Enforcement in the SoftLayer API - Update July 2020** 
+5) **Setup Ansible** 
+   ```
+   $ sudo apt update  
+   $ sudo apt --yes install software-properties-common  
+   $ sudo apt-add-repository --yes --update ppa:ansible/ansible  
+   $ sudo apt --yes install ansible  
+   
+   # Fix "winrm or requests is not installed: No module named winrm"
+   $ sudo apt --yes install python-pip  
+   $ pip install --ignore-installed "pywinrm>=0.2.2"  
+   ```
+
+4) **Permission Enforcement in the SoftLayer API - Update July 2020** 
    Add Compute with Public Network Port: Classic infrastructure > Permissions > Network
    or
    ibmcloud sl user permission-edit <user_id> --permission PUBLIC_NETWORK_COMPUTE --enable true
 
-4) **IBM Cloud Packer-Builder**
+
+5) **IBM Cloud Packer-Builder**
 
    Clone this repository 
    ```
-   $ mkdir -p $GOPATH/src/github.com/ibmcloud
-   $ cd $GOPATH/src/github.com/ibmcloud
-   $ git clone https://github.com/IBM/packer-plugin-ibmcloud.git
+   $ mkdir -p $GOPATH/src/github.com/ibmcloud  
+   $ cd $GOPATH/src/github.com/ibmcloud  
+   
+   # main repo
+   $ git clone https://github.com/IBM/packer-plugin-ibmcloud.git packer-builder-ibmcloud
+   $ cd $GOPATH/src/github.com/ibmcloud/packer-builder-ibmcloud  
+
+   # Install dependencies for Generate the HCL2 code of a plugin
+   $ go get github.com/cweill/gotests/...  
+   $ go install github.com/hashicorp/packer/cmd/mapstructure-to-hcl2  
+   $ mv $GOPATH/src/github.com/hashicorp/packer/vendor/github.com/hashicorp/hcl $GOPATH/src/github.com/hashicorp  
+   $ go generate ./builder/ibmcloud/...
    ```
 
    Build the plugin
    ```
    $ cd $GOPATH/src/github.com/ibmcloud/packer-builder-ibmcloud
-   
+      
    # make sure you update the version under version/version.go if code has changes/features are added 
    # Eg - current version is 0.1.0. When a new feature added to plugin then the new version should be 0.1.1
    
