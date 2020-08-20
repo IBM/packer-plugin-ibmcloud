@@ -40,7 +40,6 @@ else
 fi
 echo "$green [INFO] go installed and Create Workspace successfully$white"
 
-
 echo "$cyan [Step 1-2]: Set go Environment variables $white"
 GOPATH="$HOME/go"
 GOROOT="/usr/local/go"
@@ -49,7 +48,6 @@ cd $HOME
 echo export GOROOT=/usr/local/go >> .profile
 echo export GOPATH=$HOME/go >> .profile
 echo "$green [INFO] Successfully set of go Environment variables and Created Workspace$white"
-
 
 echo "$cyan [Step 2-1]: Download and install Packer $white"
 packer -v > /dev/null 2>&1
@@ -65,7 +63,6 @@ else
   unzip $packer_zip -d /usr/local/packer > /dev/null
 fi
 
-
 echo "$cyan [Step 2-2]: Set packer Environment variables $white"
 PACKERPATH="/usr/local/packer"
 export PATH=$PATH:$PACKERPATH
@@ -73,7 +70,6 @@ cd $HOME
 echo export PACKERPATH=/usr/local/packer >> .profile
 echo export PATH=$PATH:$GOPATH:$GOROOT/bin:$GOPATH/bin:$PACKERPATH >> .profile
 echo "$green [INFO] Successfully set of packer Environment variables $white"
-
 
 echo "$cyan [Step 3]: Validate git $white"
 git --version > /dev/null 2>&1
@@ -91,7 +87,6 @@ else
   fi
 fi
 
-
 echo "$cyan [Step 4-1]: Download Packer dependencies $white"
 # -- dependencies: get hashicorp --
 cd $GOPATH/src/github.com > /dev/null
@@ -103,7 +98,6 @@ else
   exit 1
 fi
 
-
 echo "$cyan [Step 4-2]: Remove vendor golang.org $white"
 cd $GOPATH/src/github.com/hashicorp/packer/vendor > /dev/null
 rm -r golang.org > /dev/null 2>&1
@@ -112,7 +106,6 @@ if [ $? -eq 0 ];then
 else
   echo "$red [ERROR] Error removing vendor golang.org directory $white"
 fi
-
 
 echo "$cyan [Step 5]: Setup the golang.org directory $white"
 mkdir -p $GOPATH/src/golang.org/x/ > /dev/null
@@ -128,6 +121,7 @@ git clone https://go.googlesource.com/text > /dev/null
 # below packages are required after change above packages source
 go get github.com/agext/levenshtein > /dev/null
 go get github.com/mitchellh/go-wordwrap > /dev/null
+go get github.com/google/go-cmp/cmp > /dev/null
 mv $GOPATH/src/github.com/hashicorp/packer/vendor/github.com/zclconf $GOPATH/src/github.com
 go get github.com/apparentlymart/go-textseg/textseg > /dev/null
 cd /root/go/src/github.com/apparentlymart/go-textseg > /dev/null
@@ -137,7 +131,6 @@ cp -r textseg v12 > /dev/null
 cd $GOPATH/src > /dev/null
 go get -u cloud.google.com/go/compute/metadata > /dev/null
 echo "$green [INFO]: Done setup the golang.org directory $white"
-
 
 echo "$cyan [Step 6-1]: Setup Ansible $white"
 sudo apt update
@@ -149,14 +142,13 @@ sudo apt --yes install python-pip
 pip install --ignore-installed "pywinrm>=0.2.2"
 echo "$green [INFO]: Done setup Ansible $white"
 
-
 echo "$cyan [Step 7]: Access IBM Cloud Packer plugin $white"
 mkdir -p $GOPATH/src/github.com/ibmcloud > /dev/null
 cd $GOPATH/src/github.com/ibmcloud > /dev/null
 # main repo
-# git clone https://github.com/IBM/packer-plugin-ibmcloud.git > /dev/null
-# issue branch
-git clone -b i-4-jp --single-branch https://github.com/IBM/packer-plugin-ibmcloud.git packer-builder-ibmcloud
+git clone https://github.com/IBM/packer-plugin-ibmcloud.git packer-builder-ibmcloud
+# branch
+# git clone -b i-4-jp --single-branch https://github.com/IBM/packer-plugin-ibmcloud.git packer-builder-ibmcloud
 cd $GOPATH/src/github.com/ibmcloud/packer-builder-ibmcloud
 # Install dependencies for Generate the HCL2 code of a plugin
 go get github.com/cweill/gotests/... > /dev/null
@@ -166,7 +158,6 @@ go generate ./builder/ibmcloud/...
 
 go build
 echo "$green [INFO]: success doing $ go build $white"
-
 
 echo "$cyan [Step 8]: packer validate ....$white"
 source .env
