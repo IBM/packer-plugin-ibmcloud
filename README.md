@@ -79,8 +79,8 @@ Post-processors are optional, and they can be used to upload artifacts.
    ```
 
 4) **Permission Enforcement in the SoftLayer API - Update July 2020** 
-   Add Compute with Public Network Port: Classic infrastructure > Permissions > Network
-   or
+   Add Compute with Public Network Port: Classic infrastructure > Permissions > Network  
+   or  
    ibmcloud sl user permission-edit <user_id> --permission PUBLIC_NETWORK_COMPUTE --enable true
 
 
