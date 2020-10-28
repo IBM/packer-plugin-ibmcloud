@@ -139,7 +139,7 @@ RUN set -ex \
 RUN set -ex \
     && cd $GOPATH/src/github.com/ibmcloud/packer-builder-ibmcloud \
     && go generate ./builder/ibmcloud/... \
-    && go build
+    && CGO_ENABLED=0 go build
 
 ###########################################################
 RUN echo "IBM Packer Plugin created successfully!!!"
