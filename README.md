@@ -14,25 +14,49 @@ Post-processors are optional, and they can be used to upload artifacts.
 ## Installation  
 
 ### Using a Docker Container  
-1. Build the script from Dockerfile  
-    `$ cd vsi-linux-setup`  
-    `$ docker build -t ibmcloudvpc/packer-plugin-ibmcloud .`   
-   OR  
-   Pull the image from ibmcloudvpc/packer-plugin-ibmcloud  
-    `$ docker pull ibmcloudvpc/packer-plugin-ibmcloud:latest`  
+1. Build the script from Dockerfile   
+   `$ docker build -t ibmcloud/packer-plugin-ibmcloud .`   
 2. Check image is in the local Docker image registry  
-    `$ docker image ls`
+   `$ docker image ls`
 3. Run and interact with the container  
-    `$ docker run -it ibmcloudvpc/packer-plugin-ibmcloud /bin/bash`    
-4. Copy/Create SSH Keys on /root/.ssh folder   
-    - To create them run `$ ssh-keygen -t rsa` 
+   ```
+   $ docker run -it ibmcloud/packer-plugin-ibmcloud /bin/bash    
+   $ cd $GOPATH/src/github.com/ibmcloud/packer-builder-ibmcloud
+   ```
+4. Copy your SSH key pair and give proper permission access.    
+   ```
+   $ mkdir -p $HOME/.ssh
+   $ vi $HOME/.ssh/id_rsa
+   -----BEGIN RSA PRIVATE KEY----- ...
+
+   $ vi $HOME/.ssh/id_rsa.pub
+   ssh-rsa AAAA ...   
+
+   $ chmod 600 $HOME/.ssh/id_rsa
+   $ chmod 600 $HOME/.ssh/id_rsa.pub  
+   ```
 5. Update .env file with your IBM Cloud credentials  
-    `$ cd $GOPATH/src/github.com/ibmcloud/packer-builder-ibmcloud`  
-    `$ vi .env`      
+   ```
+   $ vi .env
+
+   export IBM_API_KEY=""
+   export ANSIBLE_INVENTORY_FILE="provisioner/hosts"
+   export ANSIBLE_HOST_KEY_CHECKING=False
+   export PRIVATEKEY="$HOME/.ssh/id_rsa"
+   export PUBLICKEY="$HOME/.ssh/id_rsa.pub"
+   export PACKER_LOG=1
+   export PACKER_LOG_PATH="packerlog.txt"
+   export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+   ```     
 6. Run Packer plugin commands  
-    `$ source .env`  
-    `$ packer validate examples/linux.json`  
-    `$ packer build examples/linux.json`
+   ```
+   $ source .env
+
+   # Edit the json file with proper mandatory and optional fields 
+   $ packer validate examples/linux.json  or   $ packer validate examples/windows.json
+   $ packer build examples/linux.json     or   $ packer build examples/windows.json
+   ```
+
 
 
 ### Install it using a shell script  
