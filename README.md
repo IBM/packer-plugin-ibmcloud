@@ -21,7 +21,7 @@ Post-processors are optional, and they can be used to upload artifacts.
 3. Run and interact with the container  
    ```
    $ docker run -it ibmcloud/packer-plugin-ibmcloud /bin/bash    
-   $ cd $GOPATH/src/github.com/ibmcloud/packer-builder-ibmcloudvpc
+   $ cd $GOPATH/src/github.com/ibmcloud/packer-builder-ibmcloud
    ```
 4. Copy your SSH key pair and give proper permission access.    
    ```
