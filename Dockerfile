@@ -18,7 +18,7 @@ ENV HOME /root
 ###########################################################
 RUN echo "[Step 1-1]: Install go and Create Workspace"
 ###########################################################
-ENV GO_VERSION 1.14.7
+ENV GO_VERSION 1.15.3
 ENV GO_TAR go$GO_VERSION.linux-amd64.tar.gz
 ENV GO_URL https://golang.org/dl/$GO_TAR  
 RUN set -ex \ 
@@ -78,6 +78,7 @@ RUN set -ex \
 ###########################################################
 RUN echo "[Step 4]: Download Packer dependencies"
 ###########################################################
+# See go.mod for other dependencies
 RUN set -ex \
     && cd $GOPATH/src/github.com \
     && go get github.com/hashicorp/packer \
@@ -94,7 +95,7 @@ RUN set -ex \
 
 
 ###########################################################
-RUN echo "[Step 7]: Access IBM Cloud Packer plugin"
+RUN echo "[Step 6]: Access IBM Cloud Packer plugin"
 ###########################################################
 # Copy source code to the folder packer-builder-ibmcloud
 RUN set -ex \
