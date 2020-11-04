@@ -60,14 +60,16 @@ Post-processors are optional, and they can be used to upload artifacts.
 
 
 ### Install it using a shell script  
-1. Go to vsi-linux-setup folder  
-   `$ cd vsi-linux-setup`
-2. Copy files to a folder called "temp" inside linux machine
-3. Give permission to setup.sh (Setup plugin on your machine)
-   1. `chmod +x setup.sh`
-4. run `. ./setup.sh`
+1. Go to vsi-setup folder  
+   `$ cd vsi-setup`
+2. Choose the right installation for your instance: macOS, ubuntu. 
+   - Here, setup-ubuntu.sh is used.
+3. Give permission to setup-ubuntu.sh (Setup plugin on your machine)
+   - `chmod +x setup-ubuntu.sh`
+4. run `. ./setup-ubuntu.sh`
 5. run `go generate ./builder/ibmcloud/...`
 6. run `go build`
+7. Follow steps 4-6 Using a Docker Container
 
 
 ### Install it manually
