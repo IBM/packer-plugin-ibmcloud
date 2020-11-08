@@ -11,7 +11,14 @@ The provisioners use builtin software or software like ansible to install packag
 ## IBM Packer Post-Provisoners
 Post-processors are optional, and they can be used to upload artifacts.
 
-## Installation  
+## Requirements
+* [Packer](https://www.packer.io/intro/getting-started/install.html)
+* [Go 1.13+](https://golang.org/doc/install)
+
+## Build and Installation  
+### Install from release:
+   - Download binaries from the [releases page](https://github.com/IBM/packer-plugin-ibmcloud/releases).
+
 
 ### Using a Docker Container  
 1. Build the script from Dockerfile   
@@ -26,10 +33,16 @@ Post-processors are optional, and they can be used to upload artifacts.
 4. Copy your SSH key pair and give proper permission access.    
    ```
    $ mkdir -p $HOME/.ssh
+   @ local
+   $ cat $HOME/.ssh/id_rsa | pbcopy
+   @ container
    $ vi $HOME/.ssh/id_rsa
    -----BEGIN RSA PRIVATE KEY----- ...
 
-   $ vi $HOME/.ssh/id_rsa.pub
+   @ local
+   $ cat $HOME/.ssh/id_rsa.pub | pbcopy
+   @ container
+   $ vi $HOME/.ssh/id_rsa.pub   
    ssh-rsa AAAA ...   
 
    $ chmod 600 $HOME/.ssh/id_rsa
@@ -64,12 +77,13 @@ Post-processors are optional, and they can be used to upload artifacts.
    `$ cd vsi-setup`
 2. Choose the right installation for your instance: macOS, ubuntu. 
    - Here, setup-ubuntu.sh is used.
-3. Give permission to setup-ubuntu.sh (Setup plugin on your machine)
+3. Copy setup-ubuntu.sh to ubuntu machine.
+4. Give permission to setup-ubuntu.sh (Setup plugin on your machine)
    - `chmod +x setup-ubuntu.sh`
-4. run `. ./setup-ubuntu.sh`
-5. run `go generate ./builder/ibmcloud/...`
-6. run `go build`
-7. Follow steps 4-6 Using a Docker Container
+5. run `. ./setup-ubuntu.sh`
+6. run `go generate ./builder/ibmcloud/...`
+7. run `go build`
+8. Follow steps 4-6 Using a Docker Container
 
 
 ### Install it manually
