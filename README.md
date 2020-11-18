@@ -86,7 +86,7 @@ Post-processors are optional, and they can be used to upload artifacts.
 8. Follow steps 4-6 Using a Docker Container
 
 
-### Install it manually
+### Install it manually on your local machine
 
 1) **Download and install Go**
 
@@ -153,7 +153,7 @@ Post-processors are optional, and they can be used to upload artifacts.
    $ pip install --ignore-installed "pywinrm>=0.2.2"  
    ```
 
-4) **Permission Enforcement in the SoftLayer API - Update July 2020** 
+4) **Permission Enforcement in the SoftLayer API - Update July 2020 (IAM permission required for assigning Public IP to an instance)** 
    Add Compute with Public Network Port: Classic infrastructure > Permissions > Network  
    or  
    ibmcloud sl user permission-edit <user_id> --permission PUBLIC_NETWORK_COMPUTE --enable true
