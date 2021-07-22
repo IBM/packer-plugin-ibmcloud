@@ -184,7 +184,7 @@ func (client IBMCloudClient) getIAMToken(state multistep.StateBag) (map[string]i
 func (client IBMCloudClient) VPCCreateInstance(instance InstanceType, state multistep.StateBag) (map[string]interface{}, error) {
 	ui := state.Get("ui").(packer.Ui)
 
-	validName, err := regexp.Compile(`[^A-Za-z0-9\-\.]+`)
+	validName, err := regexp.Compile(`[^a-z0-9\-]+`)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error validating the Instance's name. Error: %s", err)
 		ui.Error(err.Error())
