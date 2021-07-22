@@ -41,7 +41,8 @@ type InstanceType struct {
 	ResourceGroupID string
 	VPCSSHKeyID     string `json:",omitempty"`
 	VSIName         string
-	VSIBaseImageID  string `json:",omitempty"`
+	VSIBaseImageID  string
+	VSIBaseImageName  string
 	VSIProfile      string `json:",omitempty"`
 	VSIInterface    string `json:",omitempty"`
 	VSIUserDataFile string `json:",omitempty"`
@@ -795,6 +796,30 @@ func (client IBMCloudClient) addNetworkInterfaceToSecurityGroup(SecurityGroupID 
 		return nil, err
 	}
 	return response, nil
+}
+
+func (client IBMCloudClient) getImageIDByName(name string, state multistep.StateBag) (string, error) {
+	ui := state.Get("ui").(packer.Ui)
+	config := state.Get("config").(Config)
+
+	validName, err := regexp.Compile(`[^a-z0-9\-]+`)
+	if err != nil {
+		err := fmt.Errorf("[ERROR] Error validating the image's name. Error: %s", err)
+		ui.Error(err.Error())
+		log.Println(err.Error())
+		return "", err
+	}
+	name = validName.ReplaceAllString(name, "")
+
+	url := config.EndPoint + "/" + "images" + "?" + "name=" + name + "&" + config.Version + "&" + config.Generation
+	response, err := client.newHttpRequest(url, nil, "GET", state)
+	if err != nil {
+		err := fmt.Errorf("[ERROR] Error sending the HTTP request that get the Images. Error: %s", err)
+		ui.Error(err.Error())
+		log.Println(err.Error())
+		return "", err
+	}
+	return response["images"].([]interface{})[0].(map[string]interface{})["id"].(string), nil
 }
 
 // func (client IBMCloudClient) createSnapshot(state multistep.StateBag, snapshotData SnapshotReq) (map[string]interface{}, error) {

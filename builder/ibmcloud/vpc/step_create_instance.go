@@ -29,6 +29,7 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		VPCSSHKeyID:     state.Get("vpc_ssh_key_id").(string),
 		VSIName:         config.VSIName,
 		VSIBaseImageID:  config.VSIBaseImageID,
+		VSIBaseImageName:  config.VSIBaseImageName,
 		VSIProfile:      config.VSIProfile,
 		VSIInterface:    config.VSIInterface,
 		VSIUserDataFile: config.VSIUserDataFile,
@@ -36,6 +37,21 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 	state.Put("instance_definition", *instanceDefinition)
 
 	ui.Say("Creating Instance...")
+
+	// Get Image ID
+	if instanceDefinition.VSIBaseImageName != "" {
+		ui.Say("Fetching ImageID...")
+		baseImageID,err := client.getImageIDByName(instanceDefinition.VSIBaseImageName, state)
+		if err != nil {
+			err := fmt.Errorf("[ERROR] Error getting image ID: %s", err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
+		instanceDefinition.VSIBaseImageID = baseImageID
+		ui.Say(fmt.Sprintf("ImageID fetched: %s", string(instanceDefinition.VSIBaseImageID)))
+	}
+
 	instanceData, err := client.VPCCreateInstance(*instanceDefinition, state)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error creating the instance: %s", err)
