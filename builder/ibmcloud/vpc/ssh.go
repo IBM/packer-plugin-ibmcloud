@@ -45,6 +45,7 @@ func sshConfig(state multistep.StateBag) (*ssh.ClientConfig, error) {
 		User: config.Comm.SSHUsername,
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
+			ssh.Password(config.Comm.SSHPassword),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}, nil
