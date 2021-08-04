@@ -1,19 +1,27 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"os"
 
-	"github.com/hashicorp/packer/packer/plugin"
-	"github.com/ibmcloud/packer-builder-ibmcloud/builder/ibmcloud"
-	"github.com/ibmcloud/packer-builder-ibmcloud/version"
+	"packer-plugin-ibmcloud/version"
+
+	"github.com/hashicorp/packer-plugin-sdk/plugin"
+
+	// "packer-plugin-ibmcloud/builder/ibmcloud/classic"
+	"packer-plugin-ibmcloud/builder/ibmcloud/vpc"
 )
 
 func main() {
-	log.Println("IBM Cloud Provider version", version.FormattedVersion, version.VersionPrerelease, version.GitCommit)
-	server, err := plugin.Server()
+	pps := plugin.NewSet()
+	pps.RegisterBuilder("vpc", new(vpc.Builder))
+	// pps.RegisterBuilder("classic", new(classic.Builder))
+	pps.SetVersion(version.IBMCloudPluginVersion)
+	err := pps.Run()
+	log.Println("IBM Cloud Packer Plugin Version", version.IBMCloudPluginVersion)
 	if err != nil {
-		panic(err)
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
 	}
-	server.RegisterBuilder(new(ibmcloud.Builder))
-	server.Serve()
 }

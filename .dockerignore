@@ -1,0 +1,4 @@
+# Docker ignore these files
+/examples
+.credentials
+.env

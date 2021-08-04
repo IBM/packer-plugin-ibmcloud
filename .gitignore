@@ -1,2 +1,8 @@
+/dev
+/vendor
+/provisioner/hosts
+/releases
+/builder/ibmcloud/classic
 .env
-packer-builder-ibmcloud
+.credentials
+packer-plugin-ibmcloud

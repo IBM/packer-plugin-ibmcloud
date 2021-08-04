@@ -1,31 +1,17 @@
 package version
 
 import (
-	"bytes"
-	"fmt"
+	"github.com/hashicorp/packer-plugin-sdk/version"
 )
 
-// The git commit that was compiled. This will be filled in by the compiler.
-var GitCommit string
+var IBMCloudPluginVersion *version.PluginVersion
 
-// The main version number that is being run at the moment.
-const Version = "0.1.0"
+var (
+	// Version is the main version number that is being run at the moment.
+	Version           = "v2.0.1"
+	VersionPrerelease = "dev"
+)
 
-// A pre-release marker for the version. If this is "" (empty string)
-// then it means that it is a final release. Otherwise, this is a pre-release
-// such as "dev" (in development), "beta", "rc1", etc.
-const VersionPrerelease = "dev"
-
-func FormattedVersion() string {
-	var versionString bytes.Buffer
-	fmt.Fprintf(&versionString, "%s", Version)
-	if VersionPrerelease != "" {
-		fmt.Fprintf(&versionString, "-%s", VersionPrerelease)
-
-		if GitCommit != "" {
-			fmt.Fprintf(&versionString, " (%s)", GitCommit)
-		}
-	}
-
-	return versionString.String()
+func init() {
+	IBMCloudPluginVersion = version.InitializePluginVersion(Version, VersionPrerelease)
 }
