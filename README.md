@@ -29,7 +29,7 @@ packer {
   }
 }
 ```
-Then run 
+Then run  
 `packer init -upgrade examples/build.vpc.centos.pkr.hcl`  
 `packer validate examples/build.vpc.centos.pkr.hcl`  
 `packer build examples/build.vpc.centos.pkr.hcl`  
