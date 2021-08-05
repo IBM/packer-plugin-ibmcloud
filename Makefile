@@ -51,8 +51,6 @@ image:
 	docker build $(DOCKER_BUILD_ARG) -t $(CONTAINER_NAME) .
 it:
 	docker run -v $(PWD)/examples:/$(WORKDIR)/examples -v $(PWD)/packerlog:/$(WORKDIR)/packerlog $(DOCKER_RUN_ENV) -it $(CONTAINER_NAME)
-init:
-	docker run -v $(PWD)/examples:/$(WORKDIR)/examples -v $(PWD)/packerlog:/$(WORKDIR)/packerlog --rm $(DOCKER_RUN_ENV) $(CONTAINER_NAME) init -upgrade $(PACKER_TEMPLATE)																																																																 
 validate:
 	docker run -v $(PWD)/examples:/$(WORKDIR)/examples -v $(PWD)/packerlog:/$(WORKDIR)/packerlog --rm $(DOCKER_RUN_ENV) $(CONTAINER_NAME) validate $(PACKER_TEMPLATE)
 build:

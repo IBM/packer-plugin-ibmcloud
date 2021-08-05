@@ -29,9 +29,13 @@ packer {
   }
 }
 ```
-Then run `make init PACKER_TEMPLATE=examples/build.vpc.centos.pkr.hcl`
+Then run 
+`packer init -upgrade examples/build.vpc.centos.pkr.hcl`
+`packer validate examples/build.vpc.centos.pkr.hcl`
+`packer build examples/build.vpc.centos.pkr.hcl`
 
-**Note:** `make init` runs `packer init -upgrade` internally. Be aware that `packer init` does not work with legacy JSON templates. Upgrade your JSON config files to HCL. Plugin is installed on `$HOME/.packer.d/plugins`
+
+**Note:** Be aware that `packer init` does not work with legacy JSON templates. Upgrade your JSON config files to HCL. Plugin is installed on `$HOME/.packer.d/plugins`
 
 
 
@@ -117,6 +121,15 @@ Historically, Packer has used a JSON template for its configuration. From versio
 This is a basic Packer Template used to create a custom CentOS image on IBM Cloud - VPC
 
 ```
+// packer {
+//   required_plugins {
+//     ibmcloud = {
+//       version = ">=v2.0.1"
+//       source = "github.com/IBM/ibmcloud"
+//     }
+//   }
+// }
+
 variable "ibm_api_key" {
   type = string
   default = "${env("IBM_API_KEY")}"
@@ -137,16 +150,7 @@ variable "public_key_file" {
   default = "${env("PUBLIC_KEY")}"
 }
 
-// packer {
-//   required_plugins {
-//     ibmcloud = {
-//       version = ">=v2.0.1"
-//       source = "github.com/IBM/packer-plugin-ibmcloud"
-//     }
-//   }
-// }
-
-source "ibmcloud" "vpc-centos" {
+source "ibmcloud-vpc" "centos" {
   api_key = "${var.ibm_api_key}"
   region = "au-syd"
 
@@ -171,7 +175,7 @@ source "ibmcloud" "vpc-centos" {
 
 build {
   sources = [
-    "source.ibmcloud.vpc-centos"
+    "source.ibmcloud-vpc.centos"
   ]
 
   provisioner "shell" {

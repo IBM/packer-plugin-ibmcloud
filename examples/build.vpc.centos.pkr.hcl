@@ -1,11 +1,11 @@
-// packer {
-//   required_plugins {
-//     ibmcloud = {
-//       version = ">=v2.0.1"
-//       source = "github.com/IBM/ibmcloud"
-//     }
-//   }
-// }
+packer {
+  required_plugins {
+    ibmcloud = {
+      version = ">=v2.0.1"
+      source = "github.com/IBM/ibmcloud"
+    }
+  }
+}
 
 variable "ibm_api_key" {
   type = string

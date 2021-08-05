@@ -2,7 +2,6 @@
 /vendor
 /provisioner/hosts
 /releases
-/builder/ibmcloud/classic
 .env
 .credentials
 packer-plugin-ibmcloud
