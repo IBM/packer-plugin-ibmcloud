@@ -30,9 +30,9 @@ packer {
 }
 ```
 Then run 
-`packer init -upgrade examples/build.vpc.centos.pkr.hcl`
-`packer validate examples/build.vpc.centos.pkr.hcl`
-`packer build examples/build.vpc.centos.pkr.hcl`
+`packer init -upgrade examples/build.vpc.centos.pkr.hcl`  
+`packer validate examples/build.vpc.centos.pkr.hcl`  
+`packer build examples/build.vpc.centos.pkr.hcl`  
 
 
 **Note:** Be aware that `packer init` does not work with legacy JSON templates. Upgrade your JSON config files to HCL. Plugin is installed on `$HOME/.packer.d/plugins`
