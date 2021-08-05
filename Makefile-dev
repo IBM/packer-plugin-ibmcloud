@@ -4,22 +4,22 @@ setup:
 	go get -d golang.org/x/crypto/ssh@latest
 	go get -d github.com/zclconf/go-cty/cty@latest
 
-plugin: 
+plugin:
 	go mod tidy
 	go mod vendor
 	go generate ./builder/ibmcloud/...
 	go mod vendor
 	go build .
 
-run-centos:	
-	# packer init -upgrade examples/build.vpc.centos.pkr.hcl 
+run-centos:
+	# packer init -upgrade examples/build.vpc.cent os.pkr.hcl
 	packer validate examples/build.vpc.centos.pkr.hcl
 	packer build examples/build.vpc.centos.pkr.hcl	
 	# packer build examples/build.vpc.centos.json
 	# packer build examples/build.vpc.centos-ansible.pkr.hcl
 	# packer build examples/build.vpc.centos-ansible.json
 
-run-windows:	
+run-windows:
 	# packer init -upgrade examples/build.vpc.windows.pkr.hcl
 	packer validate examples/build.vpc.windows.pkr.hcl	
 	packer build examples/build.vpc.windows.pkr.hcl	

@@ -31,7 +31,7 @@ packer {
 ```
 Then run `make init PACKER_TEMPLATE=examples/build.vpc.centos.pkr.hcl`
 
-**Note:** `make init` runs `packer init` internally. Be aware that `packer init` does not work with legacy JSON templates. Upgrade your JSON config files to HCL.
+**Note:** `make init` runs `packer init -upgrade` internally. Be aware that `packer init` does not work with legacy JSON templates. Upgrade your JSON config files to HCL. Plugin is installed on `$HOME/.packer.d/plugins`
 
 
 
