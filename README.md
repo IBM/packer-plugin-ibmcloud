@@ -248,7 +248,7 @@ subnet_id | string | The VPC Subnet identifier. Required
 resource_group_id | string | The resource group identifier to use. If not specified, IBM packer plugin uses `default` resource group.
 security_group_id | string | The security group identifier to use. If not specified, IBM packer plugin creates a new temporary security group to allow SSH and WinRM access.
 | |
-vsi_base_image_id | string | The base image identifier used to created the VSI. Use ```ibmcloud is images | grep available```
+vsi_base_image_id | string | The base image identifier used to created the VSI. Use `ibmcloud is images`
 vsi_profile | string | The profile this VSI uses.
 vsi_interface | string | Set it as "public" to create a Floating IP to connect to the temp VSI. Set it as "private" to use private interface to connect to the temp VSI. Later option requires you run packer plugin inside your VPC.
 vsi_user_data_file | string | User data to be made available when setting up the virtual server instance
