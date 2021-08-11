@@ -1,23 +1,23 @@
-2021/08/04 19:29:32 [INFO] Packer version: 1.7.4 [go1.16.6 darwin amd64]
-2021/08/04 19:29:32 [TRACE] discovering plugins in /usr/local/bin
-2021/08/04 19:29:32 [TRACE] discovering plugins in /Users/juancpinzone/.packer.d/plugins
-2021/08/04 19:29:32 [TRACE] discovering plugins in .
-2021/08/04 19:29:32 [DEBUG] Discovered plugin: ibmcloud = /Users/juancpinzone/workspace/ibm/packer-plugin-ibmcloud/packer-plugin-ibmcloud
-2021/08/04 19:29:32 [INFO] found external [vpc] builders from ibmcloud plugin
-2021/08/04 19:29:32 [INFO] PACKER_CONFIG env var not set; checking the default config file path
-2021/08/04 19:29:32 [INFO] PACKER_CONFIG env var set; attempting to open config file: /Users/juancpinzone/.packerconfig
-2021/08/04 19:29:32 [WARN] Config file doesn't exist: /Users/juancpinzone/.packerconfig
-2021/08/04 19:29:32 [INFO] Setting cache directory: /Users/juancpinzone/workspace/ibm/packer-plugin-ibmcloud/packer_cache
-2021/08/04 19:29:32 [TRACE] init: plugingetter.ListInstallationsOptions{FromFolders:[]string{"/usr/local/bin/packer", ".", "/Users/juancpinzone/.packer.d/plugins"}, BinaryInstallationOptions:plugingetter.BinaryInstallationOptions{APIVersionMajor:"5", APIVersionMinor:"0", OS:"darwin", ARCH:"amd64", Ext:"", Checksummers:[]plugingetter.Checksummer{plugingetter.Checksummer{Type:"sha256", Hash:(*sha256.digest)(0xc000574180)}}}}
-2021/08/04 19:29:32 [TRACE] listing potential installations for "github.com/ibm/ibmcloud" that match ">=v2.0.1". plugingetter.ListInstallationsOptions{FromFolders:[]string{"/usr/local/bin/packer", ".", "/Users/juancpinzone/.packer.d/plugins"}, BinaryInstallationOptions:plugingetter.BinaryInstallationOptions{APIVersionMajor:"5", APIVersionMinor:"0", OS:"darwin", ARCH:"amd64", Ext:"", Checksummers:[]plugingetter.Checksummer{plugingetter.Checksummer{Type:"sha256", Hash:(*sha256.digest)(0xc000574180)}}}}
-2021/08/04 19:29:32 [TRACE] for plugin github.com/ibm/ibmcloud found 0 matching installation(s)
-2021/08/04 19:29:32 [TRACE] getting available versions for the github.com/ibm/ibmcloud plugin
-2021/08/04 19:29:32 [DEBUG] github-getter: getting "https://api.github.com/repos/ibm/packer-plugin-ibmcloud/git/matching-refs/tags"
-2021/08/04 19:29:33 [DEBUG] will try to install: [2.0.1]
-2021/08/04 19:29:33 [TRACE] fetching checksums file for the "2.0.1" version of the github.com/ibm/ibmcloud plugin in "/Users/juancpinzone/.packer.d/plugins/github.com/ibm/ibmcloud"...
-2021/08/04 19:29:33 [DEBUG] github-getter: getting "https://github.com/ibm/packer-plugin-ibmcloud/releases/download/v2.0.1/packer-plugin-ibmcloud_v2.0.1_SHA256SUMS"
-2021/08/04 19:29:33 [TRACE] About to get: packer-plugin-ibmcloud_v2.0.1_x5.0_darwin_amd64.zip
-2021/08/04 19:29:33 [DEBUG] github-getter: getting "https://github.com/ibm/packer-plugin-ibmcloud/releases/download/v2.0.1/packer-plugin-ibmcloud_v2.0.1_x5.0_darwin_amd64.zip"
-2021/08/04 19:29:35 ui: [1;36mInstalled plugin github.com/ibm/ibmcloud v2.0.1 in "/Users/juancpinzone/.packer.d/plugins/github.com/ibm/ibmcloud/packer-plugin-ibmcloud_v2.0.1_x5.0_darwin_amd64"[0m
-2021/08/04 19:29:35 [INFO] (telemetry) Finalizing.
-2021/08/04 19:29:35 waiting for all plugin processes to complete...
+2021/08/10 18:05:53 [INFO] Packer version: 1.7.4 [go1.16.6 darwin amd64]
+2021/08/10 18:05:53 [TRACE] discovering plugins in /usr/local/bin
+2021/08/10 18:05:53 [TRACE] discovering plugins in /Users/juancpinzone/.packer.d/plugins
+2021/08/10 18:05:53 [TRACE] discovering plugins in .
+2021/08/10 18:05:53 [DEBUG] Discovered plugin: ibmcloud = /Users/juancpinzone/workspace/ibm/packer-plugin-ibmcloud/packer-plugin-ibmcloud
+2021/08/10 18:05:53 [INFO] found external [vpc] builders from ibmcloud plugin
+2021/08/10 18:05:53 [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2021/08/10 18:05:53 [INFO] PACKER_CONFIG env var set; attempting to open config file: /Users/juancpinzone/.packerconfig
+2021/08/10 18:05:53 [WARN] Config file doesn't exist: /Users/juancpinzone/.packerconfig
+2021/08/10 18:05:53 [INFO] Setting cache directory: /Users/juancpinzone/workspace/ibm/packer-plugin-ibmcloud/packer_cache
+2021/08/10 18:05:53 [TRACE] init: plugingetter.ListInstallationsOptions{FromFolders:[]string{"/usr/local/bin/packer", ".", "/Users/juancpinzone/.packer.d/plugins"}, BinaryInstallationOptions:plugingetter.BinaryInstallationOptions{APIVersionMajor:"5", APIVersionMinor:"0", OS:"darwin", ARCH:"amd64", Ext:"", Checksummers:[]plugingetter.Checksummer{plugingetter.Checksummer{Type:"sha256", Hash:(*sha256.digest)(0xc000080180)}}}}
+2021/08/10 18:05:53 [TRACE] listing potential installations for "github.com/ibm/ibmcloud" that match ">=v2.0.1". plugingetter.ListInstallationsOptions{FromFolders:[]string{"/usr/local/bin/packer", ".", "/Users/juancpinzone/.packer.d/plugins"}, BinaryInstallationOptions:plugingetter.BinaryInstallationOptions{APIVersionMajor:"5", APIVersionMinor:"0", OS:"darwin", ARCH:"amd64", Ext:"", Checksummers:[]plugingetter.Checksummer{plugingetter.Checksummer{Type:"sha256", Hash:(*sha256.digest)(0xc000080180)}}}}
+2021/08/10 18:05:53 [TRACE] for plugin github.com/ibm/ibmcloud found 1 matching installation(s)
+2021/08/10 18:05:53 [TRACE] getting available versions for the github.com/ibm/ibmcloud plugin
+2021/08/10 18:05:53 [DEBUG] github-getter: getting "https://api.github.com/repos/ibm/packer-plugin-ibmcloud/git/matching-refs/tags"
+2021/08/10 18:05:53 [DEBUG] will try to install: [2.0.1]
+2021/08/10 18:05:53 [TRACE] fetching checksums file for the "2.0.1" version of the github.com/ibm/ibmcloud plugin in "/Users/juancpinzone/.packer.d/plugins/github.com/ibm/ibmcloud"...
+2021/08/10 18:05:53 [DEBUG] github-getter: getting "https://github.com/ibm/packer-plugin-ibmcloud/releases/download/v2.0.1/packer-plugin-ibmcloud_v2.0.1_SHA256SUMS"
+2021/08/10 18:05:54 [TRACE] About to get: packer-plugin-ibmcloud_v2.0.1_x5.0_darwin_amd64.zip
+2021/08/10 18:05:54 [TRACE] found a pre-exising "sha256" checksum file
+2021/08/10 18:05:54 [INFO] github.com/ibm/ibmcloud v2.0.1 plugin is already correctly installed in "/Users/juancpinzone/.packer.d/plugins/github.com/ibm/ibmcloud/packer-plugin-ibmcloud_v2.0.1_x5.0_darwin_amd64"
+2021/08/10 18:05:54 [INFO] (telemetry) Finalizing.
+2021/08/10 18:05:54 waiting for all plugin processes to complete...
