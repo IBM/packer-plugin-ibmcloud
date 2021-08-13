@@ -18,21 +18,21 @@ type Config struct {
 	common.PackerConfig `mapstructure:",squash"`
 	Comm                communicator.Config `mapstructure:",squash"`
 
-	IBMApiKey       string `mapstructure:"api_key"`
-	Region          string `mapstructure:"region"`
-	EndPoint        string `mapstructure-to-hcl2:",skip"`
-	Zone            string `mapstructure-to-hcl2:",skip"`
-	Version         string `mapstructure-to-hcl2:",skip"`
-	Generation      string `mapstructure-to-hcl2:",skip"`
-	VPCID           string `mapstructure-to-hcl2:",skip"`
-	SubnetID        string `mapstructure:"subnet_id"`
-	ResourceGroupID string `mapstructure:"resource_group_id"`
-	SecurityGroupID string `mapstructure:"security_group_id"`
-	VSIBaseImageID  string `mapstructure:"vsi_base_image_id"`
-	VSIBaseImageName  string `mapstructure:"vsi_base_image_name"`
-	VSIProfile      string `mapstructure:"vsi_profile"`
-	VSIInterface    string `mapstructure:"vsi_interface"`
-	VSIUserDataFile string `mapstructure:"vsi_user_data_file"`
+	IBMApiKey        string `mapstructure:"api_key"`
+	Region           string `mapstructure:"region"`
+	EndPoint         string `mapstructure-to-hcl2:",skip"`
+	Zone             string `mapstructure-to-hcl2:",skip"`
+	Version          string `mapstructure-to-hcl2:",skip"`
+	Generation       string `mapstructure-to-hcl2:",skip"`
+	VPCID            string `mapstructure-to-hcl2:",skip"`
+	SubnetID         string `mapstructure:"subnet_id"`
+	ResourceGroupID  string `mapstructure:"resource_group_id"`
+	SecurityGroupID  string `mapstructure:"security_group_id"`
+	VSIBaseImageID   string `mapstructure:"vsi_base_image_id"`
+	VSIBaseImageName string `mapstructure:"vsi_base_image_name"`
+	VSIProfile       string `mapstructure:"vsi_profile"`
+	VSIInterface     string `mapstructure:"vsi_interface"`
+	VSIUserDataFile  string `mapstructure:"vsi_user_data_file"`
 
 	ImageName string `mapstructure:"image_name"`
 
@@ -83,7 +83,7 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	}
 
 	if c.VSIBaseImageID == "" && c.VSIBaseImageName == "" {
-			errs = packer.MultiErrorAppend(errs, errors.New("a vsi_base_image_id or vsi_base_image_name must be specified"))
+		errs = packer.MultiErrorAppend(errs, errors.New("a vsi_base_image_id or vsi_base_image_name must be specified"))
 	}
 
 	if c.VSIProfile == "" {

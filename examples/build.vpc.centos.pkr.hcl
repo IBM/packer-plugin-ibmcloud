@@ -35,7 +35,8 @@ source "ibmcloud-vpc" "centos" {
   resource_group_id = "f054d39a43ce4f51afff708510f271cb"
   security_group_id = ""
   
-  vsi_base_image_id = "r026-3b9ba4a3-b3bd-46ac-9ed4-e53823631a6b"
+  // vsi_base_image_id = "r026-3b9ba4a3-b3bd-46ac-9ed4-e53823631a6b"
+  vsi_base_image_name = "ibm-centos-8-3-minimal-amd64-3"
   vsi_profile = "bx2-2x8"
   vsi_interface = "public"
   vsi_user_data_file = ""
