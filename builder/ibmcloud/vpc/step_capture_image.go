@@ -3,6 +3,7 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
@@ -45,6 +46,9 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 	bootVolume := bootVolumeAttachment["volume"].(map[string]interface{})
 	bootVolumeId := bootVolume["id"].(string)
 	// ui.Say(fmt.Sprintf("Instance's Boot-Volume-ID: %s", bootVolumeId))
+
+	validName := regexp.MustCompile(`[^a-z0-9\-]+`)
+	config.ImageName = validName.ReplaceAllString(config.ImageName, "")
 
 	imageRequest := &ImageReq{
 		Name: config.ImageName,
