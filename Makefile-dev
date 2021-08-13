@@ -12,12 +12,13 @@ plugin:
 	go build .
 
 run-centos:
-	# packer init -upgrade examples/build.vpc.cent os.pkr.hcl
 	packer validate examples/build.vpc.centos.pkr.hcl
 	packer build examples/build.vpc.centos.pkr.hcl	
-	# packer build examples/build.vpc.centos.json
-	# packer build examples/build.vpc.centos-ansible.pkr.hcl
-	# packer build examples/build.vpc.centos-ansible.json
+
+run-init-centos:
+	packer init -upgrade examples/build.vpc.init-centos.pkr.hcl
+	packer validate examples/build.vpc.init-centos.pkr.hcl
+	packer build examples/build.vpc.init-centos.pkr.hcl	
 
 run-windows:
 	# packer init -upgrade examples/build.vpc.windows.pkr.hcl
