@@ -16,7 +16,7 @@ require (
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/zclconf/go-cty v1.9.0
-	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
+	golang.org/x/crypto v0.0.0-20210812204632-0ba0e8f03122
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

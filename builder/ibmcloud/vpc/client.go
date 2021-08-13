@@ -32,20 +32,20 @@ type IBMCloudRequest struct {
 }
 
 type InstanceType struct {
-	EndPoint        string `json:",omitempty"`
-	Version         string `json:",omitempty"`
-	Generation      string `json:",omitempty"`
-	Zone            string `json:",omitempty"`
-	VPCID           string `json:",omitempty"`
-	SubnetID        string
-	ResourceGroupID string
-	VPCSSHKeyID     string `json:",omitempty"`
-	VSIName         string
-	VSIBaseImageID  string
-	VSIBaseImageName  string
-	VSIProfile      string `json:",omitempty"`
-	VSIInterface    string `json:",omitempty"`
-	VSIUserDataFile string `json:",omitempty"`
+	EndPoint         string `json:",omitempty"`
+	Version          string `json:",omitempty"`
+	Generation       string `json:",omitempty"`
+	Zone             string `json:",omitempty"`
+	VPCID            string `json:",omitempty"`
+	SubnetID         string
+	ResourceGroupID  string
+	VPCSSHKeyID      string `json:",omitempty"`
+	VSIName          string
+	VSIBaseImageID   string
+	VSIBaseImageName string
+	VSIProfile       string `json:",omitempty"`
+	VSIInterface     string `json:",omitempty"`
+	VSIUserDataFile  string `json:",omitempty"`
 }
 
 // IBM CLoud DataStructure to request VSI
