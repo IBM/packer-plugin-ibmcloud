@@ -29,6 +29,7 @@ type Config struct {
 	ResourceGroupID string `mapstructure:"resource_group_id"`
 	SecurityGroupID string `mapstructure:"security_group_id"`
 	VSIBaseImageID  string `mapstructure:"vsi_base_image_id"`
+	VSIBaseImageName  string `mapstructure:"vsi_base_image_name"`
 	VSIProfile      string `mapstructure:"vsi_profile"`
 	VSIInterface    string `mapstructure:"vsi_interface"`
 	VSIUserDataFile string `mapstructure:"vsi_user_data_file"`
@@ -81,8 +82,8 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		errs = packer.MultiErrorAppend(errs, errors.New("a subnet_id must be specified"))
 	}
 
-	if c.VSIBaseImageID == "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("a vsi_base_image_id must be specified"))
+	if c.VSIBaseImageID == "" && c.VSIBaseImageName == "" {
+			errs = packer.MultiErrorAppend(errs, errors.New("a vsi_base_image_id or vsi_base_image_name must be specified"))
 	}
 
 	if c.VSIProfile == "" {
