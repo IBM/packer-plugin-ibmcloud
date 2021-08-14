@@ -3,6 +3,7 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
@@ -41,7 +42,7 @@ func (s *stepCreateSshKeyVPC) Cleanup(state multistep.StateBag) {
 
 	ui.Say(fmt.Sprintf("Deleting SSH key for VPC %s ...", state.Get("vpc_ssh_key_name").(string)))
 	// Wait half minute before deleting SSH key - otherwise wouldn't be deleted.
-	// time.Sleep(30 * time.Second)
+	time.Sleep(30 * time.Second)
 	result, err := client.deleteResource(state.Get("vpc_ssh_key_id").(string), "keys", state)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error deleting SSH key for VPC %s. Please delete it manually: %s", state.Get("vpc_ssh_key_name").(string), err)
@@ -52,5 +53,7 @@ func (s *stepCreateSshKeyVPC) Cleanup(state multistep.StateBag) {
 	}
 	if result == "204 No Content" {
 		ui.Say("The Key was successfully deleted!")
+	} else {
+		ui.Say("The key could not be deleted. Please delete it manually!")
 	}
 }
