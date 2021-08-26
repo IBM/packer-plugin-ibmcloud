@@ -27,7 +27,6 @@ source "ibmcloud-vpc" "centos" {
   vsi_base_image_id = "r026-3b9ba4a3-b3bd-46ac-9ed4-e53823631a6b"
   vsi_profile = "bx2-2x8"
   vsi_interface = "public"
-  // vsi_user_data_file = "scripts/postscript.sh"
 
   image_name = "packer-${local.timestamp}"
 
@@ -45,7 +44,6 @@ build {
   ]
 
   provisioner "ansible" {
-    // playbook_file = "provisioner/jowko.yml"
-    playbook_file = "provisioner/centos-playbook.yml"
+    playbook_file = "provisioner/jowko.yml"
   }
 }
