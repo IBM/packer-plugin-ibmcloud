@@ -13,7 +13,13 @@ The builder does not manage Images. Once it creates an Image, it is up to you to
 ## Installation 
 IBM Packer Plugin may be installed in the following ways:
 
-### Using the `packer init` command
+### Manual installation
+Retrieve the packer plugin binary by compiling it from source.  
+- To install the plugin, please follow the Packer documentation on
+[installing a plugin](https://www.packer.io/docs/extending/plugins/#installing-plugins).  
+
+
+### Using the `packer init` command - Recommended
 Starting from version 1.7, Packer supports third-party plugin installation using `packer init` command. Read the
 [Packer documentation](https://www.packer.io/docs/commands/init) for more information.
 
@@ -23,45 +29,34 @@ Starting from version 1.7, Packer supports third-party plugin installation using
 packer {
   required_plugins {
     ibmcloud = {
-      version = ">=v2.0.1"
+      version = ">=v2.0.2"
       source = "github.com/IBM/ibmcloud"
     }
   }
 }
 ```
-Then run  
-`packer init -upgrade examples/build.vpc.init-centos.pkr.hcl`  
-`packer validate examples/build.vpc.init-centos.pkr.hcl`  
-`packer build examples/build.vpc.init-centos.pkr.hcl`  
-
-
-**Note:** Be aware that `packer init` does not work with legacy JSON templates. Upgrade your JSON config files to HCL. Plugin is installed on `$HOME/.packer.d/plugins`
-
-
-
-### Manual installation
-Retrieve the packer plugin binary by downloading a pre-compiled binary or compiling it from source.  
-- To install the plugin, please follow the Packer documentation on
-[installing a plugin](https://www.packer.io/docs/extending/plugins/#installing-plugins).  
-- You can find pre-compiled binary releases of the plugin on different platforms and architectures. [here](https://github.com/IBM/packer-plugin-ibmcloud/releases). 
-- Once you have everything ready update `.env` file with your IBM Cloud credentials  
-   ``` 
-   $ vi .env
+- Then run  
+  `packer init -upgrade examples/build.vpc.init-centos.pkr.hcl`    
    
-   # VPC   
-   export IBM_API_KEY=""
-   # or Classic
-   export SL_USERNAME=""
-   export SL_API_KEY=""
+  **Note:** Be aware that `packer init` does not work with legacy JSON templates. Upgrade your JSON config files to HCL. Plugin is installed on `$HOME/.packer.d/plugins`
 
-   export PRIVATE_KEY="$HOME/.ssh/id_rsa"
-   export PUBLIC_KEY="$HOME/.ssh/id_rsa.pub"
-   export ANSIBLE_INVENTORY_FILE="provisioner/hosts"
-   export ANSIBLE_HOST_KEY_CHECKING=False
-   export PACKER_LOG=1
-   export PACKER_LOG_PATH="packerlog/packerlog.txt"
-   export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
-   ```     
+  <br/>
+- Once you have everything ready update `.env` file with your IBM Cloud credentials  
+  ``` 
+  # VPC   
+  export IBM_API_KEY=""
+  # or Classic
+  export SL_USERNAME=""
+  export SL_API_KEY=""
+
+  export PRIVATE_KEY="$HOME/.ssh/id_rsa"
+  export PUBLIC_KEY="$HOME/.ssh/id_rsa.pub"
+  export ANSIBLE_INVENTORY_FILE="provisioner/hosts"
+  export ANSIBLE_HOST_KEY_CHECKING=False
+  export PACKER_LOG=1
+  export PACKER_LOG_PATH="packerlog/packerlog.txt"
+  export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+  ```     
 
    
 - Finally, run Packer plugin commands  
@@ -76,7 +71,7 @@ Retrieve the packer plugin binary by downloading a pre-compiled binary or compil
    $ packer build examples/build.vpc.windows.pkr.hcl
    ```
 
-
+<br/>
 ### Automation via Docker Container
 If you prefer an automation way to build the IBM Cloud Packer Plugin from source code, then clone it from GitHub. 
 There is a `Makefile` and a `Dockerfile` that automate everything for you.
@@ -100,10 +95,10 @@ There is a `Makefile` and a `Dockerfile` that automate everything for you.
 
 #### 2. Run Packer 
 - Validate the syntax and configuration of your Packer Template by running:   
-   `$ make validate PACKER_TEMPLATE=examples/build.vpc.centos.pkr.hcl`  
+   `$ make validate PACKER_TEMPLATE=examples/build.vpc.centos-ansible.pkr.hcl`  
    Customize here your `PACKER_TEMPLATE` path.   
 - Generate the custom image by running:   
-   `$ make build PACKER_TEMPLATE=examples/build.vpc.centos.pkr.hcl`  
+   `$ make build PACKER_TEMPLATE=examples/build.vpc.centos-ansible.pkr.hcl`  
    Customize here your `PACKER_TEMPLATE` path.
 
 **Note**
@@ -124,7 +119,7 @@ This is a basic Packer Template used to create a custom CentOS image on IBM Clou
 // packer {
 //   required_plugins {
 //     ibmcloud = {
-//       version = ">=v2.0.1"
+//       version = ">=v2.0.2"
 //       source = "github.com/IBM/ibmcloud"
 //     }
 //   }

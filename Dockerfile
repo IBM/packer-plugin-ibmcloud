@@ -11,8 +11,6 @@ ENV GO_VERSION ${GO_VERSION}
 ENV PACKER_VERSION ${PACKER_VERSION}
 
 ENV HOME /root
-ENV PRIVATE_KEY /root/.ssh/id_rsa
-ENV PUBLIC_KEY /root/.ssh/id_rsa.pub
 
 RUN set -ex \ 
   && apt-get -y update \
@@ -78,14 +76,7 @@ RUN echo "Packer Installation Successfully Completed."
 
 
 ###########################################################
-RUN echo "[Step 4]: Create SSH keys"
-###########################################################
-RUN mkdir -p /root/.ssh
-RUN echo "" | ssh-keygen -q -N ""
-
-
-###########################################################
-RUN echo "[Step 5]: Access IBM Cloud Packer plugin"
+RUN echo "[Step 4]: Access IBM Cloud Packer plugin"
 ###########################################################
 # Copy source code to the folder $GOPATH/src/github.com/IBM
 RUN set -ex \
@@ -95,7 +86,7 @@ RUN echo "Source code Successfully Copied to folder packer-plugin-ibmcloud"
 
 
 ###########################################################
-RUN echo "[Step 6]: Build IBM Cloud Packer Plugin binary"
+RUN echo "[Step 5]: Build IBM Cloud Packer Plugin binary"
 ###########################################################
 RUN set -ex \
   && cd $GOPATH/src/github.com/IBM/packer-plugin-ibmcloud \
@@ -109,12 +100,13 @@ RUN echo "IBM Cloud Packer Plugin binary Successfully Created."
 
 
 ###########################################################
-RUN echo "[Step 7]: Copy Binary and essential on a different folder"
+RUN echo "[Step 6]: Copy Binary and essential on a different folder"
 ###########################################################
 RUN set -ex \
   && cd $GOPATH/src/github.com/IBM/packer-plugin-ibmcloud \  
   # && cp -r examples /packer-plugin-ibmcloud/ \
   # && cp -r packerlog /packer-plugin-ibmcloud/ \
+  && cp -r ssh_keys /packer-plugin-ibmcloud/ \
   && cp -r scripts /packer-plugin-ibmcloud/ \
   && cp -r provisioner /packer-plugin-ibmcloud/ \
   && cp packer-plugin-ibmcloud /packer-plugin-ibmcloud/ \
