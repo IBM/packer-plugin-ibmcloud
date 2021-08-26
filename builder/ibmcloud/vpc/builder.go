@@ -56,6 +56,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 	steps := []multistep.Step{}
 	if b.config.Comm.Type == "winrm" {
 		steps = []multistep.Step{
+			new(stepGreeting),
 			new(stepGenerateIAMToken),
 			new(stepGetSubnetInfo),
 			new(stepCreateSshKeyPair),
@@ -71,11 +72,13 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 				WinRMConfig: winRMConfig,
 			},
 			new(commonsteps.StepProvision),
+			new(stepGenerateIAMToken),
 			new(stepRebootInstance),
 			new(stepCaptureImage),
 		}
 	} else if b.config.Comm.Type == "ssh" {
 		steps = []multistep.Step{
+			new(stepGreeting),
 			new(stepGenerateIAMToken),
 			new(stepGetSubnetInfo),
 			new(stepCreateSshKeyPair),
@@ -90,6 +93,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 				SSHConfig: sshConfig,
 			},
 			new(commonsteps.StepProvision),
+			new(stepGenerateIAMToken),
 			new(stepRebootInstance),
 			new(stepCaptureImage),
 		}
