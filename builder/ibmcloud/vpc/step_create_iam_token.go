@@ -15,13 +15,7 @@ func (step *stepGenerateIAMToken) Run(_ context.Context, state multistep.StateBa
 	client := state.Get("client").(*IBMCloudClient)
 	ui := state.Get("ui").(packer.Ui)
 
-	ui.Say("*************************************************************")
-	ui.Say("* Initializing IBM Cloud Packer Plugin - VPC Infrastructure *")
-	ui.Say("*************************************************************")
-	ui.Say("")
-
 	ui.Say("Generating IAM Access Token...")
-
 	tokenData, err := client.getIAMToken(state)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error generating the IAM Access Token %s", err)
