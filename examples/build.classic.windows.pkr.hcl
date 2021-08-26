@@ -1,11 +1,11 @@
-// packer {
-//   required_plugins {
-//     ibmcloud = {
-//       version = ">=v2.0.1"
-//       source = "github.com/IBM/ibmcloud"
-//     }
-//   }
-// }
+packer {
+  required_plugins {
+    ibmcloud = {
+      version = ">=v2.0.2"
+      source = "github.com/IBM/ibmcloud"
+    }
+  }
+}
 
 variable "unique-id" {
   type = string
@@ -27,6 +27,10 @@ variable "ansible_inventory_file" {
   default = "${env("ANSIBLE_INVENTORY_FILE")}"
 }
 
+locals {
+  timestamp = regex_replace(timestamp(), "[- TZ:]", "")
+}
+
 source "ibmcloud-classic" "windows" {
   api_key = "${var.sl_api_key}"
   username = "${var.sl_username}"
@@ -46,7 +50,7 @@ source "ibmcloud-classic" "windows" {
   winrm_use_ssl = true
   winrm_port = 5986
 
-  image_name = "${var.unique-id}-image"
+  image_name = "packer-${local.timestamp}"
   image_description = "Windows image created by ibmcloud packer plugin at {{isotime}}"
   image_type = "standard"
   upload_to_datacenters = [

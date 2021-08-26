@@ -1,11 +1,11 @@
-// packer {
-//   required_plugins {
-//     ibmcloud = {
-//       version = ">=v2.0.1"
-//       source = "github.com/IBM/ibmcloud"
-//     }
-//   }
-// }
+packer {
+  required_plugins {
+    ibmcloud = {
+      version = ">=v2.0.2"
+      source = "github.com/IBM/ibmcloud"
+    }
+  }
+}
 
 variable "ibm_api_key" {
   type = string
@@ -15,6 +15,10 @@ variable "ibm_api_key" {
 variable "ansible_inventory_file" {
   type = string
   default = "${env("ANSIBLE_INVENTORY_FILE")}"
+}
+
+locals {
+  timestamp = regex_replace(timestamp(), "[- TZ:]", "")
 }
 
 source "ibmcloud-vpc" "windows" {
@@ -30,7 +34,7 @@ source "ibmcloud-vpc" "windows" {
   vsi_interface = "public"
   vsi_user_data_file = "scripts/winrm_setup.ps1"
 
-  image_name = "packer-vpc-image"
+  image_name = "packer-${local.timestamp}"
 
   communicator = "winrm"
   winrm_username = "Administrator"
