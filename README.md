@@ -38,7 +38,7 @@ packer {
 - Then run  
   `packer init -upgrade examples/build.vpc.init-centos.pkr.hcl`    
    
-  **Note:** Be aware that `packer init` does not work with legacy JSON templates. Upgrade your JSON config files to HCL. Plugin is installed on `$HOME/.packer.d/plugins`
+  **Note:** Be aware that `packer init` does not work with legacy JSON templates. Upgrade your JSON config files to HCL. Plugin will be installed on `$HOME/.packer.d/plugins`
 
   <br/>
 - Once you have everything ready update `.env` file with your IBM Cloud credentials  
@@ -49,8 +49,10 @@ packer {
   export SL_USERNAME=""
   export SL_API_KEY=""
 
-  export PRIVATE_KEY="$HOME/.ssh/id_rsa"
-  export PUBLIC_KEY="$HOME/.ssh/id_rsa.pub"
+  # Location where temp SSH Keys will be created
+  export PRIVATE_KEY="ssh_keys/id_rsa"
+  export PUBLIC_KEY="ssh_keys/id_rsa.pub"
+
   export ANSIBLE_INVENTORY_FILE="provisioner/hosts"
   export ANSIBLE_HOST_KEY_CHECKING=False
   export PACKER_LOG=1
@@ -72,6 +74,10 @@ packer {
    ```
 
 <br/>
+
+## Developers
+In case you want to contribute to the project there is a folder called `developer` with a script to create the IBM Packer Plugin binary from source code. Likewise, there are more Packer Templates examples in both HCL and its equivalent on JSON format. Finally, we have an automation via Docker containers to create the IBM Packer Plugin binary.
+
 ### Automation via Docker Container
 If you prefer an automation way to build the IBM Cloud Packer Plugin from source code, then clone it from GitHub. 
 There is a `Makefile` and a `Dockerfile` that automate everything for you.
@@ -95,15 +101,15 @@ There is a `Makefile` and a `Dockerfile` that automate everything for you.
 
 #### 2. Run Packer 
 - Validate the syntax and configuration of your Packer Template by running:   
-   `$ make validate PACKER_TEMPLATE=examples/build.vpc.centos-ansible.pkr.hcl`  
+   `$ make validate PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl`  
    Customize here your `PACKER_TEMPLATE` path.   
 - Generate the custom image by running:   
-   `$ make build PACKER_TEMPLATE=examples/build.vpc.centos-ansible.pkr.hcl`  
+   `$ make build PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl`  
    Customize here your `PACKER_TEMPLATE` path.
 
 **Note**
-- You only need to create the image once. *Step 3.*
-- The volume attached to the container allows you to update local Packer Templates placed at `/examples` folder, without worried about re-create the docker image again. Just run the container when you are ready using *Steps 4* and *Step 5* above.
+- You only need to create the image once. *Step 1.*
+- The volume attached to the container allows you to update local Packer Templates placed at `/examples` folder, without worried about re-create the docker image again. Just run the container when you are ready using *Step 2* above.
 - Another advantage is that you can run multiple containers at the same time.
 
 ***********
@@ -130,19 +136,8 @@ variable "ibm_api_key" {
   default = "${env("IBM_API_KEY")}"
 }
 
-variable "ansible_inventory_file" {
-  type = string
-  default = "${env("ANSIBLE_INVENTORY_FILE")}"
-}
-
-variable "private_key_file" {
-  type = string
-  default = "${env("PRIVATE_KEY")}"
-}
-
-variable "public_key_file" {
-  type = string
-  default = "${env("PUBLIC_KEY")}"
+locals {
+  timestamp = regex_replace(timestamp(), "[- TZ:]", "")
 }
 
 source "ibmcloud-vpc" "centos" {
@@ -158,7 +153,7 @@ source "ibmcloud-vpc" "centos" {
   vsi_interface = "public"
   vsi_user_data_file = ""
 
-  image_name = "packer-vpc-image"
+  image_name = "packer-${local.timestamp}"
 
   communicator = "ssh"
   ssh_username = "root"
@@ -190,7 +185,7 @@ The `variable` block defines variables within your Packer configuration. Input v
  
 
 #### `local` block
-The `local` block defines defines exactly one local variable within a folder. Local values assign a name to an expression, that can then be used multiple times within a folder.
+The `local` block defines exactly one local variable within a folder. Local values assign a name to an expression, that can then be used multiple times within a folder.
 
 
 #### `packer` block
