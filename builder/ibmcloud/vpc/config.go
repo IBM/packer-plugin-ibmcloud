@@ -103,8 +103,6 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 
 	if c.ImageName == "" {
 		c.ImageName = fmt.Sprintf("packer-vpc-%d", currentTime.Unix())
-	} else {
-		c.ImageName = fmt.Sprintf("%s-%d%d%d", c.ImageName, currentTime.Hour(), currentTime.Minute(), currentTime.Second())
 	}
 
 	if c.Comm.Type == "winrm" {

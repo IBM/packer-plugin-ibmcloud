@@ -1,30 +1,19 @@
-// packer {
-//   required_plugins {
-//     ibmcloud = {
-//       version = ">=v2.0.1"
-//       source = "github.com/IBM/ibmcloud"
-//     }
-//   }
-// }
+packer {
+  required_plugins {
+    ibmcloud = {
+      version = ">=v2.0.2"
+      source = "github.com/IBM/ibmcloud"
+    }
+  }
+}
 
 variable "ibm_api_key" {
   type = string
   default = "${env("IBM_API_KEY")}"
 }
 
-variable "ansible_inventory_file" {
-  type = string
-  default = "${env("ANSIBLE_INVENTORY_FILE")}"
-}
-
-variable "private_key_file" {
-  type = string
-  default = "${env("PRIVATE_KEY")}"
-}
-
-variable "public_key_file" {
-  type = string
-  default = "${env("PUBLIC_KEY")}"
+locals {
+  timestamp = regex_replace(timestamp(), "[- TZ:]", "")
 }
 
 source "ibmcloud-vpc" "centos" {
@@ -40,7 +29,7 @@ source "ibmcloud-vpc" "centos" {
   vsi_interface = "public"
   vsi_user_data_file = "scripts/postscript.sh"
 
-  image_name = "packer-vpc-image"
+  image_name = "packer-${local.timestamp}"
 
   communicator = "ssh"
   ssh_username = "root"
@@ -65,13 +54,6 @@ build {
 
   provisioner "ansible" {
     playbook_file = "provisioner/centos-playbook.yml"
-    inventory_file = "${var.ansible_inventory_file}"
-    ssh_host_key_file = "${var.private_key_file}"
-    ssh_authorized_key_file = "${var.public_key_file}"
-    extra_arguments = [
-      "-vvvv",
-      "--extra-vars",
-      "ansible_user=root --private-key=${var.private_key_file}"
-    ]
   }
+
 }

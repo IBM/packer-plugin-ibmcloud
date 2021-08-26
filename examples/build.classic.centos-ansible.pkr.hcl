@@ -1,11 +1,11 @@
-// packer {
-//   required_plugins {
-//     ibmcloud = {
-//       version = ">=v2.0.1"
-//       source = "github.com/IBM/ibmcloud"
-//     }
-//   }
-// }
+packer {
+  required_plugins {
+    ibmcloud = {
+      version = ">=v2.0.2"
+      source = "github.com/IBM/ibmcloud"
+    }
+  }
+}
 
 variable "unique-id" {
   type = string
@@ -22,19 +22,8 @@ variable "sl_api_key" {
   default = "${env("SL_API_KEY")}"
 }
 
-variable "ansible_inventory_file" {
-  type = string
-  default = "${env("ANSIBLE_INVENTORY_FILE")}"
-}
-
-variable "private_key_file" {
-  type = string
-  default = "${env("PRIVATE_KEY")}"
-}
-
-variable "public_key_file" {
-  type = string
-  default = "${env("PUBLIC_KEY")}"
+locals {
+  timestamp = regex_replace(timestamp(), "[- TZ:]", "")
 }
 
 source "ibmcloud-classic" "centos" {
@@ -56,13 +45,12 @@ source "ibmcloud-classic" "centos" {
   ssh_timeout = "15m"
   ssh_username = "root"
 
-  image_name = "${var.unique-id}-image"
+  image_name = "packer-${local.timestamp}"
   image_description = "Centos image created by ibmcloud packer plugin at {{isotime}}"
   image_type = "standard"
   upload_to_datacenters = [
     "352494"
   ]
-
 }
 
 build {
@@ -79,15 +67,6 @@ build {
 
   provisioner "ansible" {
     playbook_file = "provisioner/centos-playbook.yml"
-    inventory_file = "${var.ansible_inventory_file}"
-    ssh_host_key_file = "${var.private_key_file}"
-    ssh_authorized_key_file = "${var.public_key_file}"
-    sftp_command = "/usr/libexec/openssh/sftp-server"
-    extra_arguments = [
-      "-vvvv",
-      "--extra-vars",
-      "ansible_user=root --private-key=${var.private_key_file}"
-    ]
   }
 
 }

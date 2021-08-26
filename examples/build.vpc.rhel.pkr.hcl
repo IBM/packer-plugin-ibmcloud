@@ -1,30 +1,19 @@
-// packer {
-//   required_plugins {
-//     ibmcloud = {
-//       version = ">=v2.0.1"
-//       source = "github.com/IBM/ibmcloud"
-//     }
-//   }
-// }
+packer {
+  required_plugins {
+    ibmcloud = {
+      version = ">=v2.0.2"
+      source = "github.com/IBM/ibmcloud"
+    }
+  }
+}
 
 variable "ibm_api_key" {
   type = string
   default = "${env("IBM_API_KEY")}"
 }
 
-variable "ansible_inventory_file" {
-  type = string
-  default = "${env("ANSIBLE_INVENTORY_FILE")}"
-}
-
-variable "private_key_file" {
-  type = string
-  default = "${env("PRIVATE_KEY")}"
-}
-
-variable "public_key_file" {
-  type = string
-  default = "${env("PUBLIC_KEY")}"
+locals {
+  timestamp = regex_replace(timestamp(), "[- TZ:]", "")
 }
 
 source "ibmcloud-vpc" "rhel" {
@@ -35,13 +24,13 @@ source "ibmcloud-vpc" "rhel" {
   resource_group_id = "f054d39a43ce4f51afff708510f271cb"
   security_group_id = ""
   
-  // ibm-redhat-8-3-minimal-amd64-3                     available    amd64   red-8-amd64                          8.x - Minimal Install 
+  // vsi_base_image_name = "ibm-redhat-8-3-minimal-amd64-3"
   vsi_base_image_id = "r014-02843c52-e12b-4f72-a631-931b4bf6589d"
   vsi_profile = "bx2-4x16"
   vsi_interface = "public"
   vsi_user_data_file = ""
 
-  image_name = "packer-vpc-macys-image"
+  image_name = "packer-${local.timestamp}"
 
   communicator = "ssh"
   ssh_username = "root"
