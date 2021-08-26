@@ -2,7 +2,7 @@
 # CONTAINER INFORMATION
 NAMESPACE      := ibmcloud
 APP_NAME       := packer-plugin-ibmcloud
-APP_VERSION    := 2.0.1
+APP_VERSION    := 2.0.2
 CONTAINER_NAME := $(NAMESPACE)/$(APP_NAME):$(APP_VERSION)
 WORKDIR        := packer-plugin-ibmcloud
 ##########################################################
@@ -22,8 +22,8 @@ DOCKER_BUILD_ARG = --build-arg GO_VERSION=$(GO_VERSION) \
 ##########################################################
 # ENVIRONMENT VARIABLES
 CREDENTIALS_FILE          := .credentials
-PRIVATE_KEY       				:= /root/.ssh/id_rsa
-PUBLIC_KEY        				:= /root/.ssh/id_rsa.pub
+PRIVATE_KEY       				:= ssh_keys/id_rsa
+PUBLIC_KEY        				:= ssh_keys/id_rsa.pub
 ANSIBLE_INVENTORY_FILE    := provisioner/hosts
 ANSIBLE_HOST_KEY_CHECKING := False
 PACKER_LOG                := 1
@@ -46,13 +46,14 @@ DOCKER_RUN_ENV = --env-file=$(CREDENTIALS_FILE) \
 # PACKER_TEMPLATE it's passed from command line 
 # PACKER_TEMPLATE=examples/build.vpc.centos.pkr.hcl
 # How to create volume ==>   -v $(PWD)/host/folder/path:/container/folder/path
+# $(PWD)/../  --> returns one level current folder
 
 image:
 	docker build $(DOCKER_BUILD_ARG) -t $(CONTAINER_NAME) .
 it:
-	docker run -v $(PWD)/examples:/$(WORKDIR)/examples -v $(PWD)/packerlog:/$(WORKDIR)/packerlog $(DOCKER_RUN_ENV) -it $(CONTAINER_NAME)
+	docker run -v $(PWD)/developer/examples:/$(WORKDIR)/developer/examples -v $(PWD)/packerlog:/$(WORKDIR)/packerlog $(DOCKER_RUN_ENV) -it $(CONTAINER_NAME)
 validate:
-	docker run -v $(PWD)/examples:/$(WORKDIR)/examples -v $(PWD)/packerlog:/$(WORKDIR)/packerlog --rm $(DOCKER_RUN_ENV) $(CONTAINER_NAME) validate $(PACKER_TEMPLATE)
+	docker run -v $(PWD)/developer/examples:/$(WORKDIR)/developer/examples -v $(PWD)/packerlog:/$(WORKDIR)/packerlog --rm $(DOCKER_RUN_ENV) $(CONTAINER_NAME) validate $(PACKER_TEMPLATE)
 build:
-	docker run -v $(PWD)/examples:/$(WORKDIR)/examples -v $(PWD)/packerlog:/$(WORKDIR)/packerlog --rm $(DOCKER_RUN_ENV) $(CONTAINER_NAME) build $(PACKER_TEMPLATE)
+	docker run -v $(PWD)/developer/examples:/$(WORKDIR)/developer/examples -v $(PWD)/packerlog:/$(WORKDIR)/packerlog --rm $(DOCKER_RUN_ENV) $(CONTAINER_NAME) build $(PACKER_TEMPLATE)
 ##########################################################

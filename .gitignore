@@ -2,6 +2,7 @@
 /vendor
 /provisioner/hosts
 /releases
+/ssh_keys
 .env
 .credentials
 packer-plugin-ibmcloud
