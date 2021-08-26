@@ -23,35 +23,6 @@ func (s *stepCreateSshKeyPair) Run(_ context.Context, state multistep.StateBag) 
 	privatefilepath := os.Getenv("PRIVATE_KEY")
 	publicfilepath := os.Getenv("PUBLIC_KEY")
 
-	// SAVING CURRENT LOCAL PUBLIC AND PRIVATE KEYS
-	// Local Private key
-	if privatefilepath != "" {
-		ui.Say(fmt.Sprintf("Saving current SSH Private Key %s", privatefilepath))
-		currentKey, err := ioutil.ReadFile(privatefilepath)
-		if err != nil {
-			err := fmt.Errorf("[ERROR] Error saving current SSH Private Key: %s", err)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			// log.Fatalf(err.Error())
-			return multistep.ActionHalt
-		}
-		state.Put("current_private_key", string(currentKey))
-	}
-
-	// Local Public key
-	if publicfilepath != "" {
-		ui.Say(fmt.Sprintf("Saving current SSH Public Key %s", publicfilepath))
-		currentKey, err := ioutil.ReadFile(publicfilepath)
-		if err != nil {
-			err := fmt.Errorf("[ERROR] Error saving current SSH Public Key: %s", err)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			// log.Fatalf(err.Error())
-			return multistep.ActionHalt
-		}
-		state.Put("current_public_key", string(currentKey))
-	}
-
 	// CREATING NEW RSA PRIVATE AND PUBLIC KEY
 	// Creating new RSA Private key
 	ui.Say("Creating RSA Private and Public Key Pair...")
@@ -132,55 +103,6 @@ func (s *stepCreateSshKeyPair) Run(_ context.Context, state multistep.StateBag) 
 
 func (s *stepCreateSshKeyPair) Cleanup(state multistep.StateBag) {
 	ui := state.Get("ui").(packer.Ui)
-	privatefilepath := os.Getenv("PRIVATE_KEY")
-	publicfilepath := os.Getenv("PUBLIC_KEY")
-
-	// Restoring local Private key
-	if privatefilepath != "" && state.Get("current_private_key") != nil {
-		ui.Say(fmt.Sprintf("Restoring local Private Key to a file %s", privatefilepath))
-		privatekey := state.Get("current_private_key").(string)
-		privateKey := []byte(fmt.Sprintf("%s\n", privatekey))
-		err := ioutil.WriteFile(privatefilepath, privateKey, 0600)
-		if err != nil {
-			err := fmt.Errorf("[ERROR] Failed to restore local Private Key: %s", err)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			// log.Fatalf(err.Error())
-			return
-		}
-		err = os.Chmod(privatefilepath, 0600)
-		if err != nil {
-			err := fmt.Errorf("[ERROR] Failed to edit Private Key's permission: %s", err)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			// log.Fatalf(err.Error())
-			return
-		}
-	}
-
-	// Restoring local Public key
-	if publicfilepath != "" && state.Get("current_public_key") != nil {
-		ui.Say(fmt.Sprintf("Restoring local Public Key to a file %s", publicfilepath))
-		publickey := state.Get("current_public_key").(string)
-		publicKey := []byte(fmt.Sprintf("%s\n", publickey))
-		err := ioutil.WriteFile(publicfilepath, publicKey, 0600)
-		if err != nil {
-			err := fmt.Errorf("[ERROR] Failed to restore local Public Key: %s", err)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			// log.Fatalf(err.Error())
-			return
-		}
-		err = os.Chmod(publicfilepath, 0600)
-		if err != nil {
-			err := fmt.Errorf("[ERROR] Failed to edit Public Key's permission: %s", err)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			// log.Fatalf(err.Error())
-			return
-		}
-	}
-
 	ui.Say("")
 	ui.Say("********************************************************************")
 	ui.Say("* Thank you for using IBM Cloud Packer Plugin - VPC Infrastructure *")
