@@ -49,7 +49,7 @@ packer {
   export SL_USERNAME=""
   export SL_API_KEY=""
 
-  # Location where temp SSH Keys will be created
+  # Location where temp SSH Keys will be created. Create folder manually
   export PRIVATE_KEY="ssh_keys/id_rsa"
   export PUBLIC_KEY="ssh_keys/id_rsa.pub"
 
