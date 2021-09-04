@@ -55,6 +55,7 @@ export PACKER_LOG_PATH="packerlog/packerlog.txt"
 export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 ```
 <br/>
+
 3. Create Configuration files and folders
     - Copy Packer Templates examples folder
       `cp -r examples $HOME/packer-plugin-ibmcloud/`
