@@ -57,13 +57,13 @@ export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 <br/>
 
 3. Create Configuration files and folders
-  - Copy Packer Templates examples folder
-    `cp -r examples $HOME/packer-plugin-ibmcloud/`
-  - Copy Windows-based VSI config scripts folder:
-    `cp -r scripts $HOME/packer-plugin-ibmcloud/`
-  - Copy Ansible playbooks folder:
-    `cp -r provisioner $HOME/packer-plugin-ibmcloud/`
-  - Create Packer log folder and file where you set env variable `PACKER_LOG_PATH`
+    - Copy Packer Templates examples folder
+      `cp -r examples $HOME/packer-plugin-ibmcloud/`
+    - Copy Windows-based VSI config scripts folder:
+      `cp -r scripts $HOME/packer-plugin-ibmcloud/`
+    - Copy Ansible playbooks folder:
+      `cp -r provisioner $HOME/packer-plugin-ibmcloud/`
+    - Create Packer log folder and file where you set env variable `PACKER_LOG_PATH`  
   
 4. Finally, run Packer plugin commands
 ```
@@ -166,7 +166,7 @@ The `build` block defines what builders are started, how to provision them and i
 
 ***********
 
-#### `source` block in Detail
+#### `source` Block in Detail
 Variable | Type |Description
 --- | --- | ---
 **builder variables** |
