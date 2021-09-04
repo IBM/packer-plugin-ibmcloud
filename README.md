@@ -63,7 +63,9 @@ export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
     - Copy Ansible playbooks folder:
       `cp -r provisioner $HOME/packer-plugin-ibmcloud/`
     - Create Packer log folder and file where you set env variable `PACKER_LOG_PATH`  
+
 <br/>  
+
 4. Finally, run Packer plugin commands
 ```
 $ source .env
