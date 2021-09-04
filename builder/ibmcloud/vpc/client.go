@@ -643,7 +643,7 @@ func (client IBMCloudClient) DecryptPassword(encryptedPwd string, state multiste
 	file.Close()
 
 	///// Step 3: Decrypt the decoded password using the RSA private key
-	pathPrivateKey := os.Getenv("PRIVATE_KEY")
+	pathPrivateKey := state.Get("PRIVATE_KEY").(string)
 	password, err := exec.Command("openssl", "pkeyutl", "-in", "data/decoded_pwd.txt", "-decrypt", "-inkey", pathPrivateKey).Output()
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Failed decrypting the decoded password. Error: %s", err)
@@ -682,7 +682,7 @@ func (client IBMCloudClient) createSSHKeyVPC(state multistep.StateBag) (map[stri
 	ui := state.Get("ui").(packer.Ui)
 	config := state.Get("config").(Config)
 
-	file := os.Getenv("PUBLIC_KEY")
+	file := state.Get("PUBLIC_KEY").(string)
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error reading SSH Public Key. Error: %s", err)
