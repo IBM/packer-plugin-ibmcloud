@@ -55,7 +55,6 @@ export PACKER_LOG_PATH="packerlog/packerlog.txt"
 export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 ```
 <br/>
-
 3. Create Configuration files and folders
     - Copy Packer Templates examples folder
       `cp -r examples $HOME/packer-plugin-ibmcloud/`
@@ -64,7 +63,7 @@ export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
     - Copy Ansible playbooks folder:
       `cp -r provisioner $HOME/packer-plugin-ibmcloud/`
     - Create Packer log folder and file where you set env variable `PACKER_LOG_PATH`  
-  
+<br/>  
 4. Finally, run Packer plugin commands
 ```
 $ source .env
