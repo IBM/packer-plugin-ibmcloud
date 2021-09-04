@@ -15,6 +15,10 @@ run-jowko:
 	cd ..; packer validate developer/examples/jowko.pkr.hcl
 	cd ..; packer build developer/examples/jowko.pkr.hcl
 
+run-jowko-classic:
+	cd ..; packer validate developer/examples/jowko-classic.pkr.hcl
+	cd ..; packer build developer/examples/jowko-classic.pkr.hcl
+
 run-centos:
 	cd ..; packer validate developer/examples/build.vpc.centos.pkr.hcl
 	cd ..; packer build developer/examples/build.vpc.centos.pkr.hcl	

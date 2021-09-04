@@ -44,6 +44,7 @@ build {
   ]
 
   provisioner "ansible" {
-    playbook_file = "provisioner/jowko.yml"
+    playbook_file = "provisioner/centos-playbook.yml"
+    // playbook_file = "provisioner/jowko.yml"
   }
 }

@@ -20,18 +20,32 @@ type stepCreateSshKeyPair struct{}
 
 func (s *stepCreateSshKeyPair) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
 	ui := state.Get("ui").(packer.Ui)
-	privatefilepath := os.Getenv("PRIVATE_KEY")
-	publicfilepath := os.Getenv("PUBLIC_KEY")
 
-	// CREATING NEW RSA PRIVATE AND PUBLIC KEY
+	ui.Say("Creating SSH Public and Private Key Pair...")
+	keysDirectory := "ssh_keys/"
+	privatefilepath := keysDirectory + "id_rsa"
+	publicfilepath := keysDirectory + "id_rsa.pub"
+
+	// Create a new directory in the current working directory, if it does not exist
+	if _, err := os.Stat(keysDirectory); os.IsNotExist(err) {
+		err := os.Mkdir(keysDirectory, 0755)
+		if err != nil {
+			err := fmt.Errorf("[ERROR] Error, cannot create SSH Keys folder: %s", err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			// log.Fatalf(err.Error())
+			return multistep.ActionHalt
+		}
+	}
+	// else
+	// ui.Say("Directory already exists.")
+
 	// Creating new RSA Private key
-	ui.Say("Creating RSA Private and Public Key Pair...")
 	rsaKey, err := rsa.GenerateKey(rand.Reader, 2014)
 	if err != nil {
-		err := fmt.Errorf("[ERROR] Error, cannot generate RSA Private Key: %s", err)
+		err := fmt.Errorf("[ERROR] Error, cannot generate Private SSH Key: %s", err)
 		state.Put("error", err)
 		ui.Error(err.Error())
-		// log.Fatalf(err.Error())
 		return multistep.ActionHalt
 	}
 	privDer := x509.MarshalPKCS1PrivateKey(rsaKey)
@@ -43,23 +57,21 @@ func (s *stepCreateSshKeyPair) Run(_ context.Context, state multistep.StateBag) 
 
 	// Writing Private key to file
 	if privatefilepath != "" {
-		ui.Say(fmt.Sprintf("Writing temp Private Key to a file %s", privatefilepath))
+		ui.Say(fmt.Sprintf("Writing Private SSH Key to a file %s", privatefilepath))
 		privatekey := string(pem.EncodeToMemory(&privBlk))
 		privateKey := []byte(fmt.Sprintf("%s\n", privatekey))
 		err = ioutil.WriteFile(privatefilepath, privateKey, 0600)
 		if err != nil {
-			err := fmt.Errorf("[ERROR] Failed to write temp Private Key to file: %s", err)
+			err := fmt.Errorf("[ERROR] Failed to write Private SSH Key to file: %s", err)
 			state.Put("error", err)
 			ui.Error(err.Error())
-			// log.Fatalf(err.Error())
 			return multistep.ActionHalt
 		}
 		err = os.Chmod(privatefilepath, 0600)
 		if err != nil {
-			err := fmt.Errorf("[ERROR] Failed to edit temp Private Key's permission: %s", err)
+			err := fmt.Errorf("[ERROR] Failed to edit Private SSH Key's permission: %s", err)
 			state.Put("error", err)
 			ui.Error(err.Error())
-			// log.Fatalf(err.Error())
 			return multistep.ActionHalt
 		}
 	}
@@ -67,42 +79,53 @@ func (s *stepCreateSshKeyPair) Run(_ context.Context, state multistep.StateBag) 
 	// Creating new RSA Public key
 	pub, err := ssh.NewPublicKey(&rsaKey.PublicKey)
 	if err != nil {
-		err := fmt.Errorf("[ERROR] Error, cannot generate RSA Public Key: %s", err)
+		err := fmt.Errorf("[ERROR] Error, cannot generate SSH Public Key: %s", err)
 		state.Put("error", err)
 		ui.Error(err.Error())
-		// log.Fatalf(err.Error())
 		return multistep.ActionHalt
 	}
 	publicKey := strings.TrimSpace(string(ssh.MarshalAuthorizedKey(pub)))
 
 	// Writing Public key to file
 	if publicfilepath != "" {
-		ui.Say(fmt.Sprintf("Writing temp Public Key to a file %s", publicfilepath))
+		ui.Say(fmt.Sprintf("Writing Public SSH Key to a file %s", publicfilepath))
 		pubkey := string(publicKey)
 		pubKey := []byte(fmt.Sprintf("%s\n", pubkey))
 		err = ioutil.WriteFile(publicfilepath, pubKey, 0600)
 		if err != nil {
-			err := fmt.Errorf("[ERROR] Failed to write temp Public Key to file: %s", err)
+			err := fmt.Errorf("[ERROR] Failed to write Public SSH Key to file: %s", err)
 			state.Put("error", err)
 			ui.Error(err.Error())
-			// log.Fatalf(err.Error())
 			return multistep.ActionHalt
 		}
 		err = os.Chmod(publicfilepath, 0600)
 		if err != nil {
-			err := fmt.Errorf("[ERROR] Failed to edit temp Public Key's permission: %s", err)
+			err := fmt.Errorf("[ERROR] Failed to edit Public SSH Key's permission: %s", err)
 			state.Put("error", err)
 			ui.Error(err.Error())
-			// log.Fatalf(err.Error())
 			return multistep.ActionHalt
 		}
 	}
-	ui.Say("RSA Private and Public Key Pair successfully created")
+
+	ui.Say("Public and Private SSH Key Pair successfully created.")
+	state.Put("PRIVATE_KEY", privatefilepath)
+	state.Put("PUBLIC_KEY", publicfilepath)
 	return multistep.ActionContinue
 }
 
 func (s *stepCreateSshKeyPair) Cleanup(state multistep.StateBag) {
 	ui := state.Get("ui").(packer.Ui)
+
+	ui.Say("Deleting Public and Private SSH Key Pair...")
+	err := os.RemoveAll("ssh_keys")
+	if err != nil {
+		err := fmt.Errorf("[ERROR] Failed to delete SSH Key folder: %s", err)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return
+	}
+	ui.Say("Public and Private SSH Key Pair successfully deleted.")
+
 	ui.Say("")
 	ui.Say("********************************************************************")
 	ui.Say("* Thank you for using IBM Cloud Packer Plugin - VPC Infrastructure *")

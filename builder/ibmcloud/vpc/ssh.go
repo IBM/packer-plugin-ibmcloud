@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
@@ -20,7 +19,7 @@ func sshConfig(state multistep.StateBag) (*ssh.ClientConfig, error) {
 	config := state.Get("config").(Config)
 	ui := state.Get("ui").(packer.Ui)
 
-	file := os.Getenv("PRIVATE_KEY")
+	file := state.Get("PRIVATE_KEY").(string)
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error loading SSH Private Key: %s", err)

@@ -6,9 +6,8 @@ The builder takes a source OS base Linux or Windows image (identified by it's gl
 The builder does not manage Images. Once it creates an Image, it is up to you to use it or delete it.
 
 ### Builders
-- [classic](builders/classic) - The `classic` builder support the creation of Image template(.VHD) with pre-configured OS and installed softwares on IBM Cloud - Classic Infrastructure. **- Not yet available. Clone `classic` branch instead**
+- [classic](builders/classic) - The `classic` builder support the creation of Image template(.VHD) with pre-configured OS and installed softwares on IBM Cloud - Classic Infrastructure. **- Not yet available. Clone `classic` branch instead.**
 - [vpc](builders/vpc) - The `vpc` builder support the creation of custom Images on IBM Cloud - VPC Infrastructure.
-
 
 ## Installation 
 IBM Packer Plugin may be installed in the following ways:
@@ -18,12 +17,11 @@ Retrieve the packer plugin binary by compiling it from source.
 - To install the plugin, please follow the Packer documentation on
 [installing a plugin](https://www.packer.io/docs/extending/plugins/#installing-plugins).  
 
-
 ### Using the `packer init` command - Recommended
 Starting from version 1.7, Packer supports third-party plugin installation using `packer init` command. Read the
 [Packer documentation](https://www.packer.io/docs/commands/init) for more information.
 
-`packer init` Download Packer plugin binaries required in your Packer Template. To install this plugin just copy and paste the `required_plugins` block inside your Packer Template.
+1. `packer init` Download Packer plugin binaries required in your Packer Template. To install this plugin just copy and paste the `required_plugins` block inside your Packer Template.
 
 ```hcl
 packer {
@@ -35,43 +33,46 @@ packer {
   }
 }
 ```
-- Then run  
-  `packer init -upgrade examples/build.vpc.centos.pkr.hcl`    
+Then run `packer init -upgrade examples/build.vpc.centos.pkr.hcl`    
    
-  **Note:** Be aware that `packer init` does not work with legacy JSON templates. Upgrade your JSON config files to HCL. Plugin will be installed on `$HOME/.packer.d/plugins`
-
+**Note:**   
+- Be aware that `packer init` does not work with legacy JSON templates. Upgrade your JSON config files to HCL.   
+- Plugin will be installed on `$HOME/.packer.d/plugins`  
   <br/>
-- Once you have everything ready update `.env` file with your IBM Cloud credentials  
-  ``` 
-  # VPC   
-  export IBM_API_KEY=""
-  # or Classic
-  export SL_USERNAME=""
-  export SL_API_KEY=""
 
-  # Location where temp SSH Keys will be created. Create folder manually
-  export PRIVATE_KEY="ssh_keys/id_rsa"
-  export PUBLIC_KEY="ssh_keys/id_rsa.pub"
+2. Create `.env` file and set IBM Cloud Credentials, and Packer and Ansible environment variables.  
+``` 
+# VPC   
+export IBM_API_KEY=""
+# or Classic
+export SL_USERNAME=""
+export SL_API_KEY=""
 
-  export ANSIBLE_INVENTORY_FILE="provisioner/hosts"
-  export ANSIBLE_HOST_KEY_CHECKING=False
-  export PACKER_LOG=1
-  export PACKER_LOG_PATH="packerlog/packerlog.txt"
-  export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
-  ```     
+export ANSIBLE_INVENTORY_FILE="provisioner/hosts"
+export ANSIBLE_HOST_KEY_CHECKING=False
+export PACKER_LOG=1
+export PACKER_LOG_PATH="packerlog/packerlog.txt"
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+```
+<br/>
 
-   
-- Finally, run Packer plugin commands  
-   ```
-   $ source .env
+3. Create Configuration files and folders
+  - Copy Packer Templates examples folder
+    `cp -r examples $HOME/packer-plugin-ibmcloud/`
+  - Copy Windows-based VSI config scripts folder:
+    `cp -r scripts $HOME/packer-plugin-ibmcloud/`
+  - Copy Ansible playbooks folder:
+    `cp -r provisioner $HOME/packer-plugin-ibmcloud/`
+  - Create Packer log folder and file where you set env variable `PACKER_LOG_PATH`
+  
+4. Finally, run Packer plugin commands
+```
+$ source .env
 
-   # Custom the Packer Template file with proper mandatory and optional fields   
-   $ packer validate examples/build.vpc.centos.pkr.hcl  
-   $ packer build examples/build.vpc.centos.pkr.hcl	
-   or
-   $ packer validate examples/build.vpc.windows.pkr.hcl	
-   $ packer build examples/build.vpc.windows.pkr.hcl
-   ```
+# Custom the Packer Template file with proper mandatory and optional fields
+$ packer validate examples/build.vpc.centos.pkr.hcl
+$ packer build examples/build.vpc.centos.pkr.hcl
+```
 
 ***********
 
@@ -82,15 +83,15 @@ Historically, Packer has used a JSON template for its configuration. From versio
 
 This is a basic Packer Template used to create a custom CentOS image on IBM Cloud - VPC
 
-```
-// packer {
-//   required_plugins {
-//     ibmcloud = {
-//       version = ">=v2.0.2"
-//       source = "github.com/IBM/ibmcloud"
-//     }
-//   }
-// }
+```hcl
+packer {
+  required_plugins {
+    ibmcloud = {
+      version = ">=v2.0.2"
+      source = "github.com/IBM/ibmcloud"
+    }
+  }
+}
 
 variable "ibm_api_key" {
   type = string
@@ -109,18 +110,16 @@ source "ibmcloud-vpc" "centos" {
   resource_group_id = ""
   security_group_id = ""
   
-  vsi_base_image_id = "r026-3b9ba4a3-b3bd-46ac-9ed4-e53823631a6b"
+  vsi_base_image_name = "ibm-centos-8-3-minimal-amd64-3"
   vsi_profile = "bx2-2x8"
   vsi_interface = "public"
-  vsi_user_data_file = ""
-
+  vsi_user_data_file = "scripts/postscript.sh"
   image_name = "packer-${local.timestamp}"
 
   communicator = "ssh"
   ssh_username = "root"
   ssh_port = 22
   ssh_timeout = "15m"
-  
   timeout = "30m"
 }
 
@@ -132,9 +131,13 @@ build {
   provisioner "shell" {
     execute_command = "{{.Vars}} bash '{{.Path}}'"
     inline = [
-      "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure'",  
-      "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure' >> /hello.txt"
+      "echo 'Hello from IBM Cloud Packer Plugin'",  
+      "echo 'Hello from IBM Cloud Packer Plugin' >> /hello.txt"
     ]
+  }
+
+  provisioner "ansible" {
+    playbook_file = "provisioner/centos-playbook.yml"
   }
 }
 ```
@@ -143,15 +146,12 @@ For a detail description of Packer Template configuration [here](https://www.pac
 
 #### `variable` block
 The `variable` block defines variables within your Packer configuration. Input variables serve as parameters for a Packer build, allowing aspects of the build to be customized without altering the build's own source code. When you declare variables in the build of your configuration, you can set their values using CLI options and environment variables.  
- 
 
 #### `local` block
 The `local` block defines exactly one local variable within a folder. Local values assign a name to an expression, that can then be used multiple times within a folder.
 
-
 #### `packer` block
 The `packer` configuration block type is used to configure some behaviors of Packer itself, such as its source and the minimum required Packer version needed to apply your configuration.
-
 
 #### `source` block
 The top-level `source` block defines reusable builder configuration blocks. 
@@ -159,34 +159,13 @@ The top-level `source` block defines reusable builder configuration blocks.
 source "ibmcloud" "vpc-centos" {
    ...
 ```   
-You can start builders by refering to those source blocks from a `build` block.  
-```
-build {
-  sources = [
-    "source.ibmcloud.vpc-centos"
-  ]
-```
-
 #### `build` block
 The `build` block defines what builders are started, how to provision them and if necessary what to do with their `artifacts` using post-process.
 - A `source` block nested in a `build` block allows you to use an already defined source and to "fill in" those fields which aren't already set in the top-level source block.
 - The `provisioner` block defines how a provisioner is configured. Provisioners use builtin and third-party software to install and configure the machine image after booting. Provisioners prepare the system for use. Common use cases for provisioners include: installing packages, patching the kernel, creating users, downloading application code, Here we use the `shell` provisioner: the `shell` provisioner provisions machines built by Packer using shell scripts. Shell provisioning is the easiest way to get software installed and configured on a machine.
 
-```
-build {
-  sources = [
-    "source.ibmcloud.vpc-centos"
-  ]
+***********
 
-  provisioner "shell" {
-    execute_command = "{{.Vars}} bash '{{.Path}}'"
-    inline = [
-      "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure'",  
-      "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure' >> /hello.txt"
-    ]
-  }
-}
-```
 #### `source` block in Detail
 Variable | Type |Description
 --- | --- | ---
@@ -223,7 +202,6 @@ winrm_use_ssl | bool | If true, use HTTPS for WinRM.
 | |
 timeout | string | The amount of time to wait before considering that the provisioner failed.
 
-
 ***********
 
 ## Security Groups Rules
@@ -243,19 +221,17 @@ If you want to connect to a Windows-based VSI via Microsoft Remote Desktop, go t
 ***********
 
 ## WinRM Setup
-- `winrm_setup.ps1` and `undo_winrm.ps1` scrips are required on Windows vsi's in order to use WinRM
+- `winrm_setup.ps1` and `undo_winrm.ps1` scrips are required on Windows VSI's in order to use WinRM
 
-- According with Packer documentation [here](https://learn.hashicorp.com/tutorials/packer/getting-started-build-image?in=packer/getting-started#a-windows-example): "Please note that if you're setting up WinRM for provisioning, you'll probably want to turn it off or restrict its permissions as part of a shutdown script at the end of Packer's provisioning process. For more details on the why/how, check out this useful blog post and the associated [code](https://cloudywindows.io/post/winrm-for-provisioning---close-the-door-on-the-way-out-eh/)"   
-   
-   IBM Packer plugin ensures to revert WinRM configuration to a pristine state running the script scripts/undo_winrm.ps1 on the section provisioners.
-
+- According with Packer documentation [here](https://learn.hashicorp.com/tutorials/packer/getting-started-build-image?in=packer/getting-started#a-windows-example): "Please note that if you're setting up WinRM for provisioning, you'll probably want to turn it off or restrict its permissions as part of a shutdown script at the end of Packer's provisioning process. For more details on the why/how, check out this useful blog post and the associated [code](https://cloudywindows.io/post/winrm-for-provisioning---close-the-door-on-the-way-out-eh/)"  
+As a result, IBM Packer plugin ensures to revert WinRM configuration to a pristine state running the script scripts/undo_winrm.ps1 on the section provisioners.
 
 ***********
 
-## Developers
+# Developers
 In case you want to contribute to the project there is a folder called `developer` with a script to create the IBM Packer Plugin binary from source code. Likewise, there are more Packer Templates examples in both HCL and its equivalent on JSON format. Finally, we have an automation via Docker containers to create the IBM Packer Plugin binary.
 
-### Automation via Docker Container
+## Automation via Docker Container
 If you prefer an automation way to build the IBM Cloud Packer Plugin from source code, then clone it from GitHub. 
 There is a `Makefile` and a `Dockerfile` that automate everything for you.
 
@@ -263,7 +239,7 @@ There is a `Makefile` and a `Dockerfile` that automate everything for you.
 - The `Makefile` will setup the environment variables, volumes and run the container.  
   - **Optional**: Custom `Makefile` if you want to change default configuration.
 
-#### 1. Create Packer Plugin Binary within the container:
+### 1. Create Packer Plugin Binary within the container:
 - Custom `.credentials` file with your IBM Cloud credentials. Avoid using any kind of quotes: ", '.
    ```
    # VPC
@@ -276,7 +252,7 @@ There is a `Makefile` and a `Dockerfile` that automate everything for you.
 - Create container with Packer Plugin Binary within it:
   run `make image`  
 
-#### 2. Run Packer 
+### 2. Run Packer 
 - Validate the syntax and configuration of your Packer Template by running:   
    `$ make validate PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl`  
    Customize here your `PACKER_TEMPLATE` path.   

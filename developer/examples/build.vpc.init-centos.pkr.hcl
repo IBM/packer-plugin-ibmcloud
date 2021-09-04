@@ -17,16 +17,6 @@ variable "ansible_inventory_file" {
   default = "${env("ANSIBLE_INVENTORY_FILE")}"
 }
 
-variable "private_key_file" {
-  type = string
-  default = "${env("PRIVATE_KEY")}"
-}
-
-variable "public_key_file" {
-  type = string
-  default = "${env("PUBLIC_KEY")}"
-}
-
 locals {
   timestamp = regex_replace(timestamp(), "[- TZ:]", "")
 }

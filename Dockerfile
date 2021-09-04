@@ -106,7 +106,6 @@ RUN set -ex \
   && cd $GOPATH/src/github.com/IBM/packer-plugin-ibmcloud \  
   # && cp -r examples /packer-plugin-ibmcloud/ \
   # && cp -r packerlog /packer-plugin-ibmcloud/ \
-  && cp -r ssh_keys /packer-plugin-ibmcloud/ \
   && cp -r scripts /packer-plugin-ibmcloud/ \
   && cp -r provisioner /packer-plugin-ibmcloud/ \
   && cp packer-plugin-ibmcloud /packer-plugin-ibmcloud/ \

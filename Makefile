@@ -22,8 +22,6 @@ DOCKER_BUILD_ARG = --build-arg GO_VERSION=$(GO_VERSION) \
 ##########################################################
 # ENVIRONMENT VARIABLES
 CREDENTIALS_FILE          := .credentials
-PRIVATE_KEY       				:= ssh_keys/id_rsa
-PUBLIC_KEY        				:= ssh_keys/id_rsa.pub
 ANSIBLE_INVENTORY_FILE    := provisioner/hosts
 ANSIBLE_HOST_KEY_CHECKING := False
 PACKER_LOG                := 1
@@ -32,8 +30,6 @@ OBJC_DISABLE_INITIALIZE_FORK_SAFETY := YES
 
 # DOCKER RUN ENVIRONMENT VARIABLES
 DOCKER_RUN_ENV = --env-file=$(CREDENTIALS_FILE) \
-		--env PRIVATE_KEY=$(PRIVATE_KEY) \
-		--env PUBLIC_KEY=$(PUBLIC_KEY) \
 		--env ANSIBLE_INVENTORY_FILE=$(ANSIBLE_INVENTORY_FILE) \
 		--env ANSIBLE_HOST_KEY_CHECKING=$(ANSIBLE_HOST_KEY_CHECKING) \
 		--env PACKER_LOG=$(PACKER_LOG) \
