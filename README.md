@@ -12,10 +12,8 @@ The builder does not manage Images. Once it creates an Image, it is up to you to
 ## Installation 
 IBM Packer Plugin may be installed in the following ways:
 
-### Manual installation
-Retrieve the packer plugin binary by compiling it from source.  
-- To install the plugin, please follow the Packer documentation on
-[installing a plugin](https://www.packer.io/docs/extending/plugins/#installing-plugins).  
+### Manual installation and Automation via Docker Container
+See [Developers](#developers) Section  
 
 ### Using the `packer init` command - Recommended
 Starting from version 1.7, Packer supports third-party plugin installation using `packer init` command. Read the
@@ -146,13 +144,13 @@ build {
 ### Understanding Packer Template Blocks 
 For a detail description of Packer Template configuration [here](https://www.packer.io/docs/templates).  
 
-#### `variable` block
+#### `variable` Block
 The `variable` block defines variables within your Packer configuration. Input variables serve as parameters for a Packer build, allowing aspects of the build to be customized without altering the build's own source code. When you declare variables in the build of your configuration, you can set their values using CLI options and environment variables.  
 
-#### `local` block
+#### `local` Block
 The `local` block defines exactly one local variable within a folder. Local values assign a name to an expression, that can then be used multiple times within a folder.
 
-#### `packer` block
+#### `packer` Block
 The `packer` configuration block type is used to configure some behaviors of Packer itself, such as its source and the minimum required Packer version needed to apply your configuration.
 
 #### `source` block
@@ -161,7 +159,7 @@ The top-level `source` block defines reusable builder configuration blocks.
 source "ibmcloud" "vpc-centos" {
    ...
 ```   
-#### `build` block
+#### `build` Block
 The `build` block defines what builders are started, how to provision them and if necessary what to do with their `artifacts` using post-process.
 - A `source` block nested in a `build` block allows you to use an already defined source and to "fill in" those fields which aren't already set in the top-level source block.
 - The `provisioner` block defines how a provisioner is configured. Provisioners use builtin and third-party software to install and configure the machine image after booting. Provisioners prepare the system for use. Common use cases for provisioners include: installing packages, patching the kernel, creating users, downloading application code, Here we use the `shell` provisioner: the `shell` provisioner provisions machines built by Packer using shell scripts. Shell provisioning is the easiest way to get software installed and configured on a machine.
@@ -232,6 +230,12 @@ As a result, IBM Packer plugin ensures to revert WinRM configuration to a pristi
 
 # Developers
 In case you want to contribute to the project there is a folder called `developer` with a script to create the IBM Packer Plugin binary from source code. Likewise, there are more Packer Templates examples in both HCL and its equivalent on JSON format. Finally, we have an automation via Docker containers to create the IBM Packer Plugin binary.
+
+## Manual Installation
+Retrieve the packer plugin binary by compiling it from source.  
+- To install the plugin, please follow the Packer documentation on
+[installing a plugin](https://www.packer.io/docs/extending/plugins/#installing-plugins).  
+
 
 ## Automation via Docker Container
 If you prefer an automation way to build the IBM Cloud Packer Plugin from source code, then clone it from GitHub. 
