@@ -52,7 +52,7 @@ Starting from version 1.7, Packer supports third-party plugin installation using
     Then run `packer init -upgrade examples/build.vpc.centos.pkr.hcl`    
    
     **Note:**   
-    - Be aware that `packer init` does not work with legacy JSON templates. Upgrade your JSON config files to HCL. There are some examples of how to do it on `developer/examples` folder.   
+    - Be aware that `packer init` does not work with legacy JSON templates. Upgrade your JSON config files to HCL. You can find examples on how to do it at `developer/examples` folder.   
     - Plugin will be installed on `$HOME/.packer.d/plugins`  
 
 2. Create Configuration files and folders
@@ -275,7 +275,7 @@ To generate the packer plugin binary from source code follow these steps. An aut
     packer validate examples/build.vpc.centos.pkr.hcl
     packer build examples/build.vpc.centos.pkr.hcl
     ```
-
+<br/>
 
 ### Automation via Docker Container
 If you prefer an automation way to build the IBM Cloud Packer Plugin from source code, then clone it from GitHub. 
