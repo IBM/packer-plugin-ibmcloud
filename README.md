@@ -265,7 +265,6 @@ To generate the packer plugin binary from source code follow these steps. An aut
       `cp -r provisioner $HOME/packer-plugin-ibmcloud/`
     - Create Packer log folder (recall env variable `PACKER_LOG_PATH`)
       `cp -r packerlog $HOME/packer-plugin-ibmcloud/`
-  <br/>
 4. Run `source` command to read and execute commands from the `.env` file
     ```shell
     source .env
@@ -275,6 +274,7 @@ To generate the packer plugin binary from source code follow these steps. An aut
     packer validate examples/build.vpc.centos.pkr.hcl
     packer build examples/build.vpc.centos.pkr.hcl
     ```
+
 <br/>
 
 ### Automation via Docker Container
