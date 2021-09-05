@@ -10,7 +10,29 @@ The builder does not manage Images. Once it creates an Image, it is up to you to
 - [vpc](builders/vpc) - The `vpc` builder support the creation of custom Images on IBM Cloud - VPC Infrastructure.
 
 ## Installation 
-IBM Packer Plugin may be installed in the following ways:
+IBM  Packer Plugin may be installed in the following ways:
+- Using the `packer init` command (recommended).
+- Manual Installation: Generate the packer plugin binary manually.
+- Automation via Docker Container 
+
+### Prerequisites
+- Install Packer 
+- Install Ansible if Ansible is your preferred Provisioner (recommended).
+- Install Go if you chose `Manual Installation`
+- Create `.env` file and set IBM Cloud Credentials, and Packer and Ansible environment variables.
+  ```
+  # VPC   
+  export IBM_API_KEY=""
+  # or Classic
+  export SL_USERNAME=""
+  export SL_API_KEY=""
+
+  export ANSIBLE_INVENTORY_FILE="provisioner/hosts"
+  export ANSIBLE_HOST_KEY_CHECKING=False
+  export PACKER_LOG=1
+  export PACKER_LOG_PATH="packerlog/packerlog.txt"
+  export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+  ```
 
 ### Manual installation and Automation via Docker Container
 See [Developers](#developers) Section  
@@ -19,60 +41,45 @@ See [Developers](#developers) Section
 Starting from version 1.7, Packer supports third-party plugin installation using `packer init` command. Read the
 [Packer documentation](https://www.packer.io/docs/commands/init) for more information.
 
-1. `packer init` Download Packer plugin binaries required in your Packer Template. To install this plugin just copy and paste the `required_plugins` block inside your Packer Template.
+1. `packer init` Download Packer plugin binaries required in your Packer Template. To install this plugin just copy and paste the `required_plugins` block inside your Packer Template.  
 
-```hcl
-packer {
-  required_plugins {
-    ibmcloud = {
-      version = ">=v2.0.2"
-      source = "github.com/IBM/ibmcloud"
+    ```hcl
+    packer {
+      required_plugins {
+        ibmcloud = {
+          version = ">=v2.0.2"
+          source = "github.com/IBM/ibmcloud"
+        }
+      }
     }
-  }
-}
-```
-Then run `packer init -upgrade examples/build.vpc.centos.pkr.hcl`    
+    ```
+    Then run `packer init -upgrade examples/build.vpc.centos.pkr.hcl`    
    
-**Note:**   
-- Be aware that `packer init` does not work with legacy JSON templates. Upgrade your JSON config files to HCL.   
-- Plugin will be installed on `$HOME/.packer.d/plugins`  
+    **Note:**   
+    - Be aware that `packer init` does not work with legacy JSON templates. Upgrade your JSON config files to HCL.   
+    - Plugin will be installed on `$HOME/.packer.d/plugins`  
   <br/>
-
-2. Create `.env` file and set IBM Cloud Credentials, and Packer and Ansible environment variables.  
-``` 
-# VPC   
-export IBM_API_KEY=""
-# or Classic
-export SL_USERNAME=""
-export SL_API_KEY=""
-
-export ANSIBLE_INVENTORY_FILE="provisioner/hosts"
-export ANSIBLE_HOST_KEY_CHECKING=False
-export PACKER_LOG=1
-export PACKER_LOG_PATH="packerlog/packerlog.txt"
-export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
-```
-<br/>
-
-3. Create Configuration files and folders
+2. Create Configuration files and folders
+    - Create preferred folder. i.e.
+      `mkdir $HOME/packer-plugin-ibmcloud/`
     - Copy Packer Templates examples folder
       `cp -r examples $HOME/packer-plugin-ibmcloud/`
     - Copy Windows-based VSI config scripts folder:
       `cp -r scripts $HOME/packer-plugin-ibmcloud/`
-    - Copy Ansible playbooks folder:
+    - Copy ansible playbooks folder:
       `cp -r provisioner $HOME/packer-plugin-ibmcloud/`
-    - Create Packer log folder and file where you set env variable `PACKER_LOG_PATH`  
-
-<br/>  
-
+    - Create Packer log folder (recall env variable `PACKER_LOG_PATH`)
+      `cp -r packerlog $HOME/packer-plugin-ibmcloud/`
+  <br/>
+3. Run `source` command to read and execute commands from the `.env` file
+    ```
+    source .env
+    ```
 4. Finally, run Packer plugin commands
-```
-$ source .env
-
-# Custom the Packer Template file with proper mandatory and optional fields
-$ packer validate examples/build.vpc.centos.pkr.hcl
-$ packer build examples/build.vpc.centos.pkr.hcl
-```
+    ```
+    packer validate examples/build.vpc.centos.pkr.hcl
+    packer build examples/build.vpc.centos.pkr.hcl
+    ```
 
 ***********
 
@@ -232,10 +239,51 @@ As a result, IBM Packer plugin ensures to revert WinRM configuration to a pristi
 In case you want to contribute to the project there is a folder called `developer` with a script to create the IBM Packer Plugin binary from source code. Likewise, there are more Packer Templates examples in both HCL and its equivalent on JSON format. Finally, we have an automation via Docker containers to create the IBM Packer Plugin binary.
 
 ## Manual Installation
-Retrieve the packer plugin binary by compiling it from source.  
-- To install the plugin, please follow the Packer documentation on
-[installing a plugin](https://www.packer.io/docs/extending/plugins/#installing-plugins).  
-
+To generate the packer plugin binary from source code follow these steps:
+1. Clone the GitHub repo here to your laptop and place the repo at folder `$GOPATH/src/github.com/ibmcloud/packer-plugin-ibmcloud` 
+2. Next, we need to generate the packer plugin binary by running these commands:
+    ``` 
+    cd $GOPATH/src/github.com/ibmcloud/packer-plugin-ibmcloud
+    go install github.com/hashicorp/packer-plugin-sdk/cmd/packer-sdc@latest
+    go get -d github.com/hashicorp/hcl/v2/hcldec@latest 
+    go get -d golang.org/x/crypto/ssh@latest
+    go get -d github.com/zclconf/go-cty/cty@latest
+    go mod tidy 
+    go mod vendor 
+    go generate ./builder/ibmcloud/vpc/... 
+    go mod vendor 
+    go build .
+    ```
+    The packer plugin binary is called packer-builder-ibmcloud and is located at `$GOPATH/src/github.com/ibmcloud/packer-plugin-ibmcloud`
+    <br/>
+3. Once the packer plugin binary is generated, copy plugin binary and configuration files and folders on a preferred folder:
+    - Create preferred folder . i.e.
+      `mkdir $HOME/packer-plugin-ibmcloud/`
+    - Go to folder 
+      `cd $GOPATH/src/github.com/ibmcloud/packer-plugin-ibmcloud`
+    - Copy packer plugin binary: 
+      `cp packer-builder-ibmcloud $HOME/packer-plugin-ibmcloud/`
+    - Give execute permission to the packer plugin binary: 
+      `chmod +x $HOME/packer-plugin-ibmcloud/packer-builder-ibmcloud`
+    - Copy Packer Templates examples folder
+      `cp -r examples $HOME/packer-plugin-ibmcloud/`
+    - Copy Windows-based VSI config scripts folder:
+      `cp -r scripts $HOME/packer-plugin-ibmcloud/`
+    - Copy ansible playbooks folder:
+      `cp -r provisioner $HOME/packer-plugin-ibmcloud/`
+    - Create Packer log folder (recall env variable `PACKER_LOG_PATH`)
+      `cp -r packerlog $HOME/packer-plugin-ibmcloud/`
+  <br/>
+4. Run `source` command to read and execute commands from the `.env` file
+    ```
+    source .env
+    ```
+5. Finally, run Packer plugin commands
+    ```
+    packer validate examples/build.vpc.centos.pkr.hcl
+    packer build examples/build.vpc.centos.pkr.hcl
+    ```
+<br/>
 
 ## Automation via Docker Container
 If you prefer an automation way to build the IBM Cloud Packer Plugin from source code, then clone it from GitHub. 
