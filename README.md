@@ -285,26 +285,26 @@ There is a `Makefile` and a `Dockerfile` that automate everything for you.
 - The `Makefile` will setup the environment variables, volumes and run the container.  
   - **Optional**: Custom `Makefile` if you want to change default configuration.
 
-### 1. Create Packer Plugin Binary within the container:
-- Custom `.credentials` file with your IBM Cloud credentials. Avoid using any kind of quotes: ", '.
-   ```shell
-   # VPC
-   IBM_API_KEY=###...###
-   # Classic
-   SL_USERNAME=###...###
-   SL_API_KEY=###....###
-   ```
-- Customize your Packer Template: see [Configuration](#configuration) to find a detail description of each field on the Template. Likewise, there are some Packer Template examples on `examples` folder. 
-- Create container with Packer Plugin Binary within it:
-  run `make image`  
+1. Create Packer Plugin Binary within the container:
+    - Custom `.credentials` file with your IBM Cloud credentials. Avoid using any kind of quotes: ", '.
+      ```shell
+      # VPC
+      IBM_API_KEY=###...###
+      # Classic
+      SL_USERNAME=###...###
+      SL_API_KEY=###....###
+      ```
+    - Customize your Packer Template: see [Configuration](#configuration) to find a detail description of each field on the Template. Likewise, there are some Packer Template examples on `examples` folder. 
+    - Create container with Packer Plugin Binary within it:
+      run `make image`  
 
-### 2. Run Packer 
-- Validate the syntax and configuration of your Packer Template by running:   
-   `$ make validate PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl`  
-   Customize here your `PACKER_TEMPLATE` path.   
-- Generate the custom image by running:   
-   `$ make build PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl`  
-   Customize here your `PACKER_TEMPLATE` path.
+2. Run Packer 
+    - Validate the syntax and configuration of your Packer Template by running:   
+      `$ make validate PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl`  
+      Customize here your `PACKER_TEMPLATE` path.   
+    - Generate the custom image by running:   
+      `$ make build PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl`  
+      Customize here your `PACKER_TEMPLATE` path.
 
 **Note**
 - You only need to create the image once. *Step 1.*
