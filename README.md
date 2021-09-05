@@ -54,7 +54,6 @@ Starting from version 1.7, Packer supports third-party plugin installation using
     **Note:**   
     - Be aware that `packer init` does not work with legacy JSON templates. Upgrade your JSON config files to HCL. There are some examples of how to do it on `developer/examples` folder.   
     - Plugin will be installed on `$HOME/.packer.d/plugins`  
-  <br/>
 
 2. Create Configuration files and folders
     - Create preferred folder. i.e.
@@ -67,7 +66,6 @@ Starting from version 1.7, Packer supports third-party plugin installation using
       `cp -r provisioner $HOME/packer-plugin-ibmcloud/`
     - Create Packer log folder (recall env variable `PACKER_LOG_PATH`)
       `cp -r packerlog $HOME/packer-plugin-ibmcloud/`
-  <br/>
 
 3. Run `source` command to read and execute commands from the `.env` file
     ```shell
@@ -218,6 +216,11 @@ IBM Packer Plugin - VPC Builder add rules to the Security Group to enable WinRM 
 ### - Connection to Linux-based VSIs via SSH
 + Protocol: TCP, Port range: 22-22, Source Type: Any
 
+## WinRM Setup
+- MUST use `scripts/winrm_setup.ps1` scrips to setup WinRM communication with a Windows VSI's in VPC Infrastructure.
+
+- MUST use `scripts/undo_winrm.ps1` to revert WinRM configuration to a pristine state. Read more about it on [Packer documentation](https://learn.hashicorp.com/tutorials/packer/getting-started-build-image?in=packer/getting-started#a-windows-example) 
+
 ## Microsoft Remote Desktop 
 If you want to connect to a Windows-based VSI via Microsoft Remote Desktop, go to VPC Default Security Group and add these two rules:
 + Protocol: TCP, Port range: 3389-3389, Source Type: Any
@@ -225,18 +228,10 @@ If you want to connect to a Windows-based VSI via Microsoft Remote Desktop, go t
 
 ***********
 
-## WinRM Setup
-- MUST use `scripts/winrm_setup.ps1` scrips to setup WinRM communication with a Windows VSI's in VPC Infrastructure.
+## Installation 
 
-- MUST use `scripts/undo_winrm.ps1` to revert WinRM configuration to a pristine state. Read more about it on [Packer documentation](https://learn.hashicorp.com/tutorials/packer/getting-started-build-image?in=packer/getting-started#a-windows-example) 
-
-***********
-
-# Contributing
-Any contribution to this project is welcome, so if you want to contribute by adding a new feature or fixing a bug, do so by opening a Pull Request.
-
-## Manual Installation
-To generate the packer plugin binary from source code follow these steps. An automation is on the folder `developer/Makefile`:
+### Manual Installation
+To generate the packer plugin binary from source code follow these steps. An automation script is located on the folder `developer/Makefile`:
 1. Clone the GitHub repo here to your laptop and place the repo at folder `$GOPATH/src/github.com/ibmcloud/packer-plugin-ibmcloud` 
 2. Next, we need to generate the packer plugin binary by running these commands:
     ```shell
@@ -280,9 +275,9 @@ To generate the packer plugin binary from source code follow these steps. An aut
     packer validate examples/build.vpc.centos.pkr.hcl
     packer build examples/build.vpc.centos.pkr.hcl
     ```
-<br/>
 
-## Automation via Docker Container
+
+### Automation via Docker Container
 If you prefer an automation way to build the IBM Cloud Packer Plugin from source code, then clone it from GitHub. 
 There is a `Makefile` and a `Dockerfile` that automate everything for you.
 
@@ -315,3 +310,9 @@ There is a `Makefile` and a `Dockerfile` that automate everything for you.
 - You only need to create the image once. *Step 1.*
 - The volume attached to the container allows you to update local Packer Templates placed at `/examples` folder, without worried about re-create the docker image again. Just run the container when you are ready using *Step 2* above.
 - Another advantage is that you can run multiple containers at the same time.
+
+
+***********
+
+## Contributing
+Any contribution to this project is welcome, so if you want to contribute by adding a new feature or fixing a bug, do so by opening a Pull Request.
