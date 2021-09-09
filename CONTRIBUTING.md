@@ -16,6 +16,15 @@ If you would like to implement a new feature, please raise an [issue](https://gi
 
 If you would like to fix a bug, please raise an [issue](https://github.com/IBM/packer-plugin-ibmcloud/issues) before sending a pull request so it can be tracked.
 
+## Formatting
+
+Before you commit any changes to `hcl` files, it is recommended to format them using packer. Example:
+```bash
+packer fmt examples/.
+packer fmt developer/examples/.
+```
+This helps to maintain consistent formatting across whole repository.
+
 ## Merge approval
 
 The project maintainers use LGTM (Looks Good To Me) in comments on the code review to indicate acceptance. A change requires LGTMs from two of the maintainers of each component affected.
