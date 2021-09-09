@@ -1,9 +1,3 @@
-# IntelliJ IDEA
-*.iml
-*.ipr
-*.iws
-.idea
-
 packerlog.txt
 /dev
 /vendor
