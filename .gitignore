@@ -6,3 +6,4 @@ packerlog.txt
 .env
 .credentials
 packer-plugin-ibmcloud
+/builder/ibmcloud/classic
