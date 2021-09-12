@@ -37,8 +37,6 @@ func (s *stepCreateSshKeyPair) Run(_ context.Context, state multistep.StateBag) 
 			return multistep.ActionHalt
 		}
 	}
-	// else
-	// ui.Say("Directory already exists.")
 
 	// Creating new RSA Private key
 	rsaKey, err := rsa.GenerateKey(rand.Reader, 2014)

@@ -43,7 +43,7 @@ Starting from version 1.7, Packer supports third-party plugin installation using
     packer {
       required_plugins {
         ibmcloud = {
-          version = ">=v2.0.2"
+          version = ">=v2.0.3"
           source = "github.com/IBM/ibmcloud"
         }
       }
@@ -91,7 +91,7 @@ This is a basic Packer Template used to create a custom CentOS image on IBM Clou
 packer {
   required_plugins {
     ibmcloud = {
-      version = ">=v2.0.2"
+      version = ">=v2.0.3"
       source = "github.com/IBM/ibmcloud"
     }
   }
@@ -294,7 +294,7 @@ There is a `Makefile` and a `Dockerfile` that automate everything for you.
       SL_USERNAME=###...###
       SL_API_KEY=###....###
       ```
-    - Customize your Packer Template: see [Configuration](#configuration) to find a detail description of each field on the Template. Likewise, there are some Packer Template examples on `examples` folder. 
+    - Customize your Packer Template: see [`source` Block in detail](#source-block-in-detail) to find a detail description of each field on the Template. Likewise, there are some Packer Template examples on `examples` folder. 
     - Create container with Packer Plugin Binary within it:
       run `make image`  
 
@@ -316,3 +316,12 @@ There is a `Makefile` and a `Dockerfile` that automate everything for you.
 
 ## Contributing
 Any contribution to this project is welcome, so if you want to contribute by adding a new feature or fixing a bug, do so by opening a Pull Request.
+
+### Formatting
+
+Before you commit any changes to `hcl` files, it is recommended to format them using packer. Example:
+```bash
+packer fmt examples/.
+packer fmt developer/examples/.
+```
+This helps to maintain consistent formatting across whole repository.
