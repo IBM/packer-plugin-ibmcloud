@@ -2,7 +2,7 @@
 # CONTAINER INFORMATION
 NAMESPACE      := ibmcloud
 APP_NAME       := packer-plugin-ibmcloud
-APP_VERSION    := 2.0.2
+APP_VERSION    := 2.0.3
 CONTAINER_NAME := $(NAMESPACE)/$(APP_NAME):$(APP_VERSION)
 WORKDIR        := packer-plugin-ibmcloud
 ##########################################################

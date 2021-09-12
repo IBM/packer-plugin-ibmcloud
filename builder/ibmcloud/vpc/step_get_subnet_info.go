@@ -18,10 +18,6 @@ func (s *stepGetSubnetInfo) Run(_ context.Context, state multistep.StateBag) mul
 	ui.Say(fmt.Sprintf("Retrieving Subnet %s information...", config.SubnetID))
 	SubnetData, err := client.retrieveSubnet(state, config.SubnetID)
 	if err != nil {
-		err := fmt.Errorf("[ERROR] Error retrieving Subnet information: %s", err)
-		state.Put("error", err)
-		ui.Error(err.Error())
-		// log.Fatalf(err.Error())
 		return multistep.ActionHalt
 	}
 
