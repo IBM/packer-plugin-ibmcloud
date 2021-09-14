@@ -1,0 +1,41 @@
+name: Create IBM Packer Plugin Binary
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+#     # Runs on Multiple OS
+#     runs-on: ${{ matrix.os }}
+#     strategy:
+#       matrix:
+#         os: [ubuntu-latest, windows-latests, macOS-latest]
+    
+    # Runs Only on Ubuntu OS
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Unshallow
+      run: git fetch --prune --unshallow
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.17
+    
+    - name: Set up Packer
+      uses: hashicorp-contrib/setup-packer@v1
+
+    - name: Build IBM Cloud Packer Plugin binary
+      run: | 
+        go install github.com/hashicorp/packer-plugin-sdk/cmd/packer-sdc@latest
+        go mod tidy
+        go mod vendor
+        go generate ./builder/ibmcloud/...
+        go mod vendor
+        go build .
