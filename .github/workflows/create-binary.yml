@@ -51,7 +51,7 @@ jobs:
         SL_API_KEY: ${{ secrets.SL_API_KEY }}
       run: |
         packer validate developer/examples/build.vpc.centos.pkr.hcl
-        packer build developer/examples/build.vpc.centos.pkr.hcl
+        echo "packer build developer/examples/build.vpc.centos.pkr.hcl"
       
 
   docker:
