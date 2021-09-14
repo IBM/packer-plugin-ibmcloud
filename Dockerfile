@@ -42,7 +42,6 @@ RUN set -ex \
   && echo export PATH=$PATH >> .profile
 RUN echo "go Installation Successfully Completed."
 
-
 ###########################################################
 RUN echo "[Step 2]: Setup Ansible"
 ###########################################################
@@ -53,7 +52,6 @@ RUN apt-get -y install ansible
 RUN apt -y install python3-pip
 RUN pip3 install --ignore-installed "pywinrm>=0.2.2"
 RUN echo "Ansible Installation Successfully Completed."
-
 
 ###########################################################
 RUN echo "[Step 3]: Install Packer and set Packer's Environment variables"
@@ -76,20 +74,11 @@ RUN echo "Packer Installation Successfully Completed."
 
 
 ###########################################################
-RUN echo "[Step 4]: Access IBM Cloud Packer plugin"
+RUN echo "[Step 4]: Build IBM Cloud Packer Plugin binary"
 ###########################################################
-# Copy source code to the folder $GOPATH/src/github.com/IBM
+COPY . ./
 RUN set -ex \
-  && mkdir -p $GOPATH/src/github.com/IBM
-COPY . $GOPATH/src/github.com/IBM/packer-plugin-ibmcloud
-RUN echo "Source code Successfully Copied to folder packer-plugin-ibmcloud"
-
-
-###########################################################
-RUN echo "[Step 5]: Build IBM Cloud Packer Plugin binary"
-###########################################################
-RUN set -ex \
-  && cd $GOPATH/src/github.com/IBM/packer-plugin-ibmcloud \
+  && cd ./ \
   && go install github.com/hashicorp/packer-plugin-sdk/cmd/packer-sdc@latest \
   && go mod tidy \
   && go mod vendor \  
@@ -97,22 +86,6 @@ RUN set -ex \
   && go mod vendor \
   && go build .
 RUN echo "IBM Cloud Packer Plugin binary Successfully Created."
-
-
-###########################################################
-RUN echo "[Step 6]: Copy Binary and essential on a different folder"
-###########################################################
-RUN set -ex \
-  && cd $GOPATH/src/github.com/IBM/packer-plugin-ibmcloud \  
-  # && cp -r examples /packer-plugin-ibmcloud/ \
-  # && cp -r packerlog /packer-plugin-ibmcloud/ \
-  && cp -r scripts /packer-plugin-ibmcloud/ \
-  && cp -r provisioner /packer-plugin-ibmcloud/ \
-  && cp packer-plugin-ibmcloud /packer-plugin-ibmcloud/ \
-  && chmod +x /packer-plugin-ibmcloud/packer-plugin-ibmcloud \
-  && cp Makefile /packer-plugin-ibmcloud/
-
-RUN echo "IBM Packer Plugin created successfully!!!"
 
 # Comment below line to make container interactive
 ENTRYPOINT ["/usr/local/packer/packer"]
