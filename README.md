@@ -9,7 +9,7 @@ IBM Packer Plugin adds on two **Packer Builders**: one for *Classic Infrastructu
 - [vpc](builders/vpc) - The `vpc` builder support the creation of custom Images on IBM Cloud - VPC Infrastructure.
 
 ## Installation 
-IBM Packer Plugin may be installed by:
+IBM Packer Plugin may be installed by:
 - [Using the `packer init` command](#using-the-packer-init-command)
 - [Manual Installation](#manual-installation)
 - [Automation via Docker Container](#automation-via-docker-container)
@@ -20,7 +20,7 @@ IBM Packer Plugin may be installed by:
 - Install [Go](https://golang.org/doc/install) >= 1.16, if you want to use `Manual Installation`
 - Create `.env` file and set IBM Cloud Credentials. Also, set Packer and Ansible environment variables.
   ```shell
-  # VPC   
+  # VPC
   export IBM_API_KEY=""
   # or Classic
   export SL_USERNAME=""
@@ -232,18 +232,18 @@ If you want to connect to a Windows-based VSI via Microsoft Remote Desktop, go t
 
 ### Manual Installation
 To generate the packer plugin binary from source code follow these steps. An automation script is located on the folder `developer/Makefile`:
-1. Clone the GitHub repo here to your laptop and place the repo at folder `$GOPATH/src/github.com/ibmcloud/packer-plugin-ibmcloud` 
+1. Clone the GitHub repo here to your laptop and place the repo at folder `$GOPATH/src/github.com/ibmcloud/packer-plugin-ibmcloud`
 2. Next, we need to generate the packer plugin binary by running these commands:
     ```shell
     cd $GOPATH/src/github.com/ibmcloud/packer-plugin-ibmcloud
     go install github.com/hashicorp/packer-plugin-sdk/cmd/packer-sdc@latest
-    go get -d github.com/hashicorp/hcl/v2/hcldec@latest 
+    go get -d github.com/hashicorp/hcl/v2/hcldec@latest
     go get -d golang.org/x/crypto/ssh@latest
     go get -d github.com/zclconf/go-cty/cty@latest
-    go mod tidy 
-    go mod vendor 
-    go generate ./builder/ibmcloud/vpc/... 
-    go mod vendor 
+    go mod tidy
+    go mod vendor
+    go generate ./builder/ibmcloud/vpc/...
+    go mod vendor
     go build .
     ```
     The packer plugin binary is called packer-builder-ibmcloud and is located at `$GOPATH/src/github.com/ibmcloud/packer-plugin-ibmcloud`
@@ -251,11 +251,11 @@ To generate the packer plugin binary from source code follow these steps. An aut
 3. Once the packer plugin binary is generated, copy plugin binary and configuration files and folders on a preferred folder:
     - Create preferred folder . i.e.
       `mkdir $HOME/packer-plugin-ibmcloud/`
-    - Go to folder 
+    - Go to folder
       `cd $GOPATH/src/github.com/ibmcloud/packer-plugin-ibmcloud`
-    - Copy packer plugin binary: 
+    - Copy packer plugin binary:
       `cp packer-builder-ibmcloud $HOME/packer-plugin-ibmcloud/`
-    - Give execute permission to the packer plugin binary: 
+    - Give execute permission to the packer plugin binary:
       `chmod +x $HOME/packer-plugin-ibmcloud/packer-builder-ibmcloud`
     - Copy Packer Templates examples folder
       `cp -r examples $HOME/packer-plugin-ibmcloud/`
