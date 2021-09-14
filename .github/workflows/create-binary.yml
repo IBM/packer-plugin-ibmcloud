@@ -43,6 +43,16 @@ jobs:
     
     - name: Build IBM Cloud Packer Plugin binary
       run: go build .
+    
+    - name: Validate and Build Packer Template
+      env:
+        IBM_API_KEY: ${{ secrets.IBM_API_KEY }}
+        SL_USERNAME: ${{ secrets.SL_USERNAME }}
+        SL_API_KEY: ${{ secrets.SL_API_KEY }}
+      run: |
+        packer validate examples/build.vpc.centos.pkr.hcl
+        packer build examples/build.vpc.centos.pkr.hcl
+      
 
   docker:
     needs: build
