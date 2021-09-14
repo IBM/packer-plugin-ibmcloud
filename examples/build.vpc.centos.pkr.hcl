@@ -48,8 +48,8 @@ build {
   provisioner "shell" {
     execute_command = "{{.Vars}} bash '{{.Path}}'"
     inline = [
-      "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure'",
-      "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure' >> /hello.txt"
+      "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure.'",
+      "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure.' >> /hello.txt"
     ]
   }
 }
