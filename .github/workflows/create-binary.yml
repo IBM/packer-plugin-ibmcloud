@@ -45,6 +45,7 @@ jobs:
       run: go build .
 
   docker:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
