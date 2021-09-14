@@ -34,10 +34,16 @@ jobs:
     - name: Install packer-sdc
       run: go install github.com/hashicorp/packer-plugin-sdk/cmd/packer-sdc@latest
 
+    - name: Cleans up unused dependencies or adds missing dependencies
+      run: go mod tidy
+    
+    - name: Records the go version from each dependencys go.mod file
+      run: go mod vendor
+      
+    - name: go generate
+      run: go generate ./builder/ibmcloud/...
+    
     - name: Build IBM Cloud Packer Plugin binary
       run: |
-        go mod tidy
-        go mod vendor
-        go generate ./builder/ibmcloud/...
         go mod vendor
         go build .
