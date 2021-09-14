@@ -1,0 +1,20 @@
+repo:
+- '*'
+
+templates:
+- any: ['examples/*', 'developer/examples/*']
+
+core-vpc:
+- builder/vpc/**/*
+
+core-classic:
+- builder/classic/**/*
+
+provisioner:
+- provisioner
+
+scripts:
+- scripts
+
+version:
+- verison
