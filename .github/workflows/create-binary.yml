@@ -31,9 +31,11 @@ jobs:
     - name: Set up Packer
       uses: hashicorp-contrib/setup-packer@v1
 
+    - name: Install packer-sdc
+      run: go install github.com/hashicorp/packer-plugin-sdk/cmd/packer-sdc@latest
+
     - name: Build IBM Cloud Packer Plugin binary
-      run: | 
-        go install github.com/hashicorp/packer-plugin-sdk/cmd/packer-sdc@latest
+      run: |
         go mod tidy
         go mod vendor
         go generate ./builder/ibmcloud/...
