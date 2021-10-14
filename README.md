@@ -5,7 +5,7 @@ The IBM Packer Plugin can be used to create custom Images on IBM Cloud.
 IBM Packer Plugin adds on two **Packer Builders**: one for *Classic Infrastructure* and one for *VPC Infrastructure*. A **Packer Builder** is a Packer component responsible for creating a machine image. A Builder reads in a **Packer Template**, a configuration file that defines the image you want to build and how to build it. From this configuration file the Builder takes a source OS image (Linux or Windows) and provisions a VSI. Then, the **Builder** installs software for your specific use-case and generates an Image out of the VSI. This generated Image can be reused to launch new VSI Instances within IBM Cloud.
 
 ### Builders
-- [classic](builders/classic) - The `classic` builder support the creation of Image template(.VHD) with pre-configured OS and installed softwares on IBM Cloud - Classic Infrastructure. **- Not yet available for Packer 1.7. Clone `classic` branch instead.**
+- [classic](builders/classic) - The `classic` builder support the creation of custom Images(.VHD) on IBM Cloud - Classic Infrastructure.
 - [vpc](builders/vpc) - The `vpc` builder support the creation of custom Images on IBM Cloud - VPC Infrastructure.
 
 ## Installation 
@@ -17,12 +17,12 @@ IBM Packer Plugin may be installed by:
 ### Prerequisites
 - Install [Packer](https://www.packer.io/downloads) >= 1.7   
 - Install [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-specific-operating-systems) >= 2.10, if Ansible is your preferred Provisioner (recommended).
-- Install [Go](https://golang.org/doc/install) >= 1.16, if you want to use `Manual Installation`
+- Install [Go](https://golang.org/doc/install) >= 1.17, if you want to use `Manual Installation`
 - Create `.env` file and set IBM Cloud Credentials. Also, set Packer and Ansible environment variables.
   ```shell
   # VPC
   export IBM_API_KEY=""
-  # or Classic
+  # Classic
   export SL_USERNAME=""
   export SL_API_KEY=""
 
@@ -43,7 +43,7 @@ Starting from version 1.7, Packer supports third-party plugin installation using
     packer {
       required_plugins {
         ibmcloud = {
-          version = ">=v2.0.3"
+          version = ">=v2.1.0"
           source = "github.com/IBM/ibmcloud"
         }
       }
@@ -91,7 +91,7 @@ This is a basic Packer Template used to create a custom CentOS image on IBM Clou
 packer {
   required_plugins {
     ibmcloud = {
-      version = ">=v2.0.3"
+      version = ">=v2.1.0"
       source = "github.com/IBM/ibmcloud"
     }
   }
