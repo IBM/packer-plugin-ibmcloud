@@ -1,9 +1,5 @@
-packerlog.txt
-/dev
 /vendor
 /provisioner/hosts
-/releases
 .env
 .credentials
 packer-plugin-ibmcloud
-/builder/ibmcloud/classic

@@ -10,8 +10,8 @@ WORKDIR        := packer-plugin-ibmcloud
 
 ##########################################################
 # GO AND PACKER VERSION
-GO_VERSION := 1.16.4
-PACKER_VERSION := 1.7.3
+GO_VERSION := 1.17.2
+PACKER_VERSION := 1.7.6
 
 # DOCKER BUILD ARGUMENTS
 DOCKER_BUILD_ARG = --build-arg GO_VERSION=$(GO_VERSION) \
