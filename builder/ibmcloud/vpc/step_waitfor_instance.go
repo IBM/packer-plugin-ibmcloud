@@ -28,7 +28,7 @@ func (s *stepWaitforInstance) Run(_ context.Context, state multistep.StateBag) m
 	}
 
 	// Update instance_data with new information unavailable at creation time (Private_IP, etc..)
-	newInstanceData, _ := client.retrieveResource(instanceID, "instances", state)
+	newInstanceData, _ := client.retrieveResource(instanceID, state)
 	state.Put("instance_data", newInstanceData)
 	ui.Say("Instance is ACTIVE!")
 	return multistep.ActionContinue

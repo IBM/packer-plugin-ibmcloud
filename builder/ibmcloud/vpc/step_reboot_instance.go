@@ -20,7 +20,7 @@ func (s *stepRebootInstance) Run(_ context.Context, state multistep.StateBag) mu
 	instanceData := state.Get("instance_data").(map[string]interface{})
 	instanceID := instanceData["id"].(string)
 
-	status, err := client.manageInstance(instanceID, "instances", "reboot", state)
+	status, err := client.manageInstance(instanceID, "reboot", state)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error rebooting the instance: %s", err)
 		state.Put("error", err)
@@ -40,7 +40,7 @@ func (s *stepRebootInstance) Run(_ context.Context, state multistep.StateBag) mu
 		}
 	}
 
-	newInstanceData, err := client.retrieveResource(instanceID, "instances", state)
+	newInstanceData, err := client.retrieveResource(instanceID, state)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error updating the instance: %s", err)
 		state.Put("error", err)

@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
@@ -449,33 +450,38 @@ func (client IBMCloudClient) waitForResourceReady(resourceID string, resourceTyp
 
 func (client IBMCloudClient) isResourceReady(resourceID string, resourceType string, state multistep.StateBag) (bool, error) {
 	var ready bool
+	var vpcService *vpcv1.VpcV1
+	if state.Get("vpcService") != nil {
+		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
+	}
+
 	if resourceType == "instances" {
-		status, err := client.getStatus(resourceID, resourceType, state)
+		// status, err := client.getStatus(resourceID, resourceType, state)
+		options := vpcService.NewGetInstanceOptions(resourceID)
+		instance, _, err := vpcService.GetInstance(options)
+		status := *instance.Status
 		ready = status == "running"
 		return ready, err
-	} else if resourceType == "floating_ips" || resourceType == "subnets" {
-		status, err := client.getStatus(resourceID, resourceType, state)
+	} else if resourceType == "floating_ips" {
+		options := vpcService.NewGetFloatingIPOptions(resourceID)
+		floatingIP, _, err := vpcService.GetFloatingIP(options)
+		status := *floatingIP.Status
+		ready = status == "available"
+		return ready, err
+	} else if resourceType == "subnets" {
+		options := vpcService.NewGetSubnetOptions(resourceID)
+		subnet, _, err := vpcService.GetSubnet(options)
+		status := *subnet.Status
 		ready = status == "available"
 		return ready, err
 	} else if resourceType == "images" {
-		status, err := client.getStatus(resourceID, resourceType, state)
+		options := vpcService.NewGetImageOptions(resourceID)
+		image, _, err := vpcService.GetImage(options)
+		status := *image.Status
 		ready = status == "available"
 		return ready, err
 	}
 	return ready, nil
-}
-
-func (client IBMCloudClient) getStatus(resourceID string, resourceType string, state multistep.StateBag) (string, error) {
-	ui := state.Get("ui").(packer.Ui)
-	url := client.newUrl("GET", resourceID, resourceType, "", "", state)
-	response, err := client.newHttpRequest(url, nil, "GET", state)
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Failed getting resource's status. Error: %s", err)
-		ui.Error(err.Error())
-		log.Println(err.Error())
-		return "", err
-	}
-	return response["status"].(string), nil
 }
 
 func (client IBMCloudClient) waitForResourceDown(resourceID string, resourceType string, timeout time.Duration, state multistep.StateBag) error {
@@ -533,8 +539,16 @@ func (client IBMCloudClient) waitForResourceDown(resourceID string, resourceType
 
 func (client IBMCloudClient) isResourceDown(resourceID string, resourceType string, state multistep.StateBag) (bool, error) {
 	var down bool
+
+	var vpcService *vpcv1.VpcV1
+	if state.Get("vpcService") != nil {
+		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
+	}
 	if resourceType == "instances" {
-		status, err := client.getStatus(resourceID, resourceType, state)
+		options := &vpcv1.GetInstanceOptions{}
+		options.SetID(resourceID)
+		instance, _, err := vpcService.GetInstance(options)
+		status := *instance.Status
 		down = status == "stopped"
 		return down, err
 	}
@@ -542,18 +556,23 @@ func (client IBMCloudClient) isResourceDown(resourceID string, resourceType stri
 }
 
 // Perfomr actions (stops, reboot, etc.) over an instance
-func (client IBMCloudClient) manageInstance(resourceID string, resourceType string, action string, state multistep.StateBag) (string, error) {
+func (client IBMCloudClient) manageInstance(resourceID string, action string, state multistep.StateBag) (string, error) {
 	ui := state.Get("ui").(packer.Ui)
-	instance := state.Get("instance_definition").(InstanceType)
-	url := instance.EndPoint + resourceType + "/" + resourceID + "/actions?" + instance.Version + "&" + instance.Generation
+
+	var vpcService *vpcv1.VpcV1
+	if state.Get("vpcService") != nil {
+		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
+	}
+
+	// instance := state.Get("instance_definition").(InstanceType)
+	// url := instance.EndPoint + resourceType + "/" + resourceID + "/actions?" + instance.Version + "&" + instance.Generation
 
 	// Construct the Instance Action object which will be decoded into json and posted to the API
-	instanceActionRequest := &instanceActionRequest{
-		Type: action,
-	}
-
 	// Create Instance Action Payload
-	payload, err := json.Marshal(instanceActionRequest)
+	options := &vpcv1.CreateInstanceActionOptions{}
+	options.SetInstanceID(resourceID)
+	options.SetType(action)
+	response, _, err := vpcService.CreateInstanceAction(options)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Failed to perform %s action over instance. Error: %s", action, err)
 		ui.Error(err.Error())
@@ -561,36 +580,41 @@ func (client IBMCloudClient) manageInstance(resourceID string, resourceType stri
 		return "", err
 	}
 
-	response, err := client.newHttpRequest(url, payload, "POST", state)
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Failed to perform %s action over instance. Error: %s", action, err)
-		ui.Error(err.Error())
-		log.Println(err.Error())
-		return "", err
-	}
-
-	if response["status"] == nil {
+	if response.Status == nil {
 		return "", nil
 	}
-	return response["status"].(string), nil
+	return *response.Status, nil
 }
 
-func (client IBMCloudClient) retrieveResource(resourceID string, resourceType string, state multistep.StateBag) (map[string]interface{}, error) {
+func (client IBMCloudClient) retrieveResource(resourceID string, state multistep.StateBag) (*vpcv1.Instance, error) {
 	ui := state.Get("ui").(packer.Ui)
-	url := client.newUrl("GET", resourceID, resourceType, "", "", state)
-	resourceData, err := client.newHttpRequest(url, nil, "GET", state)
+
+	var vpcService *vpcv1.VpcV1
+	if state.Get("vpcService") != nil {
+		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
+	}
+	options := &vpcv1.GetInstanceOptions{}
+	options.SetID(resourceID)
+	instance, _, err := vpcService.GetInstance(options)
+
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Failed retrieving resource information. Error: %s", err)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return nil, err
 	}
-	return resourceData, nil
+	return instance, nil
 }
 
-func (client IBMCloudClient) createFloatingIP(state multistep.StateBag) (map[string]interface{}, error) {
+func (client IBMCloudClient) createFloatingIP(state multistep.StateBag) (*vpcv1.FloatingIP, error) {
 	ui := state.Get("ui").(packer.Ui)
 	config := state.Get("config").(Config)
+
+	var vpcService *vpcv1.VpcV1
+	if state.Get("vpcService") != nil {
+		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
+	}
+
 	instanceData := state.Get("instance_data").(map[string]interface{})
 	instanceResourceGroup := instanceData["resource_group"].(map[string]interface{})
 	instanceResourceGroupID := instanceResourceGroup["id"].(string)
@@ -600,37 +624,48 @@ func (client IBMCloudClient) createFloatingIP(state multistep.StateBag) (map[str
 	networkInterfaceID := instanceNetworkInterface["id"].(string)
 
 	// Construct the Floating IP object which will be decoded into json and posted to the API
-	floatingIPRequest := &FloatingIPRequest{
-		Name: config.FloatingIPName,
-	}
-	floatingIPRequest.Target = &ResourceByID{
-		Id: networkInterfaceID,
-	}
+	// floatingIPRequest := &FloatingIPRequest{
+	// 	Name: config.FloatingIPName,
+	// }
+	// floatingIPRequest.Target = &ResourceByID{
+	// 	Id: networkInterfaceID,
+	// }
 
-	if config.ResourceGroupID != "" {
-		floatingIPRequest.ResourceGroup = &ResourceByID{
-			Id: instanceResourceGroupID,
-		}
-	}
+	// if config.ResourceGroupID != "" {
+	// 	floatingIPRequest.ResourceGroup = &ResourceByID{
+	// 		Id: instanceResourceGroupID,
+	// 	}
+	// }
 
 	// Create Floating IP Payload
-	payload, err := json.Marshal(floatingIPRequest)
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Failed creating Floating IP Payload. Error: %s", err)
-		ui.Error(err.Error())
-		log.Println(err.Error())
-		return nil, err
-	}
+	// payload, err := json.Marshal(floatingIPRequest)
+	// if err != nil {
+	// 	err := fmt.Errorf("[ERROR] Failed creating Floating IP Payload. Error: %s", err)
+	// 	ui.Error(err.Error())
+	// 	log.Println(err.Error())
+	// 	return nil, err
+	// }
 
-	url := client.newUrl("POST", "", "floating_ips", "", "", state)
-	response, err := client.newHttpRequest(url, payload, "POST", state)
+	// url := client.newUrl("POST", "", "floating_ips", "", "", state)
+	// response, err := client.newHttpRequest(url, payload, "POST", state)
+	options := &vpcv1.CreateFloatingIPOptions{}
+	options.SetFloatingIPPrototype(&vpcv1.FloatingIPPrototype{
+		Name: &config.FloatingIPName,
+		Target: &vpcv1.FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID{
+			ID: &networkInterfaceID,
+		},
+		ResourceGroup: &vpcv1.ResourceGroupIdentityByID{
+			ID: &instanceResourceGroupID,
+		},
+	})
+	floatingIP, _, err := vpcService.CreateFloatingIP(options)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Failed creating Floating IP Request. Error: %s", err)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return nil, err
 	}
-	return response, err
+	return floatingIP, err
 }
 
 func (client IBMCloudClient) GrabCredentials(instanceID string, state multistep.StateBag) (string, string, error) {
@@ -690,32 +725,11 @@ func (client IBMCloudClient) DecryptPassword(encryptedPwd string, state multiste
 	return string(password), err
 }
 
-func (client IBMCloudClient) createImage(state multistep.StateBag, imageData ImageReq) (map[string]interface{}, error) {
-	ui := state.Get("ui").(packer.Ui)
-	payload, err := json.Marshal(imageData)
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Error creating image payload. Error: %s", err)
-		ui.Error(err.Error())
-		log.Println(err.Error())
-		return nil, err
-	}
-
-	url := client.newUrl("POST", "", "images", "", "", state)
-	response, err := client.newHttpRequest(url, payload, "POST", state)
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Error sending the HTTP request that creates the image. Error: %s", err)
-		ui.Error(err.Error())
-		log.Println(err.Error())
-		return nil, err
-	}
-	return response, nil
-}
-
-func (client IBMCloudClient) createSSHKeyVPC(state multistep.StateBag) (map[string]interface{}, error) {
+func (client IBMCloudClient) createSSHKeyVPC(state multistep.StateBag) (*vpcv1.Key, error) {
 	ui := state.Get("ui").(packer.Ui)
 	config := state.Get("config").(Config)
 
-	file := state.Get("PUBLIC_KEY").(string)
+	file := os.Getenv("PUBLIC_KEY")
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error reading SSH Public Key. Error: %s", err)
@@ -727,36 +741,29 @@ func (client IBMCloudClient) createSSHKeyVPC(state multistep.StateBag) (map[stri
 	publicKey := string(content)
 	state.Put("ssh_public_key", publicKey)
 
-	VpcSshKeyRequest := &VPCSSHKeyRequest{
-		Name:      config.VpcSshKeyName,
-		PublicKey: publicKey,
-		Type:      "rsa",
-	}
-
+	options := &vpcv1.CreateKeyOptions{}
+	options.SetName(config.VpcSshKeyName)
+	options.SetPublicKey(publicKey)
 	if config.ResourceGroupID != "" {
-		VpcSshKeyRequest.ResourceGroup = &ResourceByID{
-			Id: config.ResourceGroupID,
-		}
+		options.SetResourceGroup(
+			&vpcv1.ResourceGroupIdentity{
+				ID: &config.ResourceGroupID,
+			},
+		)
+	}
+	var vpcService *vpcv1.VpcV1
+	if state.Get("vpcService") != nil {
+		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
 	}
 
-	// Create VpcSshKey Payload
-	payload, err := json.Marshal(VpcSshKeyRequest)
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Error creating SSH Key for VPC payload. Error: %s", err)
-		ui.Error(err.Error())
-		log.Println(err.Error())
-		return nil, err
-	}
-
-	url := client.newUrl("POST", "", "keys", "", "", state)
-	response, err := client.newHttpRequest(url, payload, "POST", state)
+	key, _, err := vpcService.CreateKey(options)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error sending the HTTP request that creates the SSH Key for VPC. Error: %s", err)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return nil, err
 	}
-	return response, nil
+	return key, nil
 }
 
 func (client IBMCloudClient) retrieveSubnet(state multistep.StateBag, subnetID string) (map[string]interface{}, error) {
@@ -773,62 +780,90 @@ func (client IBMCloudClient) retrieveSubnet(state multistep.StateBag, subnetID s
 
 }
 
-func (client IBMCloudClient) createSecurityGroup(state multistep.StateBag, securityGroupData SecurityGroupRequest) (map[string]interface{}, error) {
+func (client IBMCloudClient) createSecurityGroup(state multistep.StateBag, securityGroupData vpcv1.CreateSecurityGroupOptions) (*vpcv1.SecurityGroup, error) {
 	ui := state.Get("ui").(packer.Ui)
-	payload, err := json.Marshal(securityGroupData)
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Error creating Security Group payload. Error: %s", err)
-		ui.Error(err.Error())
-		log.Println(err.Error())
-		return nil, err
+
+	var vpcService *vpcv1.VpcV1
+	if state.Get("vpcService") != nil {
+		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
 	}
 
-	url := client.newUrl("POST", "", "security_groups", "", "", state)
-	response, err := client.newHttpRequest(url, payload, "POST", state)
+	// payload, err := json.Marshal(securityGroupData)
+	// if err != nil {
+	// 	err := fmt.Errorf("[ERROR] Error creating Security Group payload. Error: %s", err)
+	// 	ui.Error(err.Error())
+	// 	log.Println(err.Error())
+	// 	return nil, err
+	// }
+
+	// url := client.newUrl("POST", "", "security_groups", "", "", state)
+	// response, err := client.newHttpRequest(url, payload, "POST", state)
+
+	securityGroup, _, err := vpcService.CreateSecurityGroup(&securityGroupData)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error sending the HTTP request that creates the Security Group. Error: %s", err)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return nil, err
 	}
-	return response, nil
+	return securityGroup, nil
 }
 
-func (client IBMCloudClient) createRule(SecurityGroupID string, rule SecurityGroupRuleRequest, state multistep.StateBag) (map[string]interface{}, error) {
+func (client IBMCloudClient) createRule(rule vpcv1.CreateSecurityGroupRuleOptions, state multistep.StateBag) (*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp, error) {
 	ui := state.Get("ui").(packer.Ui)
-	payload, err := json.Marshal(rule)
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Error creating Security Group's rule payload. Error: %s", err)
-		ui.Error(err.Error())
-		log.Println(err.Error())
-		return nil, err
+
+	var vpcService *vpcv1.VpcV1
+	if state.Get("vpcService") != nil {
+		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
 	}
 
-	resourceType := "security_groups/" + SecurityGroupID + "/rules"
-	url := client.newUrl("POST", "", resourceType, "", "", state)
-	response, err := client.newHttpRequest(url, payload, "POST", state)
+	// payload, err := json.Marshal(rule)
+	// if err != nil {
+	// 	err := fmt.Errorf("[ERROR] Error creating Security Group's rule payload. Error: %s", err)
+	// 	ui.Error(err.Error())
+	// 	log.Println(err.Error())
+	// 	return nil, err
+	// }
+
+	// resourceType := "security_groups/" + SecurityGroupID + "/rules"
+	// url := client.newUrl("POST", "", resourceType, "", "", state)
+	// response, err := client.newHttpRequest(url, payload, "POST", state)
+
+	securityGroupRuleIntf, _, err := vpcService.CreateSecurityGroupRule(&rule)
+	securityGroupRule := securityGroupRuleIntf.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
+
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error sending the HTTP request that creates a Security Group's rule. Error: %s", err)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return nil, err
 	}
-	return response, nil
+	return securityGroupRule, nil
 }
 
-func (client IBMCloudClient) addNetworkInterfaceToSecurityGroup(SecurityGroupID string, networkInterfaceID string, state multistep.StateBag) (map[string]interface{}, error) {
+func (client IBMCloudClient) addNetworkInterfaceToSecurityGroup(securityGroupID string, networkInterfaceID string, state multistep.StateBag) (*vpcv1.SecurityGroupTargetReferenceNetworkInterfaceReferenceTargetContext, error) {
 	ui := state.Get("ui").(packer.Ui)
-	resourceType := "security_groups/" + SecurityGroupID + "/network_interfaces"
-	url := client.newUrl("PUT", networkInterfaceID, resourceType, "", "", state)
-	response, err := client.newHttpRequest(url, nil, "PUT", state)
+	var vpcService *vpcv1.VpcV1
+	if state.Get("vpcService") != nil {
+		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
+	}
+	// resourceType := "security_groups/" + SecurityGroupID + "/network_interfaces"
+	// url := client.newUrl("PUT", networkInterfaceID, resourceType, "", "", state)
+	// response, err := client.newHttpRequest(url, nil, "PUT", state)
+	options := vpcService.NewCreateSecurityGroupTargetBindingOptions(
+		securityGroupID,
+		networkInterfaceID,
+	)
 
+	securityGroupTargetReferenceIntf, _, err := vpcService.CreateSecurityGroupTargetBinding(options)
+	securityGroupTargetReference := securityGroupTargetReferenceIntf.(*vpcv1.SecurityGroupTargetReferenceNetworkInterfaceReferenceTargetContext)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error sending the HTTP request that Add the VSI's network interface to the Security Group. Error: %s", err)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return nil, err
 	}
-	return response, nil
+	return securityGroupTargetReference, nil
 }
 
 func (client IBMCloudClient) getImageIDByName(name string, state multistep.StateBag) (string, error) {

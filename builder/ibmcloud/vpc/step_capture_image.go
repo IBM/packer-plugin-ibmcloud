@@ -3,8 +3,10 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"log"
 	"regexp"
 
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
@@ -16,11 +18,16 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 	config := state.Get("config").(Config)
 	ui := state.Get("ui").(packer.Ui)
 
+	var vpcService *vpcv1.VpcV1
+	if state.Get("vpcService") != nil {
+		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
+	}
+
 	instanceData := state.Get("instance_data").(map[string]interface{})
 	instanceID := instanceData["id"].(string)
 
 	ui.Say(fmt.Sprintf("Stopping instance ID: %s ...", instanceID))
-	status, err := client.manageInstance(instanceID, "instances", "stop", state)
+	status, err := client.manageInstance(instanceID, "stop", state)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error stopping the instance: %s", err)
 		state.Put("error", err)
@@ -48,22 +55,29 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 	// ui.Say(fmt.Sprintf("Instance's Boot-Volume-ID: %s", bootVolumeId))
 
 	validName := regexp.MustCompile(`[^a-z0-9\-]+`)
+
 	config.ImageName = validName.ReplaceAllString(config.ImageName, "")
 
-	imageRequest := &ImageReq{
-		Name: config.ImageName,
-		SourceVolume: &ResourceByID{
-			Id: bootVolumeId,
+	options := &vpcv1.CreateImageOptions{}
+	options.SetImagePrototype(&vpcv1.ImagePrototypeImageBySourceVolume{
+		Name: &config.ImageName,
+		SourceVolume: &vpcv1.VolumeIdentityByID{
+			ID: &bootVolumeId,
 		},
+		ResourceGroup: &vpcv1.ResourceGroupIdentityByID{
+			ID: &config.ResourceGroupID,
+		},
+	})
+
+	imageData, _, err := vpcService.CreateImage(options)
+
+	if err != nil {
+		err := fmt.Errorf("[ERROR] Error sending the HTTP request that creates the image. Error: %s", err)
+		ui.Error(err.Error())
+		log.Println(err.Error())
+		return multistep.ActionHalt
 	}
 
-	if config.ResourceGroupID != "" {
-		imageRequest.ResourceGroup = &ResourceByID{
-			Id: config.ResourceGroupID,
-		}
-	}
-
-	imageData, err := client.createImage(state, *imageRequest)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error creating the Image: %s", err)
 		state.Put("error", err)
@@ -72,7 +86,7 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 		return multistep.ActionHalt
 	}
 
-	imageId := imageData["id"].(string)
+	imageId := *imageData.ID
 	state.Put("image_id", imageId)
 
 	ui.Say("Image Successfully created!")
