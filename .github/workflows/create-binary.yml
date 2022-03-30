@@ -8,13 +8,14 @@ on:
 
 jobs:
 
-  zap_scan:
-    runs-on: ubuntu-latest
-    steps:        
-      - name: ZAP Scan
-        uses: zaproxy/action-full-scan@v0.3.0
-        with:
-          target: 'https://www.zaproxy.org/'
+# In case OWASP ZAP Full Scan is required
+#   zap_scan:
+#     runs-on: ubuntu-latest
+#     steps:        
+#       - name: ZAP Scan
+#         uses: zaproxy/action-full-scan@v0.3.0
+#         with:
+#           target: 'https://www.zaproxy.org/'
 
   build:
 #     # Runs on Multiple OS
