@@ -852,5 +852,24 @@ func (client IBMCloudClient) getImageIDByName(name string, state multistep.State
 		log.Println(err.Error())
 		return "", err
 	}
-	return response["images"].([]interface{})[0].(map[string]interface{})["id"].(string), nil
+
+	images := response["images"].([]interface{})
+	if len(images) < 1 {
+		err := fmt.Errorf("[ERROR] Error validating the instance's base-image-name")
+		ui.Error(err.Error())
+		log.Println(err.Error())
+		state.Put("imageBaseError", err)
+		return "", err
+	}
+
+	baseImageID, ok := images[0].(map[string]interface{})["id"].(string)
+	if !ok {
+		err := fmt.Errorf("[ERROR] Error: Instance's base-image-name is not available")
+		ui.Error(err.Error())
+		log.Println(err.Error())
+		state.Put("imageBaseError", err)
+		return "", err
+	}
+
+	return baseImageID, nil
 }
