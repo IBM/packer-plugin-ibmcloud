@@ -81,6 +81,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 			new(stepGreeting),
 			new(stepGenerateIAMToken),
 			new(stepGetSubnetInfo),
+			new(stepGetBaseImageID),
 			new(stepCreateSshKeyPair),
 			new(stepCreateSshKeyVPC),
 			new(stepCreateInstance),

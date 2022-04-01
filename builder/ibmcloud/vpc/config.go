@@ -74,7 +74,10 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 
 	// Configure IBM Cloud EndPoint and other IBM Cloud API constants
 	c.EndPoint = "https://" + c.Region + ".iaas.cloud.ibm.com/v1/"
-	c.Version = fmt.Sprintf("version=%d-%02d-%02d", currentTime.Year(), currentTime.Month(), currentTime.Day())
+	// According with the IBM Cloud - VPC API documentation (https://cloud.ibm.com/apidocs/vpc#api-versioning),
+	// we should be hard-coding the version and test the plugin with new API versions, to maintain ongoing compatibility.
+	// c.Version = fmt.Sprintf("version=%d-%02d-%02d", currentTime.Year(), currentTime.Month(), currentTime.Day())
+	c.Version = "version=2021-10-15"
 	c.Generation = "generation=2"
 	// log.Println("Version : ", c.Version)
 

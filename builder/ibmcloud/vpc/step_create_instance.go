@@ -37,19 +37,9 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 	state.Put("instance_definition", *instanceDefinition)
 
 	ui.Say("Creating Instance...")
-
-	// Get Image ID
+	// Fetching Base Image ID
 	if instanceDefinition.VSIBaseImageName != "" {
-		ui.Say("Fetching ImageID...")
-		baseImageID, err := client.getImageIDByName(instanceDefinition.VSIBaseImageName, state)
-		if err != nil {
-			err := fmt.Errorf("[ERROR] Error getting image ID: %s", err)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			return multistep.ActionHalt
-		}
-		instanceDefinition.VSIBaseImageID = baseImageID
-		ui.Say(fmt.Sprintf("ImageID fetched: %s", string(instanceDefinition.VSIBaseImageID)))
+		instanceDefinition.VSIBaseImageID = state.Get("baseImageID").(string)
 	}
 
 	instanceData, err := client.VPCCreateInstance(*instanceDefinition, state)

@@ -1,0 +1,101 @@
+2022/04/01 14:17:22 [INFO] Packer version: 1.8.0 [go1.17.8 darwin amd64]
+2022/04/01 14:17:22 Old default config directory found: /Users/juancpinzone/.packer.d
+2022/04/01 14:17:22 [TRACE] discovering plugins in /usr/local/bin
+2022/04/01 14:17:22 Old default config directory found: /Users/juancpinzone/.packer.d
+2022/04/01 14:17:22 [TRACE] discovering plugins in /Users/juancpinzone/.packer.d/plugins
+2022/04/01 14:17:22 [TRACE] discovering plugins in .
+2022/04/01 14:17:22 [DEBUG] Discovered plugin: ibmcloud = /Users/juancpinzone/workspace/ibm/packer-plugin-ibmcloud/packer-plugin-ibmcloud
+2022/04/01 14:17:22 [INFO] found external [classic vpc] builders from ibmcloud plugin
+2022/04/01 14:17:22 [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/04/01 14:17:22 [INFO] PACKER_CONFIG env var set; attempting to open config file: /Users/juancpinzone/.packerconfig
+2022/04/01 14:17:22 [WARN] Config file doesn't exist: /Users/juancpinzone/.packerconfig
+2022/04/01 14:17:22 Old default config directory found: /Users/juancpinzone/.packer.d
+2022/04/01 14:17:22 [INFO] Setting cache directory: /Users/juancpinzone/.cache/packer
+2022/04/01 14:17:22 Old default config directory found: /Users/juancpinzone/.packer.d
+2022/04/01 14:17:22 [TRACE] validateValue: not active for ibm_api_key, so skipping
+2022/04/01 14:17:22 [TRACE] Starting external plugin /Users/juancpinzone/workspace/ibm/packer-plugin-ibmcloud/packer-plugin-ibmcloud start builder vpc
+2022/04/01 14:17:22 Starting plugin: /Users/juancpinzone/workspace/ibm/packer-plugin-ibmcloud/packer-plugin-ibmcloud []string{"/Users/juancpinzone/workspace/ibm/packer-plugin-ibmcloud/packer-plugin-ibmcloud", "start", "builder", "vpc"}
+2022/04/01 14:17:22 Waiting for RPC address for: /Users/juancpinzone/workspace/ibm/packer-plugin-ibmcloud/packer-plugin-ibmcloud
+2022/04/01 14:17:22 Received unix RPC address for /Users/juancpinzone/workspace/ibm/packer-plugin-ibmcloud/packer-plugin-ibmcloud: addr is /var/folders/39/2_gfgr5s3vqgv2p4cxs1ywg40000gn/T/packer-plugin4216118380
+2022/04/01 14:17:22 packer-plugin-ibmcloud plugin: 2022/04/01 14:17:22 Plugin address: unix /var/folders/39/2_gfgr5s3vqgv2p4cxs1ywg40000gn/T/packer-plugin4216118380
+2022/04/01 14:17:22 packer-plugin-ibmcloud plugin: 2022/04/01 14:17:22 Waiting for connection...
+2022/04/01 14:17:22 packer-plugin-ibmcloud plugin: 2022/04/01 14:17:22 Serving a plugin connection...
+2022/04/01 14:17:22 packer-plugin-ibmcloud plugin: 2022/04/01 14:17:22 [TRACE] starting builder vpc
+2022/04/01 14:17:22 [TRACE] Starting internal plugin packer-provisioner-shell
+2022/04/01 14:17:22 Starting plugin: /usr/local/bin/packer []string{"/usr/local/bin/packer", "plugin", "packer-provisioner-shell"}
+2022/04/01 14:17:22 Waiting for RPC address for: /usr/local/bin/packer
+2022/04/01 14:17:22 packer-provisioner-shell plugin: [INFO] Packer version: 1.8.0 [go1.17.8 darwin amd64]
+2022/04/01 14:17:22 packer-provisioner-shell plugin: Old default config directory found: /Users/juancpinzone/.packer.d
+2022/04/01 14:17:22 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var not set; checking the default config file path
+2022/04/01 14:17:22 packer-provisioner-shell plugin: [INFO] PACKER_CONFIG env var set; attempting to open config file: /Users/juancpinzone/.packerconfig
+2022/04/01 14:17:22 packer-provisioner-shell plugin: [WARN] Config file doesn't exist: /Users/juancpinzone/.packerconfig
+2022/04/01 14:17:22 packer-provisioner-shell plugin: Old default config directory found: /Users/juancpinzone/.packer.d
+2022/04/01 14:17:22 packer-provisioner-shell plugin: [INFO] Setting cache directory: /Users/juancpinzone/.cache/packer
+2022/04/01 14:17:22 packer-provisioner-shell plugin: args: []string{"packer-provisioner-shell"}
+2022/04/01 14:17:22 packer-provisioner-shell plugin: Old default config directory found: /Users/juancpinzone/.packer.d
+2022/04/01 14:17:22 Received unix RPC address for /usr/local/bin/packer: addr is /var/folders/39/2_gfgr5s3vqgv2p4cxs1ywg40000gn/T/packer-plugin2616127519
+2022/04/01 14:17:22 packer-provisioner-shell plugin: Plugin address: unix /var/folders/39/2_gfgr5s3vqgv2p4cxs1ywg40000gn/T/packer-plugin2616127519
+2022/04/01 14:17:22 packer-provisioner-shell plugin: Waiting for connection...
+2022/04/01 14:17:22 packer-provisioner-shell plugin: Serving a plugin connection...
+2022/04/01 14:17:22 ui: [1;32mibmcloud-vpc.centos: output will be in this color.[0m
+2022/04/01 14:17:22 ui: 
+2022/04/01 14:17:22 Build debug mode: false
+2022/04/01 14:17:22 Force build: false
+2022/04/01 14:17:22 On error: 
+2022/04/01 14:17:22 Waiting on builds to complete...
+2022/04/01 14:17:22 Starting build run: ibmcloud-vpc.centos
+2022/04/01 14:17:22 Running builder: 
+2022/04/01 14:17:22 [INFO] (telemetry) Starting builder ibmcloud-vpc.centos
+2022/04/01 14:17:22 ui: [1;32m==> ibmcloud-vpc.centos: *************************************************************[0m
+2022/04/01 14:17:22 ui: [1;32m==> ibmcloud-vpc.centos: * Initializing IBM Cloud Packer Plugin - VPC Infrastructure *[0m
+2022/04/01 14:17:22 ui: [1;32m==> ibmcloud-vpc.centos: *************************************************************[0m
+2022/04/01 14:17:22 ui: [1;32m==> ibmcloud-vpc.centos:[0m
+2022/04/01 14:17:22 ui: [1;32m==> ibmcloud-vpc.centos: Generating IAM Access Token...[0m
+2022/04/01 14:17:23 packer-plugin-ibmcloud plugin: 2022/04/01 14:17:23 Response Status -  200
+2022/04/01 14:17:23 packer-plugin-ibmcloud plugin: 2022/04/01 14:17:23 IAM Access Token: Bearer eyJraWQiOiIyMDIyMDMxNzA4MjMiLCJhbGciOiJSUzI1NiJ9.eyJpYW1faWQiOiJJQk1pZC01NTAwMDJKMUI5IiwiaWQiOiJJQk1pZC01NTAwMDJKMUI5IiwicmVhbG1pZCI6IklCTWlkIiwianRpIjoiODhiNDFlYjktNWZiZS00ZjE0LTliNmItMTZjZmZkOWNmOGNmIiwiaWRlbnRpZmllciI6IjU1MDAwMkoxQjkiLCJnaXZlbl9uYW1lIjoiSnVhbiIsImZhbWlseV9uYW1lIjoiUGluem9uIEVzdHVwaW5hbiIsIm5hbWUiOiJKdWFuIFBpbnpvbiBFc3R1cGluYW4iLCJlbWFpbCI6Ikp1YW4uUGluem9uQGlibS5jb20iLCJzdWIiOiJKdWFuLlBpbnpvbkBpYm0uY29tIiwiYXV0aG4iOnsic3ViIjoiSnVhbi5QaW56b25AaWJtLmNvbSIsImlhbV9pZCI6IklCTWlkLTU1MDAwMkoxQjkiLCJuYW1lIjoiSnVhbiBQaW56b24gRXN0dXBpbmFuIiwiZ2l2ZW5fbmFtZSI6Ikp1YW4iLCJmYW1pbHlfbmFtZSI6IlBpbnpvbiBFc3R1cGluYW4iLCJlbWFpbCI6Ikp1YW4uUGluem9uQGlibS5jb20ifSwiYWNjb3VudCI6eyJib3VuZGFyeSI6Imdsb2JhbCIsInZhbGlkIjp0cnVlLCJic3MiOiJjZGVmZTZkOTlmN2VhNDU5YWFjYjI1Nzc1ZmI4OGEzMyIsImltc191c2VyX2lkIjoiNzUyODI2MSIsImZyb3plbiI6dHJ1ZSwiaW1zIjoiMTE5NjIwMSJ9LCJpYXQiOjE2NDg4NDc4NDAsImV4cCI6MTY0ODg1MTQ0MCwiaXNzIjoiaHR0cHM6Ly9pYW0uY2xvdWQuaWJtLmNvbS9pZGVudGl0eSIsImdyYW50X3R5cGUiOiJ1cm46aWJtOnBhcmFtczpvYXV0aDpncmFudC10eXBlOmFwaWtleSIsInNjb3BlIjoiaWJtIG9wZW5pZCIsImNsaWVudF9pZCI6ImRlZmF1bHQiLCJhY3IiOjEsImFtciI6WyJwd2QiXX0.J-1d-UOt7ISYp484wlqktW9mtU6NkRUfR1g15Ui8ZR13HECnpL2qnk36DHdyg5OAuNSYPBq0FfbgNkEsr_gIHYdM36c3TxfGD2uB-EXwDuBgb2MDawfOEHnavYCYR5V95wVKaBxukBmhPeNMDsB5Gi_Vtr8x0LPwrYN9XS6n75zq-CPhdgTHXFxLJRSt80VxEbMTZqr6ZFf1bN8oZEMWtEgAB6yonJ2xo8chULuo6w-s1XiTPtCiGq8iyaruq3o_yVVUU81lnDlBugoJEFDefpbMfT7HkczibiGWU0PtHFJqYkEWbZoSuL_cWwF_rpcoi2Ou5NfFRa-US46TN09jwA
+2022/04/01 14:17:23 ui: [1;32m==> ibmcloud-vpc.centos: IAM Access Token successfully generated![0m
+2022/04/01 14:17:23 ui: [1;32m==> ibmcloud-vpc.centos: Retrieving Subnet 02h7-46a8b111-3530-4337-9c04-c78e03160869 information...[0m
+2022/04/01 14:17:25 packer-plugin-ibmcloud plugin: 2022/04/01 14:17:25 Response Status -  200
+2022/04/01 14:17:25 packer-plugin-ibmcloud plugin: 2022/04/01 14:17:25 Response Body from ibmcloud-  {"id":"02h7-46a8b111-3530-4337-9c04-c78e03160869","crn":"crn:v1:bluemix:public:is:au-syd-1:a/cdefe6d99f7ea459aacb25775fb88a33::subnet:02h7-46a8b111-3530-4337-9c04-c78e03160869","href":"https://au-syd.iaas.cloud.ibm.com/v1/subnets/02h7-46a8b111-3530-4337-9c04-c78e03160869","name":"packer-demo-sub1","resource_type":"subnet","available_ipv4_address_count":250,"ipv4_cidr_block":"10.245.1.0/24","ip_version":"ipv4","zone":{"name":"au-syd-1","href":"https://au-syd.iaas.cloud.ibm.com/v1/regions/au-syd/zones/au-syd-1"},"vpc":{"id":"r026-f9e56aed-5e7e-4501-9cd3-c64ff9c2d02e","crn":"crn:v1:bluemix:public:is:au-syd:a/cdefe6d99f7ea459aacb25775fb88a33::vpc:r026-f9e56aed-5e7e-4501-9cd3-c64ff9c2d02e","href":"https://au-syd.iaas.cloud.ibm.com/v1/vpcs/r026-f9e56aed-5e7e-4501-9cd3-c64ff9c2d02e","name":"packer-demo-vpc","resource_type":"vpc"},"status":"available","total_ipv4_address_count":256,"created_at":"2022-03-31T00:16:48Z","network_acl":{"id":"r026-811fa1ca-fad9-405e-a36c-7952d253b852","crn":"crn:v1:bluemix:public:is:au-syd:a/cdefe6d99f7ea459aacb25775fb88a33::network-acl:r026-811fa1ca-fad9-405e-a36c-7952d253b852","href":"https://au-syd.iaas.cloud.ibm.com/v1/network_acls/r026-811fa1ca-fad9-405e-a36c-7952d253b852","name":"reconvene-freehand-oxidize-fence"},"resource_group":{"id":"f054d39a43ce4f51afff708510f271cb","href":"https://resource-controller.cloud.ibm.com/v2/resource_groups/f054d39a43ce4f51afff708510f271cb","name":"Seismic"},"routing_table":{"id":"r026-8f5460cc-57de-4cee-b7c5-c72191b2f7ed","href":"https://au-syd.iaas.cloud.ibm.com/v1/vpcs/r026-f9e56aed-5e7e-4501-9cd3-c64ff9c2d02e/routing_tables/r026-8f5460cc-57de-4cee-b7c5-c72191b2f7ed","name":"snowshoe-importer-overturn-easeful","resource_type":"routing_table"}}
+2022/04/01 14:17:25 ui: [1;32m==> ibmcloud-vpc.centos: Subnet Information successfully retrieved ...[0m
+2022/04/01 14:17:25 ui: [1;32m==> ibmcloud-vpc.centos: VPC ID: r026-f9e56aed-5e7e-4501-9cd3-c64ff9c2d02e[0m
+2022/04/01 14:17:25 ui: [1;32m==> ibmcloud-vpc.centos: Zone: au-syd-1[0m
+2022/04/01 14:17:25 ui: [1;32m==> ibmcloud-vpc.centos: Fetching Base Image ID...[0m
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: 2022/04/01 14:17:26 Response Status -  200
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: 2022/04/01 14:17:26 Response Body from ibmcloud-  {"first":{"href":"https://au-syd.iaas.cloud.ibm.com/v1/images?limit=50"},"limit":50,"images":[]}
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: panic: runtime error: index out of range [0] with length 0
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: 
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: goroutine 131 [running]:
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: packer-plugin-ibmcloud/builder/ibmcloud/vpc.IBMCloudClient.getImageIDByName({0xc000275c20, {0xc0000bc960, 0x19}}, {0xc0003a0aa0, 0x1f}, {0x1c982c8, 0xc000275c50})
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: 	/Users/juancpinzone/workspace/ibm/packer-plugin-ibmcloud/builder/ibmcloud/vpc/client.go:855 +0x526
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: packer-plugin-ibmcloud/builder/ibmcloud/vpc.(*stepGetBaseImageID).Run(0x1014699, {0x1a9b876, 0x0}, {0x1c982c8, 0xc000275c50})
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: 	/Users/juancpinzone/workspace/ibm/packer-plugin-ibmcloud/builder/ibmcloud/vpc/step_get_base_image_id.go:22 +0x16f
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: github.com/hashicorp/packer-plugin-sdk/multistep.(*BasicRunner).Run(0xc000275ce0, {0x1c97e68, 0xc0005ff500}, {0x1c982c8, 0xc000275c50})
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: 	/Users/juancpinzone/workspace/ibm/packer-plugin-ibmcloud/vendor/github.com/hashicorp/packer-plugin-sdk/multistep/basic_runner.go:70 +0x2fe
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: packer-plugin-ibmcloud/builder/ibmcloud/vpc.(*Builder).Run(0xc000596a00, {0x1c97e68, 0xc0005ff500}, {0x1c9f5e0, 0xc000275bf0}, {0x1c7f020, 0xc00007ab80})
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: 	/Users/juancpinzone/workspace/ibm/packer-plugin-ibmcloud/builder/ibmcloud/vpc/builder.go:105 +0x839
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: github.com/hashicorp/packer-plugin-sdk/rpc.(*BuilderServer).Run(0xc0002408c0, 0xc3740, 0xc0000c3720)
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: 	/Users/juancpinzone/workspace/ibm/packer-plugin-ibmcloud/vendor/github.com/hashicorp/packer-plugin-sdk/rpc/builder.go:117 +0x1e3
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: reflect.Value.call({0xc000388ae0, 0xc00038a450, 0x13}, {0x1a95bcc, 0x4}, {0xc000073ef8, 0x3, 0x3})
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: 	/usr/local/go/src/reflect/value.go:556 +0x845
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: reflect.Value.Call({0xc000388ae0, 0xc00038a450, 0x0}, {0xc00046eef8, 0x3, 0x3})
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: 	/usr/local/go/src/reflect/value.go:339 +0xc5
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: net/rpc.(*service).call(0xc000240900, 0x0, 0x0, 0xc000383560, 0xc0003c6c00, 0x0, {0x19329c0, 0xc0000c371c, 0x12}, {0x1919640, ...}, ...)
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: 	/usr/local/go/src/net/rpc/server.go:377 +0x239
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: created by net/rpc.(*Server).ServeCodec
+2022/04/01 14:17:26 packer-plugin-ibmcloud plugin: 	/usr/local/go/src/net/rpc/server.go:474 +0x405
+2022/04/01 14:17:26 [INFO] (telemetry) ending ibmcloud-vpc.centos
+2022/04/01 14:17:26 ui error: [1;31mBuild 'ibmcloud-vpc.centos' errored after 3 seconds 610 milliseconds: unexpected EOF[0m
+2022/04/01 14:17:26 ui: 
+==> Wait completed after 3 seconds 610 milliseconds
+2022/04/01 14:17:26 machine readable: error-count []string{"1"}
+2022/04/01 14:17:26 ui error: 
+==> Some builds didn't complete successfully and had errors:
+2022/04/01 14:17:26 machine readable: ibmcloud-vpc.centos,error []string{"unexpected EOF"}
+2022/04/01 14:17:26 ui error: --> ibmcloud-vpc.centos: unexpected EOF
+2022/04/01 14:17:26 /Users/juancpinzone/workspace/ibm/packer-plugin-ibmcloud/packer-plugin-ibmcloud: plugin process exited
+2022/04/01 14:17:26 ui: 
+==> Builds finished but no artifacts were created.
+2022/04/01 14:17:26 [INFO] (telemetry) Finalizing.
+2022/04/01 14:17:26 waiting for all plugin processes to complete...
+2022/04/01 14:17:26 /usr/local/bin/packer: plugin process exited
