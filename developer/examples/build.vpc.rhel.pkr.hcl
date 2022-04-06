@@ -1,7 +1,7 @@
 // packer {
 //   required_plugins {
 //     ibmcloud = {
-//       version = ">=v2.1.0"
+//       version = ">=v2.1.1"
 //       source = "github.com/IBM/ibmcloud"
 //     }
 //   }

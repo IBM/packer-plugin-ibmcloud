@@ -95,15 +95,14 @@ func (s *stepCreateSecurityGroupRules) Run(_ context.Context, state multistep.St
 	primaryNetworkInterfaceID := primaryNetworkInterface["id"].(string)
 
 	SecurityGroupData, err := client.addNetworkInterfaceToSecurityGroup(securityGroupID, primaryNetworkInterfaceID, state)
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Error Adding Network Interface To Security Group: %s", err)
+	if err != nil || SecurityGroupData == nil {
+		err := fmt.Errorf("[ERROR] Error Adding Instance To Security Group: %s", err)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		// log.Fatalf(err.Error())
 		return multistep.ActionHalt
 	}
-	SecurityGroupStatus := SecurityGroupData["status"].(string)
-	ui.Say(fmt.Sprintf("Network Interface successfully added to the Security Group!: %s", SecurityGroupStatus))
+	ui.Say(fmt.Sprintf("Instance successfully added to the Security Group %s", securityGroupID))
 
 	return multistep.ActionContinue
 }
