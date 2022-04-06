@@ -1,7 +1,7 @@
 // packer {
 //   required_plugins {
 //     ibmcloud = {
-//       version = ">=v2.1.0"
+//       version = ">=v2.1.1"
 //       source = "github.com/IBM/ibmcloud"
 //     }
 //   }
@@ -27,9 +27,9 @@ source "ibmcloud-vpc" "centos" {
   // vsi_base_image_id = "r026-4e9a4dcc-15c7-4fac-b6ea-e24619059218"
   vsi_base_image_name = "ibm-centos-7-9-minimal-amd64-5"
 
-  vsi_profile         = "bx2-2x8"
-  vsi_interface       = "public"
-  vsi_user_data_file  = ""
+  vsi_profile        = "bx2-2x8"
+  vsi_interface      = "public"
+  vsi_user_data_file = ""
 
   image_name = "packer-${local.timestamp}"
 

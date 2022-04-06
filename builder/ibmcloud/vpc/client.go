@@ -179,7 +179,7 @@ func (client IBMCloudClient) getIAMToken(state multistep.StateBag) error {
 
 	IAMToken := unmarshalData["token_type"].(string) + " " + unmarshalData["access_token"].(string)
 	state.Put("IAMToken", IAMToken)
-	log.Println(fmt.Sprintf("IAM Access Token: %s", IAMToken))
+	log.Printf("IAM Access Token: %s", IAMToken)
 	return nil
 }
 
@@ -818,7 +818,7 @@ func (client IBMCloudClient) createRule(SecurityGroupID string, rule SecurityGro
 
 func (client IBMCloudClient) addNetworkInterfaceToSecurityGroup(SecurityGroupID string, networkInterfaceID string, state multistep.StateBag) (map[string]interface{}, error) {
 	ui := state.Get("ui").(packer.Ui)
-	resourceType := "security_groups/" + SecurityGroupID + "/network_interfaces"
+	resourceType := "security_groups/" + SecurityGroupID + "/targets"
 	url := client.newUrl("PUT", networkInterfaceID, resourceType, "", "", state)
 	response, err := client.newHttpRequest(url, nil, "PUT", state)
 

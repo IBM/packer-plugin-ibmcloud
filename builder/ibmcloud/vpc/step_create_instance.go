@@ -9,9 +9,7 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
 
-type stepCreateInstance struct {
-	instanceID string
-}
+type stepCreateInstance struct{}
 
 func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
 	client := state.Get("client").(*IBMCloudClient)
@@ -43,7 +41,7 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 	}
 
 	instanceData, err := client.VPCCreateInstance(*instanceDefinition, state)
-	if err != nil {
+	if err != nil || instanceData == nil {
 		err := fmt.Errorf("[ERROR] Error creating the instance: %s", err)
 		state.Put("error", err)
 		ui.Error(err.Error())
