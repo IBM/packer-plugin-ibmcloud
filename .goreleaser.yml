@@ -1,4 +1,4 @@
-# This is an example goreleaser.yaml file with some defaults.
+# This is an example goreleaser.yaml file with some sane defaults.
 # Make sure to check the documentation at http://goreleaser.com
 env:
   - CGO_ENABLED=0
@@ -17,13 +17,6 @@ builds:
   -
     id: plugin-check
     mod_timestamp: '{{ .CommitTimestamp }}'
-    hooks:
-      post:
-        # This will check plugin compatibility against latest version of Packer
-        - cmd: |
-            go install github.com/hashicorp/packer/cmd/packer-plugins-check@latest &&
-            packer-plugins-check -load={{ .Name }}
-          dir: "{{ dir .Path}}"
     flags:
       - -trimpath #removes all file system paths from the compiled executable
     ldflags:
