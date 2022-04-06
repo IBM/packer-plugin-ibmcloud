@@ -8,7 +8,7 @@ var IBMCloudPluginVersion *version.PluginVersion
 
 var (
 	// Version is the main version number that is being run at the moment.
-	Version           = "v2.1.1"
+	Version           = "v2.2.0"
 	VersionPrerelease = "dev"
 )
 
