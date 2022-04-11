@@ -25,6 +25,10 @@ packer fmt developer/examples/.
 ```
 This helps to maintain consistent formatting across whole repository.
 
+## Automated tests
+
+When adding or changing functionality, please include new tests for them as part of your contribution.
+
 ## Merge approval
 
 The project maintainers use LGTM (Looks Good To Me) in comments on the code review to indicate acceptance. A change requires LGTMs from two of the maintainers of each component affected.
