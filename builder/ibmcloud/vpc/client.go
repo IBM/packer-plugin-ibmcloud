@@ -24,9 +24,9 @@ type IBMCloudClient struct {
 	IBMApiKey string
 }
 
-type IBMCloudRequest struct {
-	Parameters interface{} `json:"parameters"`
-}
+// type IBMCloudRequest struct {
+// 	Parameters interface{} `json:"parameters"`
+// }
 
 func (client IBMCloudClient) New(IBMApiKey string) *IBMCloudClient {
 	return &IBMCloudClient{
