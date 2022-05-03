@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
@@ -18,16 +19,16 @@ func (step *stepGetIP) Run(_ context.Context, state multistep.StateBag) multiste
 	config := state.Get("config").(Config)
 	ui := state.Get("ui").(packer.Ui)
 
-	instanceData := state.Get("instance_data").(map[string]interface{})
+	instanceData := state.Get("instance_data").(*vpcv1.Instance)
 
 	ui.Say(fmt.Sprintf("Getting %s IP...", strings.Title(config.VSIInterface)))
 	var ipAddress string
 	if config.VSIInterface == "private" {
-		primaryNetworkInterface := instanceData["primary_network_interface"].(map[string]interface{})
+		primaryNetworkInterface := instanceData.PrimaryNetworkInterface
 		// ipAddress = primaryNetworkInterface["primary_ipv4_address"].(string)
 
 		// Post 3/29/22 Reserved IP P2
-		ipAddress = primaryNetworkInterface["primary_ip"].(string)
+		ipAddress = *primaryNetworkInterface.PrimaryIP.Address
 
 	} else if config.VSIInterface == "public" {
 		ui.Say("Reserve a Floating IP and associate it to the instance's network interface")

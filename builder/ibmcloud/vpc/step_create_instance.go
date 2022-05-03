@@ -10,9 +10,7 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
 
-type stepCreateInstance struct {
-	instanceID string
-}
+type stepCreateInstance struct{}
 
 func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
 	// client := state.Get("client").(*IBMCloudClient)
@@ -24,12 +22,15 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
 	}
 
-	instanceDefinition := &InstanceType{
-		ResourceGroupID:  config.ResourceGroupID,
-		VSIBaseImageID:   config.VSIBaseImageID,
-		VSIBaseImageName: config.VSIBaseImageName,
-		VSIInterface:     config.VSIInterface,
-	}
+	// type instanceDefinition struct{
+	// 	ResourceGroupID:  config.ResourceGroupID,
+	// 	VSIBaseImageID:   config.VSIBaseImageID,
+	// 	VSIBaseImageName: config.VSIBaseImageName,
+	// 	VSIInterface:     config.VSIInterface,
+	// }
+
+	vsiBaseImageName := config.VSIBaseImageName
+	vsiBaseImageID := config.VSIBaseImageID
 
 	keyIDentityModel := &vpcv1.KeyIdentityByID{
 		ID: &[]string{state.Get("vpc_ssh_key_id").(string)}[0],
@@ -55,12 +56,12 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 	ui.Say("Creating Instance...")
 
 	// Get Image ID
-	if instanceDefinition.VSIBaseImageName != "" {
+	if vsiBaseImageName != "" {
 		ui.Say("Fetching ImageID...")
 		// baseImageID, err := client.getImageIDByName(instanceDefinition.VSIBaseImageName, state)
 
 		options := &vpcv1.ListImagesOptions{}
-		options.SetName(instanceDefinition.VSIBaseImageName)
+		options.SetName(vsiBaseImageName)
 		image, _, err := vpcService.ListImages(options)
 
 		if err != nil {
@@ -69,12 +70,12 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 			ui.Error(err.Error())
 			return multistep.ActionHalt
 		}
-		instanceDefinition.VSIBaseImageID = *image.Images[0].ID
-		ui.Say(fmt.Sprintf("ImageID fetched: %s", string(instanceDefinition.VSIBaseImageID)))
+		vsiBaseImageID = *image.Images[0].ID
+		ui.Say(fmt.Sprintf("ImageID fetched: %s", string(vsiBaseImageName)))
 	}
 
 	imageIDentityModel := &vpcv1.ImageIdentityByID{
-		ID: &[]string{instanceDefinition.VSIBaseImageID}[0],
+		ID: &[]string{vsiBaseImageID}[0],
 	}
 	instancePrototypeModel := &vpcv1.InstancePrototypeInstanceByImage{
 		Keys:                    []vpcv1.KeyIdentityIntf{keyIDentityModel},
@@ -91,9 +92,6 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 	}
 	state.Put("instance_definition", *instancePrototypeModel)
 
-	// instanceData, err := client.VPCCreateInstance(*instanceDefinition, state)
-	// Start
-
 	createInstanceOptions := vpcService.NewCreateInstanceOptions(
 		instancePrototypeModel,
 	)
@@ -108,6 +106,7 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 	}
 
 	state.Put("instance_data", instanceData)
+
 	ui.Say("Instance successfully created!")
 	ui.Say(fmt.Sprintf("Instance's Name: %s", *instanceData.Name))
 	ui.Say(fmt.Sprintf("Instance's ID: %s", *instanceData.ID))
@@ -160,8 +159,8 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 
 	// Wait a couple of seconds before attempting to delete the instance.
 	time.Sleep(2 * time.Second)
-	instanceData := state.Get("instance_data").(map[string]interface{})
-	instanceID := instanceData["id"].(string)
+	instanceData := state.Get("instance_data").(*vpcv1.Instance)
+	instanceID := *instanceData.ID
 	ui.Say(fmt.Sprintf("Deleting Instance ID: %s ...", instanceID))
 
 	// result, err := client.deleteResource(instanceID, "instances", state)
@@ -211,7 +210,7 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 		securityGroupID := state.Get("security_group_id").(string)
 		// result, err := client.deleteResource(securityGroupID, "security_groups", state)
 		sgOptions := &vpcv1.DeleteSecurityGroupOptions{}
-		options.SetID(securityGroupID)
+		sgOptions.SetID(securityGroupID)
 		sgResponse, err := vpcService.DeleteSecurityGroup(sgOptions)
 		if err != nil {
 			err := fmt.Errorf("[ERROR] Error deleting Security Group %s. Please delete it manually: %s", securityGroupName, err)

@@ -23,8 +23,8 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
 	}
 
-	instanceData := state.Get("instance_data").(map[string]interface{})
-	instanceID := instanceData["id"].(string)
+	instanceData := state.Get("instance_data").(*vpcv1.Instance)
+	instanceID := *instanceData.ID
 
 	ui.Say(fmt.Sprintf("Stopping instance ID: %s ...", instanceID))
 	status, err := client.manageInstance(instanceID, "stop", state)
@@ -49,10 +49,9 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 	ui.Say("Instance successfully stopped!")
 
 	ui.Say(fmt.Sprintf("Creating an Image from instance ID: %s ...", instanceID))
-	bootVolumeAttachment := instanceData["boot_volume_attachment"].(map[string]interface{})
-	bootVolume := bootVolumeAttachment["volume"].(map[string]interface{})
-	bootVolumeId := bootVolume["id"].(string)
-	// ui.Say(fmt.Sprintf("Instance's Boot-Volume-ID: %s", bootVolumeId))
+	bootVolumeAttachment := instanceData.BootVolumeAttachment
+	bootVolume := bootVolumeAttachment.Volume
+	bootVolumeId := *bootVolume.ID
 
 	validName := regexp.MustCompile(`[^a-z0-9\-]+`)
 

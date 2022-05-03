@@ -27,7 +27,11 @@ func (s *stepGetSubnetInfo) Run(_ context.Context, state multistep.StateBag) mul
 	options := &vpcv1.GetSubnetOptions{}
 	options.SetID(config.SubnetID)
 	subnetData, _, err := vpcService.GetSubnet(options)
+
 	if err != nil {
+		err := fmt.Errorf("[ERROR] Error fetching subnet %s", err)
+		state.Put("error", err)
+		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
 
