@@ -96,7 +96,7 @@ func (s *stepCreateSecurityGroupRules) Run(_ context.Context, state multistep.St
 		// log.Fatalf(err.Error())
 		return multistep.ActionHalt
 	}
-	ui.Say(fmt.Sprintf("Network Interface successfully added to the Security Group!: %s", *securityGroupData.ID))
+	ui.Say(fmt.Sprintf("Instance successfully added to the Security Group %s", *securityGroupData.ID))
 
 	return multistep.ActionContinue
 }
