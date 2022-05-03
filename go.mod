@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go v0.81.0 // indirect
 	github.com/ChrisTrenkamp/goxpath v0.0.0-20210404020558-97928f7e12b6 // indirect
 	github.com/IBM/go-sdk-core v1.1.0
-	github.com/IBM/vpc-go-sdk v0.16.0
+	github.com/IBM/vpc-go-sdk v0.19.0
 	github.com/aws/aws-sdk-go v1.38.57 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/uuid v1.2.0 // indirect

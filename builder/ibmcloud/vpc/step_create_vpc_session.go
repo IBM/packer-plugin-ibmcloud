@@ -3,6 +3,7 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/IBM/go-sdk-core/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -16,15 +17,19 @@ type stepCreateVPCSession struct {
 func (step *stepCreateVPCSession) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
 	client := state.Get("client").(*IBMCloudClient)
 	ui := state.Get("ui").(packer.Ui)
+	iamurl := os.Getenv("AUTH_URL")
+	url := os.Getenv("URL")
 
 	ui.Say("Creating VPC service...")
 	// err := client.getIAMToken(state)
-
-	vpcService, serviceErr := vpcv1.NewVpcV1(&vpcv1.VpcV1Options{
+	options := &vpcv1.VpcV1Options{
 		Authenticator: &core.IamAuthenticator{
 			ApiKey: client.IBMApiKey,
+			URL:    iamurl,
 		},
-	})
+		URL: url,
+	}
+	vpcService, serviceErr := vpcv1.NewVpcV1(options)
 
 	if serviceErr != nil {
 		err := fmt.Errorf("[ERROR] Error creating VPC service %s", serviceErr)

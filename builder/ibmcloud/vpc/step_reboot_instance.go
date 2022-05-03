@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
@@ -17,8 +18,8 @@ func (s *stepRebootInstance) Run(_ context.Context, state multistep.StateBag) mu
 
 	ui.Say("Rebooting instance to cleanly complete any installed software components...")
 
-	instanceData := state.Get("instance_data").(map[string]interface{})
-	instanceID := instanceData["id"].(string)
+	instanceData := state.Get("instance_data").(*vpcv1.Instance)
+	instanceID := *instanceData.ID
 
 	status, err := client.manageInstance(instanceID, "reboot", state)
 	if err != nil {

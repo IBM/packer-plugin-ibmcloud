@@ -74,6 +74,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 			},
 			new(commonsteps.StepProvision),
 			// new(stepGenerateIAMToken),
+			new(stepCreateVPCSession),
 			new(stepRebootInstance),
 			new(stepCaptureImage),
 		}
@@ -96,6 +97,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 			},
 			new(commonsteps.StepProvision),
 			// new(stepGenerateIAMToken),
+			new(stepCreateVPCSession),
 			new(stepRebootInstance),
 			new(stepCaptureImage),
 		}
