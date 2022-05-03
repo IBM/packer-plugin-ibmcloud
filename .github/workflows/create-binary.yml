@@ -8,6 +8,15 @@ on:
 
 jobs:
 
+# In case OWASP ZAP Full Scan is required
+#   zap_scan:
+#     runs-on: ubuntu-latest
+#     steps:        
+#       - name: ZAP Scan
+#         uses: zaproxy/action-full-scan@v0.3.0
+#         with:
+#           target: 'https://www.zaproxy.org/'
+
   build:
 #     # Runs on Multiple OS
 #     runs-on: ${{ matrix.os }}
@@ -52,7 +61,6 @@ jobs:
       run: |
         packer validate developer/examples/build.vpc.centos.pkr.hcl
         echo "packer build developer/examples/build.vpc.centos.pkr.hcl"
-      
 
   docker:
     needs: build

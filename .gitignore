@@ -3,3 +3,5 @@
 .env
 .credentials
 packer-plugin-ibmcloud
+packerlog/packerlog.txt
+provisioner/hosts
