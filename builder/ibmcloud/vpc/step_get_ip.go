@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
@@ -21,7 +20,7 @@ func (step *stepGetIP) Run(_ context.Context, state multistep.StateBag) multiste
 
 	instanceData := state.Get("instance_data").(*vpcv1.Instance)
 
-	ui.Say(fmt.Sprintf("Getting %s IP...", strings.Title(config.VSIInterface)))
+	ui.Say(fmt.Sprintf("Getting %s IP...", config.VSIInterface))
 	var ipAddress string
 	if config.VSIInterface == "private" {
 		primaryNetworkInterface := instanceData.PrimaryNetworkInterface
@@ -61,7 +60,7 @@ func (step *stepGetIP) Run(_ context.Context, state multistep.StateBag) multiste
 		ipAddress = *floatingIPData.Address
 	}
 
-	ui.Say(fmt.Sprintf("%s IP Address: %s", strings.Title(config.VSIInterface), ipAddress))
+	ui.Say(fmt.Sprintf("%s IP Address: %s", config.VSIInterface, ipAddress))
 	state.Put("floating_ip", ipAddress)
 
 	///// Update the Communicator with the ipAddres value /////
