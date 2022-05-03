@@ -60,7 +60,6 @@ func (step *stepGetIP) Run(_ context.Context, state multistep.StateBag) multiste
 		ipAddress = *floatingIPData.Address
 	}
 
-	ui.Say(fmt.Sprintf("%s IP Address: %s", config.VSIInterface, ipAddress))
 	state.Put("floating_ip", ipAddress)
 
 	///// Update the Communicator with the ipAddres value /////
