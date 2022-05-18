@@ -24,7 +24,6 @@ func (step *stepGetIP) Run(_ context.Context, state multistep.StateBag) multiste
 	var ipAddress string
 	if config.VSIInterface == "private" {
 		primaryNetworkInterface := instanceData.PrimaryNetworkInterface
-		// ipAddress = primaryNetworkInterface["primary_ipv4_address"].(string)
 
 		// Post 3/29/22 Reserved IP P2
 		ipAddress = *primaryNetworkInterface.PrimaryIP.Address
@@ -78,7 +77,6 @@ func (step *stepGetIP) Run(_ context.Context, state multistep.StateBag) multiste
 		return multistep.ActionContinue
 	}
 
-	// ui.Say(fmt.Sprintf("Writing IP address to file %s", hostsFilePath))
 	ipAddressBytes := []byte(fmt.Sprintf("%s\n", ipAddress))
 	err := ioutil.WriteFile(hostsFilePath, ipAddressBytes, 0644)
 	if err != nil {

@@ -21,7 +21,7 @@ func (s *stepWaitforInstance) Run(_ context.Context, state multistep.StateBag) m
 	instanceID := *instanceData.ID
 	err := client.waitForResourceReady(instanceID, "instances", config.StateTimeout, state)
 	if err != nil {
-		err := fmt.Errorf("[ERROR] Error step waiting for instance to become ACTIVE: %s", err)
+		err := fmt.Errorf("[ERROR] Error step waiting for instance to become ACTIVE: %s", err.Error())
 		state.Put("error", err)
 		ui.Error(err.Error())
 		// log.Fatalf(err.Error())
@@ -35,4 +35,8 @@ func (s *stepWaitforInstance) Run(_ context.Context, state multistep.StateBag) m
 	return multistep.ActionContinue
 }
 
-func (client *stepWaitforInstance) Cleanup(state multistep.StateBag) {}
+func (client *stepWaitforInstance) Cleanup(state multistep.StateBag) {
+	ui := state.Get("ui").(packer.Ui)
+
+	ui.Say("Instance failed to start")
+}
