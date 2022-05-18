@@ -13,7 +13,6 @@ import (
 type stepCreateInstance struct{}
 
 func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
-	// client := state.Get("client").(*IBMCloudClient)
 	config := state.Get("config").(Config)
 	ui := state.Get("ui").(packer.Ui)
 
@@ -21,13 +20,6 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 	if state.Get("vpcService") != nil {
 		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
 	}
-
-	// type instanceDefinition struct{
-	// 	ResourceGroupID:  config.ResourceGroupID,
-	// 	VSIBaseImageID:   config.VSIBaseImageID,
-	// 	VSIBaseImageName: config.VSIBaseImageName,
-	// 	VSIInterface:     config.VSIInterface,
-	// }
 
 	vsiBaseImageName := config.VSIBaseImageName
 	vsiBaseImageID := config.VSIBaseImageID
@@ -58,7 +50,6 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 	// Get Image ID
 	if vsiBaseImageName != "" {
 		ui.Say("Fetching ImageID...")
-		// baseImageID, err := client.getImageIDByName(instanceDefinition.VSIBaseImageName, state)
 
 		options := &vpcv1.ListImagesOptions{}
 		options.SetName(vsiBaseImageName)
@@ -127,7 +118,6 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 		ui.Say(fmt.Sprintf("Releasing the Floating IP: %s ...", floatingIP))
 
 		floatingIPID := state.Get("floating_ip_id").(string)
-		// status, _ := client.getStatus(floatingIPID, "floating_ips", state)
 
 		options := vpcService.NewGetFloatingIPOptions(floatingIPID)
 		floatingIPresponse, _, err := vpcService.GetFloatingIP(options)
@@ -140,7 +130,6 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 		}
 		status := floatingIPresponse.Status
 		if *status == "available" {
-			// result, err := client.deleteResource(floatingIPID, "floating_ips", state)
 			options := vpcService.NewDeleteFloatingIPOptions(floatingIPID)
 			result, err := vpcService.DeleteFloatingIP(options)
 
@@ -163,7 +152,6 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 	instanceID := *instanceData.ID
 	ui.Say(fmt.Sprintf("Deleting Instance ID: %s ...", instanceID))
 
-	// result, err := client.deleteResource(instanceID, "instances", state)
 	options := &vpcv1.DeleteInstanceOptions{}
 	options.SetID(instanceID)
 	result, err := vpcService.DeleteInstance(options)
@@ -184,8 +172,6 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 
 	ruleID := state.Get("security_group_rule_id").(string)
 	ui.Say(fmt.Sprintf("Deleting Security Group's rule %s ...", ruleID))
-	// resourceType := "security_groups/" + state.Get("security_group_id").(string) + "/rules"
-	// result2, err2 := client.deleteResource(ruleID, resourceType, state)
 	sgRuleOptions := &vpcv1.DeleteSecurityGroupRuleOptions{}
 	sgRuleOptions.SetSecurityGroupID(state.Get("security_group_id").(string))
 	sgRuleOptions.SetID(ruleID)
@@ -208,7 +194,6 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 		securityGroupName := state.Get("security_group_name").(string)
 		ui.Say(fmt.Sprintf("Deleting Security Group %s ...", securityGroupName))
 		securityGroupID := state.Get("security_group_id").(string)
-		// result, err := client.deleteResource(securityGroupID, "security_groups", state)
 		sgOptions := &vpcv1.DeleteSecurityGroupOptions{}
 		sgOptions.SetID(securityGroupID)
 		sgResponse, err := vpcService.DeleteSecurityGroup(sgOptions)

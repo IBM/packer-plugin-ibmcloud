@@ -13,7 +13,6 @@ type stepGetSubnetInfo struct{}
 
 func (s *stepGetSubnetInfo) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
 	ui := state.Get("ui").(packer.Ui)
-	// client := state.Get("client").(*IBMCloudClient)
 	config := state.Get("config").(Config)
 
 	var vpcService *vpcv1.VpcV1
@@ -22,7 +21,6 @@ func (s *stepGetSubnetInfo) Run(_ context.Context, state multistep.StateBag) mul
 	}
 
 	ui.Say(fmt.Sprintf("Retrieving Subnet %s information...", config.SubnetID))
-	// SubnetData, err := client.retrieveSubnet(state, config.SubnetID)
 
 	options := &vpcv1.GetSubnetOptions{}
 	options.SetID(config.SubnetID)

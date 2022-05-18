@@ -13,7 +13,7 @@ type stepWaitWinRM struct{}
 func (s *stepWaitWinRM) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
 	ui := state.Get("ui").(packer.Ui)
 
-	// Wait around 3 minutes until WinRM becomea available
+	// Wait around 3 minutes until WinRM become available
 	ui.Say("Waiting for WinRM to become available (~3 minutes)...")
 	time.Sleep(3 * time.Minute)
 	return multistep.ActionContinue

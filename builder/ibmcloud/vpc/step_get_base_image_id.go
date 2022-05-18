@@ -13,7 +13,6 @@ type stepGetBaseImageID struct {
 }
 
 func (step *stepGetBaseImageID) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
-	// client := state.Get("client").(*IBMCloudClient)
 	config := state.Get("config").(Config)
 	ui := state.Get("ui").(packer.Ui)
 	var vpcService *vpcv1.VpcV1

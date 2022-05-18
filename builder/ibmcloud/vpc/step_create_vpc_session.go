@@ -21,7 +21,7 @@ func (step *stepCreateVPCSession) Run(_ context.Context, state multistep.StateBa
 	url := os.Getenv("URL")
 
 	ui.Say("Creating VPC service...")
-	// err := client.getIAMToken(state)
+
 	options := &vpcv1.VpcV1Options{
 		Authenticator: &core.IamAuthenticator{
 			ApiKey: client.IBMApiKey,
