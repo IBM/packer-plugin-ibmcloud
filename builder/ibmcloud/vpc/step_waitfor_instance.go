@@ -35,8 +35,4 @@ func (s *stepWaitforInstance) Run(_ context.Context, state multistep.StateBag) m
 	return multistep.ActionContinue
 }
 
-func (client *stepWaitforInstance) Cleanup(state multistep.StateBag) {
-	ui := state.Get("ui").(packer.Ui)
-
-	ui.Say("Instance failed to start")
-}
+func (client *stepWaitforInstance) Cleanup(state multistep.StateBag) {}
