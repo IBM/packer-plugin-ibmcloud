@@ -35,13 +35,13 @@ func (s *stepCreateSecurityGroupRules) Run(_ context.Context, state multistep.St
 			// log.Fatalf(err.Error())
 			return multistep.ActionHalt
 		}
-		SecurityGroupID := *SecurityGroupData.ID
-		state.Put("security_group_id", SecurityGroupID)
-		SecurityGroupName := *SecurityGroupData.Name
-		state.Put("security_group_name", SecurityGroupName)
+		securityGroupID := *SecurityGroupData.ID
+		state.Put("security_group_id", securityGroupID)
+		securityGroupName := *SecurityGroupData.Name
+		state.Put("security_group_name", securityGroupName)
 		ui.Say("Temp Security Group on VPC successfully created!")
-		ui.Say(fmt.Sprintf("Security Group's Name: %s", SecurityGroupName))
-		ui.Say(fmt.Sprintf("Security Group's ID: %s", SecurityGroupID))
+		ui.Say(fmt.Sprintf("Security Group's Name: %s", securityGroupName))
+		ui.Say(fmt.Sprintf("Security Group's ID: %s", securityGroupID))
 
 	} else {
 		state.Put("security_group_id", config.SecurityGroupID)
@@ -53,21 +53,21 @@ func (s *stepCreateSecurityGroupRules) Run(_ context.Context, state multistep.St
 
 	if config.Comm.Type == "winrm" {
 		// Create rule to allow WinRM connection
-		securityGroupRuleRequest.SetSecurityGroupRulePrototype(&vpcv1.SecurityGroupRulePrototype{
+		// Connection to Windows-based VSIs via WinRM
+		// Protocol: TCP, Port range: 5985-5986, Source Type: Any
+		securityGroupRuleRequest.SetSecurityGroupRulePrototype(&vpcv1.SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp{
 			Direction: &[]string{"inbound"}[0],
 			Protocol:  &[]string{"tcp"}[0],
 			PortMin:   &[]int64{5985}[0],
 			PortMax:   &[]int64{5986}[0],
-			IPVersion: &[]string{"ipv4"}[0],
 		})
 	} else if config.Comm.Type == "ssh" {
 		// Create rule to allow SSH connection
-		securityGroupRuleRequest.SetSecurityGroupRulePrototype(&vpcv1.SecurityGroupRulePrototype{
+		securityGroupRuleRequest.SetSecurityGroupRulePrototype(&vpcv1.SecurityGroupRulePrototypeSecurityGroupRuleProtocolTcpudp{
 			Direction: &[]string{"inbound"}[0],
 			Protocol:  &[]string{"tcp"}[0],
 			PortMin:   &[]int64{22}[0],
 			PortMax:   &[]int64{22}[0],
-			IPVersion: &[]string{"ipv4"}[0],
 		})
 	}
 

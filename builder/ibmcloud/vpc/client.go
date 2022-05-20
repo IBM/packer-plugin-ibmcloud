@@ -334,7 +334,6 @@ func (client IBMCloudClient) DecryptPassword(encryptedPwd []byte, state multiste
 		log.Println(err.Error())
 		return "", err
 	}
-	log.Println("password - ", password)
 
 	///// Step 3: Delete working dir
 	defer os.RemoveAll("data")

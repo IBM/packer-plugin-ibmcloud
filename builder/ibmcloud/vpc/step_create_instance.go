@@ -77,10 +77,13 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		PrimaryNetworkInterface: networkInterfacePrototypeModel,
 		Zone:                    zoneIdentityModel,
 		UserData:                &userData,
-		ResourceGroup: &vpcv1.ResourceGroupIdentityByID{
-			ID: &config.ResourceGroupID,
-		},
 	}
+	if config.ResourceGroupID != "" {
+		instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
+			ID: &config.ResourceGroupID,
+		}
+	}
+
 	state.Put("instance_definition", *instancePrototypeModel)
 
 	createInstanceOptions := vpcService.NewCreateInstanceOptions(
@@ -188,6 +191,9 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 	if sgRuleResponse.StatusCode == 204 {
 		ui.Say("The Security Group's rule was successfully deleted!")
 	}
+
+	// Wait a couple of seconds before attempting to delete the security group.
+	time.Sleep(10 * time.Second)
 
 	// Deleting Security Group
 	if config.SecurityGroupID == "" {

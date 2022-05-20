@@ -58,15 +58,19 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 	config.ImageName = validName.ReplaceAllString(config.ImageName, "")
 
 	options := &vpcv1.CreateImageOptions{}
-	options.SetImagePrototype(&vpcv1.ImagePrototypeImageBySourceVolume{
+	imagePrototype := &vpcv1.ImagePrototypeImageBySourceVolume{
 		Name: &config.ImageName,
 		SourceVolume: &vpcv1.VolumeIdentityByID{
 			ID: &bootVolumeId,
 		},
-		ResourceGroup: &vpcv1.ResourceGroupIdentityByID{
+	}
+	if config.ResourceGroupID != "" {
+		imagePrototype.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
 			ID: &config.ResourceGroupID,
-		},
-	})
+		}
+	}
+
+	options.SetImagePrototype(imagePrototype)
 
 	imageData, _, err := vpcService.CreateImage(options)
 
