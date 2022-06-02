@@ -101,7 +101,7 @@ func (s *stepCreateSecurityGroupRules) Run(_ context.Context, state multistep.St
 	ui.Say("Attaching Instance to the Security Group")
 	instanceData := state.Get("instance_data").(*vpcv1.Instance)
 	primaryNetworkInterfaceID := *instanceData.PrimaryNetworkInterface.ID
-	securityGroupData, err := client.addNetworkInterfaceToSecurityGroup(state.Get("security_group_id").(string), primaryNetworkInterfaceID, state)
+	_, err := client.addNetworkInterfaceToSecurityGroup(state.Get("security_group_id").(string), primaryNetworkInterfaceID, state)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error Adding Network Interface To Security Group: %s", err)
 		state.Put("error", err)
@@ -109,7 +109,7 @@ func (s *stepCreateSecurityGroupRules) Run(_ context.Context, state multistep.St
 		// log.Fatalf(err.Error())
 		return multistep.ActionHalt
 	}
-	ui.Say(fmt.Sprintf("Instance successfully added to the Security Group %s", *securityGroupData.ID))
+	ui.Say(fmt.Sprintf("Instance successfully added to the Security Group."))
 
 	return multistep.ActionContinue
 }

@@ -446,13 +446,13 @@ func (client IBMCloudClient) addNetworkInterfaceToSecurityGroup(securityGroupID 
 		networkInterfaceID,
 	)
 	securityGroupTargetReferenceIntf, _, err := vpcService.CreateSecurityGroupTargetBinding(options)
-	securityGroupTargetReference := securityGroupTargetReferenceIntf.(*vpcv1.SecurityGroupTargetReference)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error sending the HTTP request that Add the VSI's network interface to the Security Group. Error: %s", err)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return nil, err
 	}
+	securityGroupTargetReference := securityGroupTargetReferenceIntf.(*vpcv1.SecurityGroupTargetReference)
 
 	return securityGroupTargetReference, nil
 }
