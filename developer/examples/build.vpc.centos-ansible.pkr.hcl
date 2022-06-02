@@ -12,19 +12,39 @@ variable "ibm_api_key" {
   default = "${env("IBM_API_KEY")}"
 }
 
+variable "subnet_id" {
+  type    = string
+  default = "${env("SUBNET_ID")}"
+}
+
+variable "region" {
+  type    = string
+  default = "${env("REGION")}"
+}
+
+variable "resource_group_id" {
+  type    = string
+  default = "${env("RESOURCE_GROUP_ID")}"
+}
+
+variable "security_group_id" {
+  type    = string
+  default = "${env("SECURITY_GROUP_ID")}"
+}
+
 locals {
   timestamp = regex_replace(timestamp(), "[- TZ:]", "")
 }
 
 source "ibmcloud-vpc" "centos" {
   api_key = "${var.ibm_api_key}"
-  region  = "au-syd"
+  region  = "${var.region}"
 
-  subnet_id         = "02h7-9645d633-55a8-463c-b3b3-5cd302f2ee32"
-  resource_group_id = "f054d39a43ce4f51afff708510f271cb"
-  security_group_id = ""
+  subnet_id         = "${var.subnet_id}"
+  resource_group_id = "${var.resource_group_id}"
+  security_group_id = "${var.security_group_id}"
 
-  vsi_base_image_id  = "r026-3b9ba4a3-b3bd-46ac-9ed4-e53823631a6b"
+  vsi_base_image_name = "ibm-centos-7-9-minimal-amd64-5"
   vsi_profile        = "bx2-2x8"
   vsi_interface      = "public"
   vsi_user_data_file = "scripts/postscript.sh"

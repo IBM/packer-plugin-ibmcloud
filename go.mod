@@ -5,10 +5,10 @@ go 1.17
 require (
 	github.com/IBM/go-sdk-core v1.1.0
 	github.com/IBM/vpc-go-sdk v0.19.0
-	github.com/hashicorp/hcl/v2 v2.11.1
+	github.com/hashicorp/hcl/v2 v2.12.0
 	github.com/hashicorp/packer-plugin-sdk v0.2.11
 	github.com/zclconf/go-cty v1.10.0
-	golang.org/x/crypto v0.0.0-20220331220935-ae2d96664a29
+	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
 )
 
 require (
