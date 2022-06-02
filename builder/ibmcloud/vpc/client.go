@@ -380,7 +380,23 @@ func (client IBMCloudClient) createSSHKeyVPC(state multistep.StateBag) (*vpcv1.K
 	}
 	return key, nil
 }
+func (client IBMCloudClient) getSecurityGroup(state multistep.StateBag, securityGroupData vpcv1.GetSecurityGroupOptions) (*vpcv1.SecurityGroup, error) {
+	ui := state.Get("ui").(packer.Ui)
 
+	var vpcService *vpcv1.VpcV1
+	if state.Get("vpcService") != nil {
+		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
+	}
+
+	securityGroup, _, err := vpcService.GetSecurityGroup(&securityGroupData)
+	if err != nil {
+		err := fmt.Errorf("[ERROR] Error getting the Security Group. Error: %s", err)
+		ui.Error(err.Error())
+		log.Println(err.Error())
+		return nil, err
+	}
+	return securityGroup, nil
+}
 func (client IBMCloudClient) createSecurityGroup(state multistep.StateBag, securityGroupData vpcv1.CreateSecurityGroupOptions) (*vpcv1.SecurityGroup, error) {
 	ui := state.Get("ui").(packer.Ui)
 
@@ -391,7 +407,7 @@ func (client IBMCloudClient) createSecurityGroup(state multistep.StateBag, secur
 
 	securityGroup, _, err := vpcService.CreateSecurityGroup(&securityGroupData)
 	if err != nil {
-		err := fmt.Errorf("[ERROR] Error sending the HTTP request that creates the Security Group. Error: %s", err)
+		err := fmt.Errorf("[ERROR] Error creating the Security Group. Error: %s", err)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return nil, err

@@ -17,19 +17,39 @@ variable "ansible_inventory_file" {
   default = "${env("ANSIBLE_INVENTORY_FILE")}"
 }
 
+variable "subnet_id" {
+  type    = string
+  default = "${env("SUBNET_ID")}"
+}
+
+variable "region" {
+  type    = string
+  default = "${env("REGION")}"
+}
+
+variable "resource_group_id" {
+  type    = string
+  default = "${env("RESOURCE_GROUP_ID")}"
+}
+
+variable "security_group_id" {
+  type    = string
+  default = "${env("SECURITY_GROUP_ID")}"
+}
+
 locals {
   timestamp = regex_replace(timestamp(), "[- TZ:]", "")
 }
 
 source "ibmcloud-vpc" "windows" {
   api_key = "${var.ibm_api_key}"
-  region  = "au-syd"
+  region  = "${var.region}"
 
-  subnet_id         = "02h7-9645d633-55a8-463c-b3b3-5cd302f2ee32"
-  resource_group_id = ""
-  security_group_id = ""
+  subnet_id         = "${var.subnet_id}"
+  resource_group_id = "${var.resource_group_id}"
+  security_group_id = "${var.security_group_id}"
 
-  vsi_base_image_id  = "r026-0b7a41fa-4d00-44bb-b3ab-e8c1ed04d4ad"
+  vsi_base_image_name  = "ibm-windows-server-2019-full-standard-amd64-8"
   vsi_profile        = "bx2-2x8"
   vsi_interface      = "public"
   vsi_user_data_file = "scripts/winrm_setup.ps1"

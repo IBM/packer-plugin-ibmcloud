@@ -45,6 +45,19 @@ func (s *stepCreateSecurityGroupRules) Run(_ context.Context, state multistep.St
 
 	} else {
 		state.Put("security_group_id", config.SecurityGroupID)
+		ui.Say(fmt.Sprintf("Looking for security group: %s", config.SecurityGroupID))
+		options := &vpcv1.GetSecurityGroupOptions{}
+		options.SetID(config.SecurityGroupID)
+		SecurityGroupData, err := client.getSecurityGroup(state, *options)
+		if err != nil {
+			err := fmt.Errorf("[ERROR] Error getting Security Group: %s", err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
+		securityGroupName := *SecurityGroupData.Name
+		securityGroupID := *SecurityGroupData.ID
+		ui.Say(fmt.Sprintf("Security group with name %s and ID %s found.", securityGroupName, securityGroupID))
 	}
 
 	ui.Say(fmt.Sprintf("Creating Security Group's rule to allow %s connection...", config.Comm.Type))
