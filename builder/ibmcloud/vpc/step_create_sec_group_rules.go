@@ -109,7 +109,7 @@ func (s *stepCreateSecurityGroupRules) Run(_ context.Context, state multistep.St
 		// log.Fatalf(err.Error())
 		return multistep.ActionHalt
 	}
-	ui.Say(fmt.Sprintf("Instance successfully added to the Security Group."))
+	ui.Say("Instance successfully added to the Security Group.")
 
 	return multistep.ActionContinue
 }
