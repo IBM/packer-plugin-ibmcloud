@@ -3,6 +3,7 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -43,7 +44,16 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 	zoneIdentityModel := &vpcv1.ZoneIdentityByName{
 		Name: &[]string{state.Get("zone").(string)}[0],
 	}
-	userData := config.VSIUserDataFile
+	file := config.VSIUserDataFile
+	content, err := ioutil.ReadFile(file)
+	if err != nil {
+		err := fmt.Errorf("[ERROR] Error reading user data file. Error: %s", err)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return multistep.ActionHalt
+	}
+
+	userData := string(content)
 
 	ui.Say("Creating Instance...")
 
