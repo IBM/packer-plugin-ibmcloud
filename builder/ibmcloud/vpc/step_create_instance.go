@@ -44,16 +44,6 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 	zoneIdentityModel := &vpcv1.ZoneIdentityByName{
 		Name: &[]string{state.Get("zone").(string)}[0],
 	}
-	file := config.VSIUserDataFile
-	content, err := ioutil.ReadFile(file)
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Error reading user data file. Error: %s", err)
-		state.Put("error", err)
-		ui.Error(err.Error())
-		return multistep.ActionHalt
-	}
-
-	userData := string(content)
 
 	ui.Say("Creating Instance...")
 
@@ -86,8 +76,20 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		Image:                   imageIDentityModel,
 		PrimaryNetworkInterface: networkInterfacePrototypeModel,
 		Zone:                    zoneIdentityModel,
-		UserData:                &userData,
 	}
+
+	userDataFilePath := config.VSIUserDataFile
+	if userDataFilePath != "" {
+		content, err := ioutil.ReadFile(userDataFilePath)
+		if err != nil {
+			err := fmt.Errorf("[ERROR] Error reading user data file. Error: %s", err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
+		instancePrototypeModel.UserData = &[]string{string(content)}[0]
+	}
+
 	if config.ResourceGroupID != "" {
 		instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
 			ID: &config.ResourceGroupID,
