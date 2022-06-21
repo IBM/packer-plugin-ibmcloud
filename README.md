@@ -25,6 +25,10 @@ IBM Packer Plugin may be installed by:
   export PACKERPATH=/usr/local/packer
   export PATH=$PATH:$PACKERPATH
   ```
+- For Windows Image - Install python package for winrm
+  ```shell
+  pip3 install --ignore-installed "pywinrm>=0.2.2"
+  ```
 - Create `.env` file and set IBM Cloud Credentials. Also, set Packer and Ansible environment variables.
   ```shell
   # VPC

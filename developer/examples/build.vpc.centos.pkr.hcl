@@ -7,29 +7,24 @@
 //   }
 // }
 
-variable "ibm_api_key" {
-  type    = string
-  default = "${env("IBM_API_KEY")}"
+variable "IBM_API_KEY" {
+  type = string
 }
 
-variable "subnet_id" {
-  type    = string
-  default = "${env("SUBNET_ID")}"
+variable "SUBNET_ID" {
+  type = string
 }
 
-variable "region" {
-  type    = string
-  default = "${env("REGION")}"
+variable "REGION" {
+  type = string
 }
 
-variable "resource_group_id" {
-  type    = string
-  default = "${env("RESOURCE_GROUP_ID")}"
+variable "RESOURCE_GROUP_ID" {
+  type = string
 }
 
-variable "security_group_id" {
-  type    = string
-  default = "${env("SECURITY_GROUP_ID")}"
+variable "SECURITY_GROUP_ID" {
+  type = string
 }
 
 locals {
@@ -37,12 +32,12 @@ locals {
 }
 
 source "ibmcloud-vpc" "centos" {
-  api_key = "${var.ibm_api_key}"
-  region  = "${var.region}"
+  api_key = var.IBM_API_KEY
+  region  = var.REGION
 
-  subnet_id         = "${var.subnet_id}"
-  resource_group_id = "${var.resource_group_id}"
-  security_group_id = "${var.security_group_id}"
+  subnet_id         = var.SUBNET_ID
+  resource_group_id = var.RESOURCE_GROUP_ID
+  security_group_id = var.SECURITY_GROUP_ID
 
   vsi_base_image_name = "ibm-centos-7-9-minimal-amd64-5"
 

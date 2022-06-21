@@ -14,28 +14,23 @@ plugin:
 	cd ..; go build .
 
 run-jowko:
-	cd ..; packer validate developer/examples/jowko.pkr.hcl
-	cd ..; packer build developer/examples/jowko.pkr.hcl
+	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/jowko.pkr.hcl
+	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/jowko.pkr.hcl
 
 run-jowko-classic:
-	cd ..; packer validate developer/examples/jowko-classic.pkr.hcl
-	cd ..; packer build developer/examples/jowko-classic.pkr.hcl
+	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/jowko-classic.pkr.hcl
+	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/jowko-classic.pkr.hcl
 
 run-centos:
-	cd ..; packer validate developer/examples/build.vpc.centos.pkr.hcl
-	cd ..; packer build developer/examples/build.vpc.centos.pkr.hcl
+	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
+	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
 
 run-centos-ansible:
-	cd ..; packer validate developer/examples/build.vpc.centos-ansible.pkr.hcl
-	cd ..; packer build developer/examples/build.vpc.centos-ansible.pkr.hcl
-
-run-init-centos:
-	cd ..; packer init -upgrade developer/examples/build.vpc.init-centos.pkr.hcl
-	cd ..; packer validate developer/examples/build.vpc.init-centos.pkr.hcl
-	cd ..; packer build developer/examples/build.vpc.init-centos.pkr.hcl
+	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos-ansible.pkr.hcl
+	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos-ansible.pkr.hcl
 
 run-windows:
-	cd ..; packer init -upgrade examples/build.vpc.windows.pkr.hcl
-	cd ..; packer validate developer/examples/build.vpc.windows.pkr.hcl
-	cd ..; packer build developer/examples/build.vpc.windows.pkr.hcl
+	cd ..; packer init -upgrade developer/examples/build.vpc.windows.pkr.hcl
+	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.windows.pkr.hcl
+	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.windows.pkr.hcl
 	# cd ..; packer build developer/examples/build.vpc.windows.json

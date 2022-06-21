@@ -7,47 +7,43 @@
 //   }
 // }
 
-variable "ibm_api_key" {
-  type    = string
-  default = "${env("IBM_API_KEY")}"
+variable "IBM_API_KEY" {
+  type = string
 }
 
-variable "subnet_id" {
-  type    = string
-  default = "${env("SUBNET_ID")}"
+variable "SUBNET_ID" {
+  type = string
 }
 
-variable "region" {
-  type    = string
-  default = "${env("REGION")}"
+variable "REGION" {
+  type = string
 }
 
-variable "resource_group_id" {
-  type    = string
-  default = "${env("RESOURCE_GROUP_ID")}"
+variable "RESOURCE_GROUP_ID" {
+  type = string
 }
 
-variable "security_group_id" {
-  type    = string
-  default = "${env("SECURITY_GROUP_ID")}"
+variable "SECURITY_GROUP_ID" {
+  type = string
 }
+
 
 locals {
   timestamp = regex_replace(timestamp(), "[- TZ:]", "")
 }
 
 source "ibmcloud-vpc" "rhel" {
-  api_key = "${var.ibm_api_key}"
-  region  = "${var.region}"
+  api_key = var.IBM_API_KEY
+  region  = var.REGION
 
-  subnet_id         = "${var.subnet_id}"
-  resource_group_id = "${var.resource_group_id}"
-  security_group_id = "${var.security_group_id}"
+  subnet_id         = var.SUBNET_ID
+  resource_group_id = var.RESOURCE_GROUP_ID
+  security_group_id = var.SECURITY_GROUP_ID
 
-  vsi_base_image_name  = "ibm-redhat-8-4-minimal-amd64-3"
-  vsi_profile        = "bx2-4x16"
-  vsi_interface      = "public"
-  vsi_user_data_file = ""
+  vsi_base_image_name = "ibm-redhat-8-4-minimal-amd64-3"
+  vsi_profile         = "bx2-4x16"
+  vsi_interface       = "public"
+  vsi_user_data_file  = ""
 
   image_name = "packer-${local.timestamp}"
 
