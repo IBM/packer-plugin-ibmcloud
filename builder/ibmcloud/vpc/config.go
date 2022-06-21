@@ -20,7 +20,8 @@ type Config struct {
 
 	IBMApiKey        string `mapstructure:"api_key"`
 	Region           string `mapstructure:"region"`
-	EndPoint         string `mapstructure-to-hcl2:",skip"`
+	Endpoint         string `mapstructure-to-hcl2:",skip"`
+	IAMEndpoint      string `mapstructure-to-hcl2:",skip"`
 	Zone             string `mapstructure-to-hcl2:",skip"`
 	Version          string `mapstructure-to-hcl2:",skip"`
 	Generation       string `mapstructure-to-hcl2:",skip"`
@@ -72,6 +73,14 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		errs = packer.MultiErrorAppend(errs, errors.New("a region must be specified"))
 	}
 
+	// Configure IBM Cloud Endpoint and other IBM Cloud API constants
+	c.Endpoint = "https://" + c.Region + ".iaas.cloud.ibm.com/v1/"
+
+	// Configure IAM endpoint for prod
+	if c.IAMEndpoint == "" {
+		c.IAMEndpoint = "https://iam.cloud.ibm.com/identity/token/"
+	}
+
 	if c.SubnetID == "" {
 		errs = packer.MultiErrorAppend(errs, errors.New("a subnet_id must be specified"))
 	}
@@ -88,7 +97,7 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		c.VSIInterface = "public"
 	}
 
-	if c.VSIUserDataFile != "" && c.Comm.Type == "winrm" {
+	if c.VSIUserDataFile != "" {
 		if _, err := os.Stat(c.VSIUserDataFile); os.IsNotExist(err) {
 			errs = packer.MultiErrorAppend(
 				errs, fmt.Errorf("failed to read user-data-file: %s", err))
