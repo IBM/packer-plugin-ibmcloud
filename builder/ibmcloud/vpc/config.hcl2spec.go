@@ -69,6 +69,8 @@ type FlatConfig struct {
 	WinRMUseNTLM              *bool             `mapstructure:"winrm_use_ntlm" cty:"winrm_use_ntlm" hcl:"winrm_use_ntlm"`
 	IBMApiKey                 *string           `mapstructure:"api_key" cty:"api_key" hcl:"api_key"`
 	Region                    *string           `mapstructure:"region" cty:"region" hcl:"region"`
+	Endpoint                  *string           `mapstructure:"vpc_endpoint_url" cty:"vpc_endpoint_url" hcl:"vpc_endpoint_url"`
+	IAMEndpoint               *string           `mapstructure:"iam_url" cty:"iam_url" hcl:"iam_url"`
 	SubnetID                  *string           `mapstructure:"subnet_id" cty:"subnet_id" hcl:"subnet_id"`
 	ResourceGroupID           *string           `mapstructure:"resource_group_id" cty:"resource_group_id" hcl:"resource_group_id"`
 	SecurityGroupID           *string           `mapstructure:"security_group_id" cty:"security_group_id" hcl:"security_group_id"`
@@ -152,6 +154,8 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"winrm_use_ntlm":               &hcldec.AttrSpec{Name: "winrm_use_ntlm", Type: cty.Bool, Required: false},
 		"api_key":                      &hcldec.AttrSpec{Name: "api_key", Type: cty.String, Required: false},
 		"region":                       &hcldec.AttrSpec{Name: "region", Type: cty.String, Required: false},
+		"vpc_endpoint_url":             &hcldec.AttrSpec{Name: "vpc_endpoint_url", Type: cty.String, Required: false},
+		"iam_url":                      &hcldec.AttrSpec{Name: "iam_url", Type: cty.String, Required: false},
 		"subnet_id":                    &hcldec.AttrSpec{Name: "subnet_id", Type: cty.String, Required: false},
 		"resource_group_id":            &hcldec.AttrSpec{Name: "resource_group_id", Type: cty.String, Required: false},
 		"security_group_id":            &hcldec.AttrSpec{Name: "security_group_id", Type: cty.String, Required: false},

@@ -26,6 +26,13 @@ variable "RESOURCE_GROUP_ID" {
 variable "SECURITY_GROUP_ID" {
   type = string
 }
+// variable "VPC_URL" {
+//   type = string
+// }
+// variable "IAM_URL" {
+//   type = string
+// }
+
 
 locals {
   timestamp = regex_replace(timestamp(), "[- TZ:]", "")
@@ -34,6 +41,8 @@ locals {
 source "ibmcloud-vpc" "centos" {
   api_key = var.IBM_API_KEY
   region  = var.REGION
+  // vpc_endpoint_url = var.VPC_URL
+  // iam_url = var.IAM_URL
 
   subnet_id         = var.SUBNET_ID
   resource_group_id = var.RESOURCE_GROUP_ID
