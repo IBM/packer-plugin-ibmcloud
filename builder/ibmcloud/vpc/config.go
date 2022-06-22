@@ -20,11 +20,9 @@ type Config struct {
 
 	IBMApiKey        string `mapstructure:"api_key"`
 	Region           string `mapstructure:"region"`
-	Endpoint         string `mapstructure-to-hcl2:",skip"`
-	IAMEndpoint      string `mapstructure-to-hcl2:",skip"`
+	Endpoint         string `mapstructure:"vpc_endpoint_url"`
+	IAMEndpoint      string `mapstructure:"iam_url"`
 	Zone             string `mapstructure-to-hcl2:",skip"`
-	Version          string `mapstructure-to-hcl2:",skip"`
-	Generation       string `mapstructure-to-hcl2:",skip"`
 	VPCID            string `mapstructure-to-hcl2:",skip"`
 	SubnetID         string `mapstructure:"subnet_id"`
 	ResourceGroupID  string `mapstructure:"resource_group_id"`
@@ -74,11 +72,8 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	}
 
 	// Configure IBM Cloud Endpoint and other IBM Cloud API constants
-	c.Endpoint = "https://" + c.Region + ".iaas.cloud.ibm.com/v1/"
-
-	// Configure IAM endpoint for prod
-	if c.IAMEndpoint == "" {
-		c.IAMEndpoint = "https://iam.cloud.ibm.com/identity/token/"
+	if c.Endpoint == "" {
+		c.Endpoint = "https://" + c.Region + ".iaas.cloud.ibm.com/v1/"
 	}
 
 	if c.SubnetID == "" {

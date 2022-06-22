@@ -13,6 +13,13 @@ plugin:
 	cd ..; go mod vendor
 	cd ..; go build .
 
+validate-all:
+	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
+	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos-ansible.pkr.hcl
+	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.windows.pkr.hcl
+	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.rhel.pkr.hcl
+	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/jowko.pkr.hcl
+
 run-jowko:
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/jowko.pkr.hcl
 	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/jowko.pkr.hcl
@@ -28,6 +35,10 @@ run-centos:
 run-centos-ansible:
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos-ansible.pkr.hcl
 	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos-ansible.pkr.hcl
+
+run-rhel:
+	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.rhel.pkr.hcl
+	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.rhel.pkr.hcl
 
 run-windows:
 	cd ..; packer init -upgrade developer/examples/build.vpc.windows.pkr.hcl
