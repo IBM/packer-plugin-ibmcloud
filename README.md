@@ -307,16 +307,36 @@ There is a `Makefile` and a `Dockerfile` that automate everything for you.
       SL_USERNAME=###...###
       SL_API_KEY=###....###
       ```
+      Or create a file `variables.pkrvars.hcl` with the following content.
+      ```
+      SUBNET_ID = ""
+      REGION = ""
+      SECURITY_GROUP_ID = ""
+      RESOURCE_GROUP_ID = ""
+      IBM_API_KEY = ""
+      ```
     - Customize your Packer Template: see [`source` Block in detail](#source-block-in-detail) to find a detail description of each field on the Template. Likewise, there are some Packer Template examples on `examples` folder.
     - Create container with Packer Plugin Binary within it:
       run `make image`
 
 2. Run Packer
-    - Validate the syntax and configuration of your Packer Template by running:
-      `$ make validate PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl PACKER_VARS_FILE=developer/variables.pkrvars.hcl`
+    - Validate the syntax and configuration of your Packer Template by running with `.credentials` file:
+        ```bash
+        $ make validate PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl
+        ```
+      Or with `variables.pkrvars.hcl` file
+        ```bash
+        $ make validate PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl PACKER_VARS_FILE=developer/variables.pkrvars.hcl
+        ```
       Customize here your `PACKER_TEMPLATE` path.
-    - Generate the custom image by running:
-      `$ make build PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl PACKER_VARS_FILE=developer/variables.pkrvars.hcl`
+    - Generate the custom image by running  with `.credentials` file:
+        ```bash
+        $ make build PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl
+        ```
+      Or with `variables.pkrvars.hcl` file
+        ```bash
+        $ make build PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl PACKER_VARS_FILE=developer/variables.pkrvars.hcl`
+        ```
       Customize here your `PACKER_TEMPLATE` path.
 
 **Note**

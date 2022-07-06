@@ -14,11 +14,11 @@ The builder does not manage Images. Once it creates an Image, it is up to you to
 In case you want to contribute to the project there is a folder called `developer` with a script to create the IBM Packer Plugin binary from source code. Likewise, there are more Packer Templates examples in both HCL and its equivalent on JSON format. Finally, we have an automation via Docker containers to create the IBM Packer Plugin binary.
 
 ### Automation via Docker Container
-If you prefer an automation way to build the IBM Cloud Packer Plugin from source code, then clone it from GitHub. 
+If you prefer an automation way to build the IBM Cloud Packer Plugin from source code, then clone it from GitHub.
 There is a `Makefile` and a `Dockerfile` that automate everything for you.
 
 - The `Dockerfile` will create an image with everything on it to run the IBM Cloud Packer Plugin.
-- The `Makefile` will setup the environment variables, volumes and run the container.  
+- The `Makefile` will setup the environment variables, volumes and run the container.
   - **Optional**: Custom `Makefile` if you want to change default configuration.
 
 #### 1. Create Packer Plugin Binary within the container:
@@ -30,18 +30,39 @@ There is a `Makefile` and a `Dockerfile` that automate everything for you.
    SL_USERNAME=###...###
    SL_API_KEY=###....###
    ```
-- Customize your Packer Template: see [Configuration](#configuration) to find a detail description of each field on the Template. Likewise, there are some Packer Template examples on `examples` folder. 
+
+   Or create a file `variables.pkrvars.hcl` with the following content.
+   ```
+   SUBNET_ID = ""
+   REGION = ""
+   SECURITY_GROUP_ID = ""
+   RESOURCE_GROUP_ID = ""
+   IBM_API_KEY = ""
+   ```
+
+- Customize your Packer Template: see [Configuration](#configuration) to find a detail description of each field on the Template. Likewise, there are some Packer Template examples on `examples` folder.
 - Create container with Packer Plugin Binary within it:
-  run `make image`  
+  run `make image`
 
-#### 2. Run Packer 
-- Validate the syntax and configuration of your Packer Template by running:   
-   `$ make validate PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl`  
-   Customize here your `PACKER_TEMPLATE` path.   
-- Generate the custom image by running:   
-   `$ make build PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl`  
+#### 2. Run Packer
+- Validate the syntax and configuration of your Packer Template by running with `.credentials` file:
+   ```bash
+   $ make validate PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl
+   ```
+      Or with `variables.pkrvars.hcl` file
+   ```bash
+   $ make validate PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl PACKER_VARS_FILE=developer/variables.pkrvars.hcl
+   ```
+Customize here your `PACKER_TEMPLATE` path.
+- Generate the custom image by running  with `.credentials` file:
+   ```bash
+   $ make build PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl
+   ```
+   Or with `variables.pkrvars.hcl` file
+   ```bash
+   $ make build PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl PACKER_VARS_FILE=developer/variables.pkrvars.hcl`
+   ```
    Customize here your `PACKER_TEMPLATE` path.
-
 **Note**
 - You only need to create the image once. *Step 1.*
 - The volume attached to the container allows you to update local Packer Templates placed at `/examples` folder, without worried about re-create the docker image again. Just run the container when you are ready using *Step 2* above.
