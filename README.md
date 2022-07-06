@@ -27,7 +27,7 @@ IBM Packer Plugin may be installed by:
   ```
 - For Windows Image - Install python package for winrm
   ```shell
-  pip3 install --ignore-installed "pywinrm>=0.2.2"
+  pip3 install --ignore-installed "pywinrm>=0.2.2" --user
   ```
 - Create `.env` file and set IBM Cloud Credentials. Also, set Packer and Ansible environment variables.
   ```shell
@@ -185,10 +185,10 @@ Variable | Type |Description
 --- | --- | ---
 **builder variables** |
 type | string | Set it as "ibmcloud"
-api_key | string | The IBM Cloud platform API key
-region | string | IBM Cloud region where VPC is deployed
 | |
-subnet_id | string | The VPC Subnet identifier. Required
+api_key | string | The IBM Cloud platform API key. Required.
+region | string | IBM Cloud region where VPC is deployed. Required.
+subnet_id | string | The VPC Subnet identifier. Required.
 resource_group_id | string | The resource group identifier to use. If not specified, IBM packer plugin uses `default` resource group.
 security_group_id | string | The security group identifier to use. If not specified, IBM packer plugin creates a new temporary security group to allow SSH and WinRM access.
 | |
@@ -196,13 +196,15 @@ vsi_base_image_id | string | The base image identifier used to created the VSI. 
 | OR |
 vsi_base_image_name | string | The base image name used to created the VSI. Use `ibmcloud is images` for available options.
 | |
-vsi_profile | string | The profile this VSI uses.
+vsi_profile | string | The profile this VSI uses. Required.
 vsi_interface | string | Set it as "public" to create a Floating IP to connect to the temp VSI. Set it as "private" to use private interface to connect to the temp VSI. Later option requires you run packer plugin inside your VPC.
-vsi_user_data_file | string | User data to be made available when setting up the virtual server instance
 | |
-image_name | string | The name of the resulting custom Image that will appear in your account.
 | |
-communicator | string | Communicators are the mechanism Packer uses to upload files, execute scripts, etc. with the machine being created. Choose between "ssh" (for Linux) and "winrm" (for Windows)
+vsi_user_data_file | string | User data to be made available when setting up the virtual server instance. Optional.
+vpc_endpoint_url | string | Configure URL for VPC test environments. Optional.
+iam_url | string | Configure URL for IAM test environments. Optional.
+image_name | string | The name of the resulting custom Image that will appear in your account. Required.
+communicator | string | Communicators are the mechanism Packer uses to upload files, execute scripts, etc. with the machine being created. Choose between "ssh" (for Linux) and "winrm" (for Windows). Required.
 ***Linux Communicator Variables*** |
 ssh_username | string | The username to connect to SSH with.
 ssh_port | int |The port that SSH will be available on. Defaults to port 22.
@@ -214,7 +216,7 @@ winrm_timeout | string | The time to wait for WinRM to become available before t
 winrm_insecure | bool | If true, do not check server certificate chain and host name.
 winrm_use_ssl | bool | If true, use HTTPS for WinRM.
 | |
-timeout | string | The amount of time to wait before considering that the provisioner failed.
+timeout | string | The amount of time to wait before considering that the provisioner failed. Optional.
 
 ***********
 
@@ -257,7 +259,7 @@ To generate the packer plugin binary from source code follow these steps. An aut
     go mod vendor
     go build .
     ```
-    The packer plugin binary is called packer-builder-ibmcloud and is located at `$GOPATH/src/github.com/ibmcloud/packer-plugin-ibmcloud`
+    The packer plugin binary is called packer-plugin-ibmcloud and is located at `$GOPATH/src/github.com/ibmcloud/packer-plugin-ibmcloud`
     <br/>
 3. Once the packer plugin binary is generated, copy plugin binary and configuration files and folders on a preferred folder:
     - Create preferred folder . i.e.
@@ -265,9 +267,9 @@ To generate the packer plugin binary from source code follow these steps. An aut
     - Go to folder
       `cd $GOPATH/src/github.com/ibmcloud/packer-plugin-ibmcloud`
     - Copy packer plugin binary:
-      `cp packer-builder-ibmcloud $HOME/packer-plugin-ibmcloud/`
+      `cp packer-plugin-ibmcloud $HOME/packer-plugin-ibmcloud/`
     - Give execute permission to the packer plugin binary:
-      `chmod +x $HOME/packer-plugin-ibmcloud/packer-builder-ibmcloud`
+      `chmod +x $HOME/packer-plugin-ibmcloud/packer-plugin-ibmcloud`
     - Copy Packer Templates examples folder
       `cp -r examples $HOME/packer-plugin-ibmcloud/`
     - Copy Windows-based VSI config scripts folder:
@@ -311,10 +313,10 @@ There is a `Makefile` and a `Dockerfile` that automate everything for you.
 
 2. Run Packer
     - Validate the syntax and configuration of your Packer Template by running:
-      `$ make validate PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl`
+      `$ make validate PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl PACKER_VARS_FILE=developer/variables.pkrvars.hcl`
       Customize here your `PACKER_TEMPLATE` path.
     - Generate the custom image by running:
-      `$ make build PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl`
+      `$ make build PACKER_TEMPLATE=developer/examples/build.vpc.centos-ansible.pkr.hcl PACKER_VARS_FILE=developer/variables.pkrvars.hcl`
       Customize here your `PACKER_TEMPLATE` path.
 
 **Note**

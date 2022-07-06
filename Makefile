@@ -41,6 +41,7 @@ DOCKER_RUN_ENV = --env-file=$(CREDENTIALS_FILE) \
 ##########################################################
 # PACKER_TEMPLATE it's passed from command line 
 # PACKER_TEMPLATE=examples/build.vpc.centos.pkr.hcl
+# PACKER_VARS_FILE=developer/variables.pkrvars.hcl
 # How to create volume ==>   -v $(PWD)/host/folder/path:/container/folder/path
 # $(PWD)/../  --> returns one level current folder
 
@@ -49,7 +50,7 @@ image:
 it:
 	docker run -v $(PWD)/developer/examples:/$(WORKDIR)/developer/examples -v $(PWD)/packerlog:/$(WORKDIR)/packerlog $(DOCKER_RUN_ENV) -it $(CONTAINER_NAME)
 validate:
-	docker run -v $(PWD)/developer/examples:/$(WORKDIR)/developer/examples -v $(PWD)/packerlog:/$(WORKDIR)/packerlog --rm $(DOCKER_RUN_ENV) $(CONTAINER_NAME) validate $(PACKER_TEMPLATE)
+	docker run -v $(PWD)/developer/examples:/$(WORKDIR)/developer/examples -v $(PWD)/packerlog:/$(WORKDIR)/packerlog --rm $(DOCKER_RUN_ENV) $(CONTAINER_NAME) validate -var-file=$(PACKER_VARS_FILE) $(PACKER_TEMPLATE)
 build:
-	docker run -v $(PWD)/developer/examples:/$(WORKDIR)/developer/examples -v $(PWD)/packerlog:/$(WORKDIR)/packerlog --rm $(DOCKER_RUN_ENV) $(CONTAINER_NAME) build $(PACKER_TEMPLATE)
+	docker run -v $(PWD)/developer/examples:/$(WORKDIR)/developer/examples -v $(PWD)/packerlog:/$(WORKDIR)/packerlog --rm $(DOCKER_RUN_ENV) $(CONTAINER_NAME) build -var-file=$(PACKER_VARS_FILE) $(PACKER_TEMPLATE)
 ##########################################################
