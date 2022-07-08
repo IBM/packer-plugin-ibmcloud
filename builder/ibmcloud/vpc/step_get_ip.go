@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
 
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
@@ -18,13 +18,16 @@ func (step *stepGetIP) Run(_ context.Context, state multistep.StateBag) multiste
 	config := state.Get("config").(Config)
 	ui := state.Get("ui").(packer.Ui)
 
-	instanceData := state.Get("instance_data").(map[string]interface{})
+	instanceData := state.Get("instance_data").(*vpcv1.Instance)
 
-	ui.Say(fmt.Sprintf("Getting %s IP...", strings.Title(config.VSIInterface)))
+	ui.Say(fmt.Sprintf("Getting %s IP...", config.VSIInterface))
 	var ipAddress string
 	if config.VSIInterface == "private" {
-		primaryNetworkInterface := instanceData["primary_network_interface"].(map[string]interface{})
-		ipAddress = primaryNetworkInterface["primary_ipv4_address"].(string)
+		primaryNetworkInterface := instanceData.PrimaryNetworkInterface
+
+		// Post 3/29/22 Reserved IP P2
+		ipAddress = *primaryNetworkInterface.PrimaryIP.Address
+
 	} else if config.VSIInterface == "public" {
 		ui.Say("Reserve a Floating IP and associate it to the instance's network interface")
 
@@ -41,7 +44,7 @@ func (step *stepGetIP) Run(_ context.Context, state multistep.StateBag) multiste
 
 		// Wait until the Floating IP is ACTIVE
 		ui.Say("Waiting for the Floating IP to become ACTIVE...")
-		floatingIPID := floatingIPData["id"].(string)
+		floatingIPID := *floatingIPData.ID
 		state.Put("floating_ip_id", floatingIPID)
 
 		err := client.waitForResourceReady(floatingIPID, "floating_ips", config.StateTimeout, state)
@@ -53,10 +56,9 @@ func (step *stepGetIP) Run(_ context.Context, state multistep.StateBag) multiste
 			return multistep.ActionHalt
 		}
 		ui.Say("Floating IP is ACTIVE!")
-		ipAddress = floatingIPData["address"].(string)
+		ipAddress = *floatingIPData.Address
 	}
 
-	ui.Say(fmt.Sprintf("%s IP Address: %s", strings.Title(config.VSIInterface), ipAddress))
 	state.Put("floating_ip", ipAddress)
 
 	///// Update the Communicator with the ipAddres value /////
@@ -75,7 +77,6 @@ func (step *stepGetIP) Run(_ context.Context, state multistep.StateBag) multiste
 		return multistep.ActionContinue
 	}
 
-	// ui.Say(fmt.Sprintf("Writing IP address to file %s", hostsFilePath))
 	ipAddressBytes := []byte(fmt.Sprintf("%s\n", ipAddress))
 	err := ioutil.WriteFile(hostsFilePath, ipAddressBytes, 0644)
 	if err != nil {

@@ -7,14 +7,30 @@
 //   }
 // }
 
-variable "ibm_api_key" {
+
+variable "ANSIBLE_INVENTORY_FILE" {
   type    = string
-  default = "${env("IBM_API_KEY")}"
+  default = "provisioner/hosts"
 }
 
-variable "ansible_inventory_file" {
-  type    = string
-  default = "${env("ANSIBLE_INVENTORY_FILE")}"
+variable "IBM_API_KEY" {
+  type = string
+}
+
+variable "SUBNET_ID" {
+  type = string
+}
+
+variable "REGION" {
+  type = string
+}
+
+variable "RESOURCE_GROUP_ID" {
+  type = string
+}
+
+variable "SECURITY_GROUP_ID" {
+  type = string
 }
 
 locals {
@@ -22,17 +38,17 @@ locals {
 }
 
 source "ibmcloud-vpc" "windows" {
-  api_key = "${var.ibm_api_key}"
-  region  = "au-syd"
+  api_key = var.IBM_API_KEY
+  region  = var.REGION
 
-  subnet_id         = "02h7-9645d633-55a8-463c-b3b3-5cd302f2ee32"
-  resource_group_id = ""
-  security_group_id = ""
+  subnet_id         = var.SUBNET_ID
+  resource_group_id = var.RESOURCE_GROUP_ID
+  security_group_id = var.SECURITY_GROUP_ID
 
-  vsi_base_image_id  = "r026-0b7a41fa-4d00-44bb-b3ab-e8c1ed04d4ad"
-  vsi_profile        = "bx2-2x8"
-  vsi_interface      = "public"
-  vsi_user_data_file = "scripts/winrm_setup.ps1"
+  vsi_base_image_name = "ibm-windows-server-2019-full-standard-amd64-8"
+  vsi_profile         = "bx2-2x8"
+  vsi_interface       = "public"
+  vsi_user_data_file  = "scripts/winrm_setup.ps1"
 
   image_name = "packer-${local.timestamp}"
 
@@ -66,7 +82,7 @@ build {
   provisioner "ansible" {
     playbook_file  = "provisioner/windows-playbook.yml"
     use_proxy      = false
-    inventory_file = "${var.ansible_inventory_file}"
+    inventory_file = var.ANSIBLE_INVENTORY_FILE
     extra_arguments = [
       "-vvvv",
       "--extra-vars",
@@ -85,3 +101,7 @@ build {
   }
 
 }
+
+
+
+

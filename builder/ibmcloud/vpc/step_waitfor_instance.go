@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
@@ -16,11 +17,11 @@ func (s *stepWaitforInstance) Run(_ context.Context, state multistep.StateBag) m
 	ui := state.Get("ui").(packer.Ui)
 
 	ui.Say("Waiting for the instance to become ACTIVE...")
-	instanceData := state.Get("instance_data").(map[string]interface{})
-	instanceID := instanceData["id"].(string)
+	instanceData := state.Get("instance_data").(*vpcv1.Instance)
+	instanceID := *instanceData.ID
 	err := client.waitForResourceReady(instanceID, "instances", config.StateTimeout, state)
 	if err != nil {
-		err := fmt.Errorf("[ERROR] Error step waiting for instance to become ACTIVE: %s", err)
+		err := fmt.Errorf("[ERROR] Error step waiting for instance to become ACTIVE: %s", err.Error())
 		state.Put("error", err)
 		ui.Error(err.Error())
 		// log.Fatalf(err.Error())
@@ -28,7 +29,7 @@ func (s *stepWaitforInstance) Run(_ context.Context, state multistep.StateBag) m
 	}
 
 	// Update instance_data with new information unavailable at creation time (Private_IP, etc..)
-	newInstanceData, _ := client.retrieveResource(instanceID, "instances", state)
+	newInstanceData, _ := client.retrieveResource(instanceID, state)
 	state.Put("instance_data", newInstanceData)
 	ui.Say("Instance is ACTIVE!")
 	return multistep.ActionContinue

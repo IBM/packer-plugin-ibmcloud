@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
@@ -17,10 +18,10 @@ func (s *stepRebootInstance) Run(_ context.Context, state multistep.StateBag) mu
 
 	ui.Say("Rebooting instance to cleanly complete any installed software components...")
 
-	instanceData := state.Get("instance_data").(map[string]interface{})
-	instanceID := instanceData["id"].(string)
+	instanceData := state.Get("instance_data").(*vpcv1.Instance)
+	instanceID := *instanceData.ID
 
-	status, err := client.manageInstance(instanceID, "instances", "reboot", state)
+	status, err := client.manageInstance(instanceID, "reboot", state)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error rebooting the instance: %s", err)
 		state.Put("error", err)
@@ -40,7 +41,7 @@ func (s *stepRebootInstance) Run(_ context.Context, state multistep.StateBag) mu
 		}
 	}
 
-	newInstanceData, err := client.retrieveResource(instanceID, "instances", state)
+	newInstanceData, err := client.retrieveResource(instanceID, state)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error updating the instance: %s", err)
 		state.Put("error", err)
