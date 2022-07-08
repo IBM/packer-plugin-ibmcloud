@@ -1,4 +1,6 @@
 # IBM Packer Plugin
+
+## Scope
 The IBM Packer Plugin can be used to create custom Images on IBM Cloud.
 
 ## Description
@@ -7,12 +9,6 @@ IBM Packer Plugin adds on two **Packer Builders**: one for *Classic Infrastructu
 ### Builders
 - [classic](builders/classic) - The `classic` builder support the creation of custom Images(.VHD) on IBM Cloud - Classic Infrastructure.
 - [vpc](builders/vpc) - The `vpc` builder support the creation of custom Images on IBM Cloud - VPC Infrastructure.
-
-## Installation
-IBM Packer Plugin may be installed by:
-- [Using the `packer init` command](#using-the-packer-init-command)
-- [Manual Installation](#manual-installation)
-- [Automation via Docker Container](#automation-via-docker-container)
 
 ### Prerequisites
 - Install [Packer](https://www.packer.io/downloads) >= 1.7
@@ -44,6 +40,7 @@ IBM Packer Plugin may be installed by:
   export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
   ```
 
+## Usage
 ### Using the `packer init` command
 Starting from version 1.7, Packer supports third-party plugin installation using `packer init` command. Read the
 [Packer documentation](https://www.packer.io/docs/commands/init) for more information.
@@ -54,7 +51,7 @@ Starting from version 1.7, Packer supports third-party plugin installation using
     packer {
       required_plugins {
         ibmcloud = {
-          version = ">=v2.2.0"
+          version = ">=v3.0.0"
           source = "github.com/IBM/ibmcloud"
         }
       }
@@ -102,7 +99,7 @@ This is a basic Packer Template used to create a custom CentOS image on IBM Clou
 packer {
   required_plugins {
     ibmcloud = {
-      version = ">=v2.2.0"
+      version = ">=v3.0.0"
       source = "github.com/IBM/ibmcloud"
     }
   }
@@ -167,20 +164,18 @@ The `local` block defines exactly one local variable within a folder. Local valu
 #### `packer` Block
 The `packer` configuration block type is used to configure some behaviors of Packer itself, such as its source and the minimum required Packer version needed to apply your configuration.
 
+#### `build` Block
+The `build` block defines what builders are started, how to provision them and if necessary what to do with their `artifacts` using post-process.
+- A `source` block nested in a `build` block allows you to use an already defined source and to "fill in" those fields which aren't already set in the top-level source block.
+- The `provisioner` block defines how a provisioner is configured. Provisioners use builtin and third-party software to install and configure the machine image after booting. Provisioners prepare the system for use. Common use cases for provisioners include: installing packages, patching the kernel, creating users or downloading application code.
+
+
 #### `source` block
 The top-level `source` block defines reusable builder configuration blocks.
 ```hcl
 source "ibmcloud" "vpc-centos" {
    ...
 ```
-#### `build` Block
-The `build` block defines what builders are started, how to provision them and if necessary what to do with their `artifacts` using post-process.
-- A `source` block nested in a `build` block allows you to use an already defined source and to "fill in" those fields which aren't already set in the top-level source block.
-- The `provisioner` block defines how a provisioner is configured. Provisioners use builtin and third-party software to install and configure the machine image after booting. Provisioners prepare the system for use. Common use cases for provisioners include: installing packages, patching the kernel, creating users or downloading application code.
-
-***********
-
-#### `source` Block in detail
 Variable | Type |Description
 --- | --- | ---
 **builder variables** |
@@ -241,7 +236,10 @@ If you want to connect to a Windows-based VSI via Microsoft Remote Desktop, go t
 
 ***********
 
-## Installation
+## Developers
+
+- [Manual Installation](#manual-installation)
+- [Automation via Docker Container](#automation-via-docker-container)
 
 ### Manual Installation
 To generate the packer plugin binary from source code follow these steps. An automation script is located on the folder `developer/Makefile`:
