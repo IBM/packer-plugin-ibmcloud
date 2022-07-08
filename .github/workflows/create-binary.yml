@@ -59,8 +59,8 @@ jobs:
         SL_USERNAME: ${{ secrets.SL_USERNAME }}
         SL_API_KEY: ${{ secrets.SL_API_KEY }}
       run: |
-        packer validate developer/examples/build.vpc.centos.pkr.hcl
-        echo "packer build developer/examples/build.vpc.centos.pkr.hcl"
+        packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
+        echo "packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl"
 
   docker:
     needs: build
