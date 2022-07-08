@@ -31,7 +31,7 @@ There is a `Makefile` and a `Dockerfile` that automate everything for you.
    SL_API_KEY=###....###
    ```
 
-   Or create a file `variables.pkrvars.hcl` with the following content.
+   Also, create a file `variables.pkrvars.hcl` with the following content.
    ```
    SUBNET_ID = ""
    REGION = ""

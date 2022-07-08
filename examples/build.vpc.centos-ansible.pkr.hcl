@@ -1,7 +1,7 @@
 packer {
   required_plugins {
     ibmcloud = {
-      version = ">=v2.2.0"
+      version = ">=v3.0.0"
       source  = "github.com/IBM/ibmcloud"
     }
   }
@@ -10,6 +10,11 @@ packer {
 variable "ibm_api_key" {
   type    = string
   default = "${env("IBM_API_KEY")}"
+}
+
+variable "ansible_inventory_file" {
+  type    = string
+  default = "${env("ANSIBLE_INVENTORY_FILE")}"
 }
 
 locals {
