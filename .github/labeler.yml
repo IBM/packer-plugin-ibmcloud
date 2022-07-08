@@ -2,7 +2,7 @@ repo:
 - '*'
 
 templates:
-- examples/*
+- any: ['examples/*', 'developer/examples/*']
 
 core-vpc:
 - builder/vpc/**/*
