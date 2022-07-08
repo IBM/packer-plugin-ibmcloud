@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
@@ -17,6 +18,7 @@ func (s *stepCreateSshKeyVPC) Run(_ context.Context, state multistep.StateBag) m
 
 	ui.Say("Creating a new SSH key for VPC...")
 	VPCSSHKeyData, err := client.createSSHKeyVPC(state)
+
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error creating the SSH Key for VPC %s", err)
 		state.Put("error", err)
@@ -25,9 +27,9 @@ func (s *stepCreateSshKeyVPC) Run(_ context.Context, state multistep.StateBag) m
 		return multistep.ActionHalt
 	}
 
-	VPCSSHKeyID := VPCSSHKeyData["id"].(string)
+	VPCSSHKeyID := *VPCSSHKeyData.ID
 	state.Put("vpc_ssh_key_id", VPCSSHKeyID)
-	VPCSSHKeyName := VPCSSHKeyData["name"].(string)
+	VPCSSHKeyName := *VPCSSHKeyData.Name
 	state.Put("vpc_ssh_key_name", VPCSSHKeyName)
 
 	ui.Say("SSH Key for VPC successfully created!")
@@ -37,13 +39,19 @@ func (s *stepCreateSshKeyVPC) Run(_ context.Context, state multistep.StateBag) m
 }
 
 func (s *stepCreateSshKeyVPC) Cleanup(state multistep.StateBag) {
-	client := state.Get("client").(*IBMCloudClient)
 	ui := state.Get("ui").(packer.Ui)
 
 	ui.Say(fmt.Sprintf("Deleting SSH key for VPC %s ...", state.Get("vpc_ssh_key_name").(string)))
 	// Wait half minute before deleting SSH key - otherwise wouldn't be deleted.
 	time.Sleep(30 * time.Second)
-	result, err := client.deleteResource(state.Get("vpc_ssh_key_id").(string), "keys", state)
+	var vpcService *vpcv1.VpcV1
+	if state.Get("vpcService") != nil {
+		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
+	}
+	deleteKeyOptions := &vpcv1.DeleteKeyOptions{}
+	deleteKeyOptions.SetID(state.Get("vpc_ssh_key_id").(string))
+	response, err := vpcService.DeleteKey(deleteKeyOptions)
+
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error deleting SSH key for VPC %s. Please delete it manually: %s", state.Get("vpc_ssh_key_name").(string), err)
 		state.Put("error", err)
@@ -51,7 +59,7 @@ func (s *stepCreateSshKeyVPC) Cleanup(state multistep.StateBag) {
 		// log.Fatalf(err.Error())
 		return
 	}
-	if result == "204 No Content" {
+	if response.StatusCode == 204 {
 		ui.Say("The Key was successfully deleted!")
 	} else {
 		ui.Say("The key could not be deleted. Please delete it manually!")

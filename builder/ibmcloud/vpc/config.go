@@ -20,10 +20,9 @@ type Config struct {
 
 	IBMApiKey        string `mapstructure:"api_key"`
 	Region           string `mapstructure:"region"`
-	EndPoint         string `mapstructure-to-hcl2:",skip"`
+	Endpoint         string `mapstructure:"vpc_endpoint_url"`
+	IAMEndpoint      string `mapstructure:"iam_url"`
 	Zone             string `mapstructure-to-hcl2:",skip"`
-	Version          string `mapstructure-to-hcl2:",skip"`
-	Generation       string `mapstructure-to-hcl2:",skip"`
 	VPCID            string `mapstructure-to-hcl2:",skip"`
 	SubnetID         string `mapstructure:"subnet_id"`
 	ResourceGroupID  string `mapstructure:"resource_group_id"`
@@ -72,15 +71,10 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		errs = packer.MultiErrorAppend(errs, errors.New("a region must be specified"))
 	}
 
-	// Configure IBM Cloud EndPoint and other IBM Cloud API constants
-	c.EndPoint = "https://" + c.Region + ".iaas.cloud.ibm.com/v1/"
-	// According with the IBM Cloud - VPC API documentation (https://cloud.ibm.com/apidocs/vpc#api-versioning),
-	// we should be hard-coding the version and test the plugin with new API versions, to maintain ongoing compatibility.
-	// c.Version = "version=2021-10-15"
-	c.Version = fmt.Sprintf("version=%d-%02d-%02d", currentTime.Year(), currentTime.Month(), currentTime.Day())
-
-	c.Generation = "generation=2"
-	// log.Println("Version : ", c.Version)
+	// Configure IBM Cloud Endpoint and other IBM Cloud API constants
+	if c.Endpoint == "" {
+		c.Endpoint = "https://" + c.Region + ".iaas.cloud.ibm.com/v1/"
+	}
 
 	if c.SubnetID == "" {
 		errs = packer.MultiErrorAppend(errs, errors.New("a subnet_id must be specified"))
@@ -98,7 +92,7 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		c.VSIInterface = "public"
 	}
 
-	if c.VSIUserDataFile != "" && c.Comm.Type == "winrm" {
+	if c.VSIUserDataFile != "" {
 		if _, err := os.Stat(c.VSIUserDataFile); os.IsNotExist(err) {
 			errs = packer.MultiErrorAppend(
 				errs, fmt.Errorf("failed to read user-data-file: %s", err))

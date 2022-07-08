@@ -3,6 +3,7 @@ package vpc
 import (
 	"fmt"
 
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/packer-plugin-sdk/communicator"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
@@ -13,8 +14,8 @@ func winRMConfig(state multistep.StateBag) (*communicator.WinRMConfig, error) {
 	config := state.Get("config").(Config)
 	ui := state.Get("ui").(packer.Ui)
 
-	instanceData := state.Get("instance_data").(map[string]interface{})
-	instanceID := instanceData["id"].(string)
+	instanceData := state.Get("instance_data").(*vpcv1.Instance)
+	instanceID := *instanceData.ID
 
 	// Grabbing credentials for the instance
 	username, password, err := client.GrabCredentials(instanceID, state)

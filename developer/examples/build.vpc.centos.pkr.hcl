@@ -7,24 +7,47 @@
 //   }
 // }
 
-variable "ibm_api_key" {
-  type    = string
-  default = "${env("IBM_API_KEY")}"
+variable "IBM_API_KEY" {
+  type = string
 }
+
+variable "SUBNET_ID" {
+  type = string
+}
+
+variable "REGION" {
+  type = string
+}
+
+variable "RESOURCE_GROUP_ID" {
+  type = string
+}
+
+variable "SECURITY_GROUP_ID" {
+  type = string
+}
+// variable "VPC_URL" {
+//   type = string
+// }
+// variable "IAM_URL" {
+//   type = string
+// }
+
 
 locals {
   timestamp = regex_replace(timestamp(), "[- TZ:]", "")
 }
 
 source "ibmcloud-vpc" "centos" {
-  api_key = "${var.ibm_api_key}"
-  region  = "au-syd"
+  api_key = var.IBM_API_KEY
+  region  = var.REGION
+  // vpc_endpoint_url = var.VPC_URL
+  // iam_url = var.IAM_URL
 
-  subnet_id         = "02h7-46a8b111-3530-4337-9c04-c78e03160869"
-  resource_group_id = "f054d39a43ce4f51afff708510f271cb"
-  security_group_id = ""
+  subnet_id         = var.SUBNET_ID
+  resource_group_id = var.RESOURCE_GROUP_ID
+  security_group_id = var.SECURITY_GROUP_ID
 
-  // vsi_base_image_id = "r026-4e9a4dcc-15c7-4fac-b6ea-e24619059218"
   vsi_base_image_name = "ibm-centos-7-9-minimal-amd64-5"
 
   vsi_profile        = "bx2-2x8"
