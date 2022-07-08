@@ -1,7 +1,7 @@
 packer {
   required_plugins {
     ibmcloud = {
-      version = ">=v2.2.0"
+      version = ">=v3.0.0"
       source  = "github.com/IBM/ibmcloud"
     }
   }
@@ -12,16 +12,21 @@ variable "ibm_api_key" {
   default = "${env("IBM_API_KEY")}"
 }
 
+variable "ansible_inventory_file" {
+  type    = string
+  default = "${env("ANSIBLE_INVENTORY_FILE")}"
+}
+
 locals {
   timestamp = regex_replace(timestamp(), "[- TZ:]", "")
 }
 
 source "ibmcloud-vpc" "centos" {
   api_key = "${var.ibm_api_key}"
-  region  = "au-syd"
+  region  = "us-south"
 
-  subnet_id         = "02h7-9645d633-55a8-463c-b3b3-5cd302f2ee32"
-  resource_group_id = "f054d39a43ce4f51afff708510f271cb"
+  subnet_id         = "0717-4ad0af5f-8084-469d-a10e-49c444caa312"
+  resource_group_id = "1984ce401571473492918ea987dd1e6f"
   security_group_id = ""
 
   // vsi_base_image_id = "r026-4e9a4dcc-15c7-4fac-b6ea-e24619059218"

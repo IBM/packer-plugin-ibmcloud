@@ -18,15 +18,7 @@ validate-all:
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos-ansible.pkr.hcl
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.windows.pkr.hcl
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.rhel.pkr.hcl
-	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/jowko.pkr.hcl
 
-run-jowko:
-	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/jowko.pkr.hcl
-	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/jowko.pkr.hcl
-
-run-jowko-classic:
-	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/jowko-classic.pkr.hcl
-	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/jowko-classic.pkr.hcl
 
 run-centos:
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
@@ -44,4 +36,3 @@ run-windows:
 	cd ..; packer init -upgrade developer/examples/build.vpc.windows.pkr.hcl
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.windows.pkr.hcl
 	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.windows.pkr.hcl
-	# cd ..; packer build developer/examples/build.vpc.windows.json
