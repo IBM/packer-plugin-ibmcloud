@@ -344,11 +344,13 @@ There is a `Makefile` and a `Dockerfile` that automate everything for you.
 
 
 ***********
+## Open source @ IBM
+Find more open source projects on the [IBM Github Page](http://ibm.github.io/).
 
-## Contributing
+### Contributing
 Any contribution to this project is welcome, so if you want to contribute by adding a new feature or fixing a bug, do so by opening a Pull Request.
 
-### Formatting
+#### Formatting
 
 Before you commit any changes to `hcl` files, it is recommended to format them using packer. Example:
 ```bash
@@ -356,3 +358,11 @@ packer fmt examples/.
 packer fmt developer/examples/.
 ```
 This helps to maintain consistent formatting across whole repository.
+
+### License
+
+This SDK project is released under the Apache 2.0 license.
+The license's full text can be found in [LICENSE](LICENSE).
+
+
+
