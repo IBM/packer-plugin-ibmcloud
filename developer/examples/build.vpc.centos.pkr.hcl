@@ -39,11 +39,8 @@ locals {
 }
 
 source "ibmcloud-vpc" "centos" {
-  api_key = var.IBM_API_KEY
-  region  = var.REGION
-  // vpc_endpoint_url = var.VPC_URL
-  // iam_url = var.IAM_URL
-
+  api_key           = var.IBM_API_KEY
+  region            = var.REGION
   subnet_id         = var.SUBNET_ID
   resource_group_id = var.RESOURCE_GROUP_ID
   security_group_id = var.SECURITY_GROUP_ID
