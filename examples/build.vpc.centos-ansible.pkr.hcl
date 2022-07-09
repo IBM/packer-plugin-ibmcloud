@@ -23,14 +23,14 @@ locals {
 
 source "ibmcloud-vpc" "centos" {
   api_key = "${var.ibm_api_key}"
-  region  = "au-syd"
+  region  = "us-south"
 
-  subnet_id         = "02h7-9645d633-55a8-463c-b3b3-5cd302f2ee32"
-  resource_group_id = ""
+  subnet_id         = "0717-4ad0af5f-8084-469d-a10e-49c444caa312"
+  resource_group_id = "1984ce401571473492918ea987dd1e6f"
   security_group_id = ""
 
   // vsi_base_image_id = "r006-13938c0a-89e4-4370-b59b-55cd1402562d"
-  vsi_base_image_name = "ibm-centos-7-9-minimal-amd64-3"
+  vsi_base_image_name = "ibm-centos-7-9-minimal-amd64-5"
   vsi_profile         = "bx2-2x8"
   vsi_interface       = "public"
   vsi_user_data_file  = "scripts/postscript.sh"
