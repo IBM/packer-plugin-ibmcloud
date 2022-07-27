@@ -126,10 +126,11 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 
 	// Naming temporary infrastructure created during packer execution
 	UniqueID := "packer-vpc"
-	c.VSIName = fmt.Sprintf("%s-vsi-%d%d%d", UniqueID, currentTime.Hour(), currentTime.Minute(), currentTime.Second())
-	c.VpcSshKeyName = fmt.Sprintf("%s-ssh-key-%d%d%d", UniqueID, currentTime.Hour(), currentTime.Minute(), currentTime.Second())
-	c.SecurityGroupName = fmt.Sprintf("%s-security-group-%d%d%d", UniqueID, currentTime.Hour(), currentTime.Minute(), currentTime.Second())
-	c.FloatingIPName = fmt.Sprintf("%s-floating-ip-%d%d%d", UniqueID, currentTime.Hour(), currentTime.Minute(), currentTime.Second())
+	timestamp := time.Now().UnixNano()
+	c.VSIName = fmt.Sprintf("%s-vsi-%d", UniqueID, timestamp)
+	c.VpcSshKeyName = fmt.Sprintf("%s-ssh-key-%d", UniqueID, timestamp)
+	c.SecurityGroupName = fmt.Sprintf("%s-security-group-%d", UniqueID, timestamp)
+	c.FloatingIPName = fmt.Sprintf("%s-floating-ip-%d", UniqueID, timestamp)
 
 	if errs != nil && len(errs.Errors) > 0 {
 		return nil, errs

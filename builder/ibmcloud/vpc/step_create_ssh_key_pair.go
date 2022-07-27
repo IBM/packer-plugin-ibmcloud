@@ -9,7 +9,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
@@ -20,9 +22,10 @@ type stepCreateSshKeyPair struct{}
 
 func (s *stepCreateSshKeyPair) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
 	ui := state.Get("ui").(packer.Ui)
-
+	nsec := time.Now().UnixNano()
 	ui.Say("Creating SSH Public and Private Key Pair...")
-	keysDirectory := "ssh_keys/"
+	keysDirectory := strconv.FormatInt(nsec, 10) + "ssh_keys/"
+	state.Put("keysDirectory", keysDirectory)
 	privatefilepath := keysDirectory + "id_rsa"
 	publicfilepath := keysDirectory + "id_rsa.pub"
 
@@ -108,14 +111,15 @@ func (s *stepCreateSshKeyPair) Run(_ context.Context, state multistep.StateBag) 
 	ui.Say("Public and Private SSH Key Pair successfully created.")
 	state.Put("PRIVATE_KEY", privatefilepath)
 	state.Put("PUBLIC_KEY", publicfilepath)
+
 	return multistep.ActionContinue
 }
 
 func (s *stepCreateSshKeyPair) Cleanup(state multistep.StateBag) {
 	ui := state.Get("ui").(packer.Ui)
-
+	keysDirectory := state.Get("keysDirectory").(string)
 	ui.Say("Deleting Public and Private SSH Key Pair...")
-	err := os.RemoveAll("ssh_keys")
+	err := os.RemoveAll(keysDirectory)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Failed to delete SSH Key folder: %s", err)
 		state.Put("error", err)
