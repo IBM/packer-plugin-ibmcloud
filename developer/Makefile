@@ -4,7 +4,7 @@ setup:
 	cd ..; go install github.com/hashicorp/packer-plugin-sdk/cmd/packer-sdc@latest
 	cd ..; go get github.com/hashicorp/hcl/v2/hcldec@latest
 	cd ..; go get golang.org/x/crypto/ssh@latest
-	cd ..; go get github.com/zclconf/go-cty/cty@latest
+	cd ..; go get github.com/zclconf/go-cty/cty@v1.9.1
 
 plugin:
 	cd ..; go mod tidy

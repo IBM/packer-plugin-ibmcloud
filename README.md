@@ -250,7 +250,7 @@ To generate the packer plugin binary from source code follow these steps. An aut
     go install github.com/hashicorp/packer-plugin-sdk/cmd/packer-sdc@latest
     go get -d github.com/hashicorp/hcl/v2/hcldec@latest
     go get -d golang.org/x/crypto/ssh@latest
-    go get -d github.com/zclconf/go-cty/cty@latest
+    go get -d github.com/zclconf/go-cty/cty@v1.9.1
     go mod tidy
     go mod vendor
     go generate ./builder/ibmcloud/vpc/...
