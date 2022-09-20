@@ -38,7 +38,7 @@ source "ibmcloud-vpc" "centos-encrypted-image" {
   resource_group_id = var.RESOURCE_GROUP_ID
   security_group_id = var.SECURITY_GROUP_ID
 
-  vsi_base_image_name = "test-encrypted-packer-bhavesh-img"
+  vsi_base_image_name = "test-encrypted-packer-img"
 
   vsi_profile        = "bx2-2x8"
   vsi_interface      = "public"

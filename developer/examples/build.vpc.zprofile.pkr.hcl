@@ -49,7 +49,7 @@ source "ibmcloud-vpc" "zprofile" {
   communicator = "ssh"
   ssh_username = "ibmuser"
   ssh_port     = 22
-  ssh_timeout  = "8m"
+  ssh_timeout  = "20m"
 
   timeout = "20m"
 }
