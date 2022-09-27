@@ -49,6 +49,8 @@ type InstanceType struct {
 	BaseImageId            string
 	BaseOsCode             string
 	PublicSecurityGroupIds []int64
+	UserData               []Attribute
+	UserDataCount          uint64
 }
 
 type InstanceReq struct {
@@ -68,6 +70,8 @@ type InstanceReq struct {
 	BlockDeviceTemplateGroup *BlockDeviceTemplateGroup `json:"blockDeviceTemplateGroup,omitempty"`
 	OsReferenceCode          string                    `json:"operatingSystemReferenceCode,omitempty"`
 	SshKeys                  []*SshKey                 `json:"sshKeys,omitempty"`
+	UserData                 []Attribute               `json:"userData,omitempty"`
+	UserDataCount            uint64                    `json:"userDataCount,omitempty"`
 }
 
 type InstanceImage struct {
@@ -126,6 +130,10 @@ type SecurityGroupBindings struct {
 
 type SecurityGroup struct {
 	Id int64 `json:"id,omitempty"`
+}
+
+type Attribute struct {
+	Value string `json:"value,omitempty"`
 }
 
 func (s SoftlayerClient) New(user string, key string) *SoftlayerClient {
@@ -302,6 +310,8 @@ func (s SoftlayerClient) CreateInstance(instance InstanceType) (map[string]inter
 				MaxSpeed: instance.NetworkSpeed,
 			},
 		},
+		UserData:      instance.UserData,
+		UserDataCount: instance.UserDataCount,
 	}
 
 	if instance.ProvisioningSshKeyId != 0 {

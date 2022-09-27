@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
@@ -44,6 +45,17 @@ func (s *stepCreateInstance) Run(_ context.Context, state multistep.StateBag) mu
 		ProvisioningSshKeyId:   ProvisioningSshKeyId,
 		BaseImageId:            config.BaseImageId,
 		BaseOsCode:             config.BaseOsCode,
+	}
+
+	if config.UserDataFilePath != "" {
+		if userDataBytes, err := os.ReadFile(config.UserDataFilePath); err == nil {
+			instanceDefinition.UserData = []Attribute{{Value: string(userDataBytes)}}
+			instanceDefinition.UserDataCount += 1
+		} else {
+			ui.Error(err.Error())
+			state.Put("error", err)
+			return multistep.ActionHalt
+		}
 	}
 
 	ui.Say("Creating an instance...")
