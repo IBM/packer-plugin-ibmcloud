@@ -87,6 +87,7 @@ type FlatConfig struct {
 	InstanceNetworkSpeed           *int              `mapstructure:"instance_network_speed" cty:"instance_network_speed" hcl:"instance_network_speed"`
 	ProvisioningSshKeyId           *int64            `mapstructure:"provisioning_ssh_key_id" cty:"provisioning_ssh_key_id" hcl:"provisioning_ssh_key_id"`
 	InstancePublicSecurityGroupIds []int64           `mapstructure:"public_security_groups" cty:"public_security_groups" hcl:"public_security_groups"`
+	UserDataFilePath               *string           `mapstructure:"user_data_file_path" cty:"user_data_file_path" hcl:"user_data_file_path"`
 	RawStateTimeout                *string           `mapstructure:"instance_state_timeout" cty:"instance_state_timeout" hcl:"instance_state_timeout"`
 }
 
@@ -179,6 +180,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"instance_network_speed":       &hcldec.AttrSpec{Name: "instance_network_speed", Type: cty.Number, Required: false},
 		"provisioning_ssh_key_id":      &hcldec.AttrSpec{Name: "provisioning_ssh_key_id", Type: cty.Number, Required: false},
 		"public_security_groups":       &hcldec.AttrSpec{Name: "public_security_groups", Type: cty.List(cty.Number), Required: false},
+		"user_data_file_path":          &hcldec.AttrSpec{Name: "user_data_file_path", Type: cty.String, Required: false},
 		"instance_state_timeout":       &hcldec.AttrSpec{Name: "instance_state_timeout", Type: cty.String, Required: false},
 	}
 	return s

@@ -4,6 +4,7 @@ package classic
 import (
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/hashicorp/packer-plugin-sdk/common"
@@ -38,6 +39,7 @@ type Config struct {
 	InstanceNetworkSpeed           int     `mapstructure:"instance_network_speed"`
 	ProvisioningSshKeyId           int64   `mapstructure:"provisioning_ssh_key_id"`
 	InstancePublicSecurityGroupIds []int64 `mapstructure:"public_security_groups"`
+	UserDataFilePath               string  `mapstructure:"user_data_file_path"`
 
 	RawStateTimeout string              `mapstructure:"instance_state_timeout"`
 	StateTimeout    time.Duration       `mapstructure-to-hcl2:",skip"`
@@ -156,6 +158,13 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 			errs, fmt.Errorf("[ERROR] Failed parsing state_timeout: %s", err))
 	}
 	c.StateTimeout = stateTimeout
+
+	if c.UserDataFilePath != "" {
+		if _, err := os.ReadFile(c.UserDataFilePath); err != nil {
+			errs = packer.MultiErrorAppend(
+				errs, fmt.Errorf("[ERROR] Error reading user data file. Error: %s", err))
+		}
+	}
 
 	//log.Println(common.ScrubConfig(self.config, c.APIKey, c.Username))
 
