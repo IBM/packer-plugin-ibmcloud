@@ -31,6 +31,7 @@ type Config struct {
 	ResourceGroupID           string `mapstructure:"resource_group_id"`
 	SecurityGroupID           string `mapstructure:"security_group_id"`
 	VSIBaseImageID            string `mapstructure:"vsi_base_image_id"`
+	VSIBootVolumeID           string `mapstructure:"vsi_boot_volume_id"`
 	VSIBaseImageName          string `mapstructure:"vsi_base_image_name"`
 	VSIProfile                string `mapstructure:"vsi_profile"`
 	VSIInterface              string `mapstructure:"vsi_interface"`
