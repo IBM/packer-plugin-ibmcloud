@@ -175,7 +175,7 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 
 	options := &vpcv1.DeleteInstanceOptions{}
 	options.SetID(instanceID)
-	result, err := vpcService.DeleteInstance(options)
+	_, err := vpcService.DeleteInstance(options)
 
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error deleting the instance. Please delete it manually: %s", err)
@@ -184,9 +184,24 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 		// log.Fatalf(err.Error())
 		return
 	}
-
-	if result.StatusCode == 204 {
-		ui.Say("The instance was successfully deleted!")
+	instanceDeleted := false
+	for !instanceDeleted {
+		options := &vpcv1.GetInstanceOptions{}
+		options.SetID(instanceID)
+		instance, response, err := vpcService.GetInstance(options)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				ui.Say("Instance deleted Succesfully")
+				instanceDeleted = true
+				break
+			}
+			err := fmt.Errorf("[ERROR] Error getting the instance to check delete status. %s", err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+		} else if instance != nil {
+			ui.Say(fmt.Sprintf("Instance status :-  %s", *instance.Status))
+		}
+		time.Sleep(10 * time.Second)
 	}
 
 	// Deleting Security Group's rule
