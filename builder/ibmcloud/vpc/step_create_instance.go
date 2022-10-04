@@ -61,6 +61,12 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 			ui.Error(err.Error())
 			return multistep.ActionHalt
 		}
+		if image != nil && len(image.Images) == 0 {
+			err := fmt.Errorf("[ERROR] Image %s not found", vsiBaseImageName)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
 		vsiBaseImageID = *image.Images[0].ID
 		ui.Say(fmt.Sprintf("ImageID fetched: %s", string(vsiBaseImageName)))
 	}
