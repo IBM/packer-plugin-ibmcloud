@@ -136,6 +136,9 @@ func (client IBMCloudClient) isResourceReady(resourceID string, resourceType str
 		}
 		status := *image.Status
 		ready = status == "available"
+		if status == "failed" {
+			err = fmt.Errorf("[ERROR] Image went into failed state")
+		}
 		return ready, err
 	}
 	return ready, nil
