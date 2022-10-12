@@ -199,6 +199,7 @@ func (client IBMCloudClient) waitForResourceDown(resourceID string, resourceType
 
 func (client IBMCloudClient) isResourceDown(resourceID string, resourceType string, state multistep.StateBag) (bool, error) {
 	var down bool
+
 	ui := state.Get("ui").(packer.Ui)
 	var vpcService *vpcv1.VpcV1
 	if state.Get("vpcService") != nil {
