@@ -96,6 +96,10 @@ func (client IBMCloudClient) isResourceReady(resourceID string, resourceType str
 	if resourceType == "instances" {
 		options := vpcService.NewGetInstanceOptions(resourceID)
 		instance, _, err := vpcService.GetInstance(options)
+		if err != nil {
+			err := fmt.Errorf("[ERROR] Error occurred while getting instance information. Error: %s", err)
+			return false, fmt.Errorf(err.Error())
+		}
 		status := *instance.Status
 		if status == "failed" {
 			err := fmt.Errorf("[ERROR] Instance return with failed status. Status Reason - %s: %s", status, *instance.StatusReasons[0].Message)
@@ -106,20 +110,35 @@ func (client IBMCloudClient) isResourceReady(resourceID string, resourceType str
 	} else if resourceType == "floating_ips" {
 		options := vpcService.NewGetFloatingIPOptions(resourceID)
 		floatingIP, _, err := vpcService.GetFloatingIP(options)
+		if err != nil {
+			err := fmt.Errorf("[ERROR] Error occurred while getting floating ip information. Error: %s", err)
+			return false, fmt.Errorf(err.Error())
+		}
 		status := *floatingIP.Status
 		ready = status == "available"
 		return ready, err
 	} else if resourceType == "subnets" {
 		options := vpcService.NewGetSubnetOptions(resourceID)
 		subnet, _, err := vpcService.GetSubnet(options)
+		if err != nil {
+			err := fmt.Errorf("[ERROR] Error occurred while getting subnet information. Error: %s", err)
+			return false, fmt.Errorf(err.Error())
+		}
 		status := *subnet.Status
 		ready = status == "available"
 		return ready, err
 	} else if resourceType == "images" {
 		options := vpcService.NewGetImageOptions(resourceID)
 		image, _, err := vpcService.GetImage(options)
+		if err != nil {
+			err := fmt.Errorf("[ERROR] Error occurred while getting image information. Error: %s", err)
+			return false, fmt.Errorf(err.Error())
+		}
 		status := *image.Status
 		ready = status == "available"
+		if status == "failed" {
+			err = fmt.Errorf("[ERROR] Image went into failed state")
+		}
 		return ready, err
 	}
 	return ready, nil
@@ -181,6 +200,7 @@ func (client IBMCloudClient) waitForResourceDown(resourceID string, resourceType
 func (client IBMCloudClient) isResourceDown(resourceID string, resourceType string, state multistep.StateBag) (bool, error) {
 	var down bool
 
+	ui := state.Get("ui").(packer.Ui)
 	var vpcService *vpcv1.VpcV1
 	if state.Get("vpcService") != nil {
 		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
@@ -189,6 +209,12 @@ func (client IBMCloudClient) isResourceDown(resourceID string, resourceType stri
 		options := &vpcv1.GetInstanceOptions{}
 		options.SetID(resourceID)
 		instance, _, err := vpcService.GetInstance(options)
+		if err != nil {
+			err := fmt.Errorf("[ERROR] Failed retrieving resource information. Error: %s", err)
+			ui.Error(err.Error())
+			log.Println(err.Error())
+			return false, err
+		}
 		status := *instance.Status
 		down = status == "stopped"
 		return down, err

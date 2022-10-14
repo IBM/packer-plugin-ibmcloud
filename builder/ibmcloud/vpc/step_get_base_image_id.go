@@ -27,13 +27,21 @@ func (step *stepGetBaseImageID) Run(_ context.Context, state multistep.StateBag)
 			Name: &config.VSIBaseImageName,
 		}
 		imageList, _, err := vpcService.ListImages(options)
-		imageId := *imageList.Images[0].ID
+
 		if err != nil {
 			err := fmt.Errorf("[ERROR] Error getting base-image ID: %s", err)
 			state.Put("error", err)
 			ui.Error(err.Error())
 			return multistep.ActionHalt
 		}
+		if imageList != nil && len(imageList.Images) == 0 {
+			err := fmt.Errorf("[ERROR] Error getting base-image, Image %s not found", config.VSIBaseImageName)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
+		imageId := *imageList.Images[0].ID
+
 		state.Put("baseImageID", imageId)
 		ui.Say(fmt.Sprintf("Base Image ID fetched: %s", imageId))
 	}
