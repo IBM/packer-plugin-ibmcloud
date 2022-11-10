@@ -52,7 +52,6 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 	bootVolumeAttachment := instanceData.BootVolumeAttachment
 	bootVolume := bootVolumeAttachment.Volume
 	bootVolumeId := *bootVolume.ID
-
 	validName := regexp.MustCompile(`[^a-z0-9\-]+`)
 
 	config.ImageName = validName.ReplaceAllString(config.ImageName, "")
@@ -64,6 +63,14 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 			ID: &bootVolumeId,
 		},
 	}
+
+	// Encryption key to create an encrypted image
+	if config.EncryptionKeyCRN != "" {
+		imagePrototype.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
+			CRN: &config.EncryptionKeyCRN,
+		}
+	}
+
 	if config.ResourceGroupID != "" {
 		imagePrototype.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
 			ID: &config.ResourceGroupID,

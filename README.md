@@ -199,6 +199,7 @@ vsi_user_data_file | string | User data to be made available when setting up the
 vpc_endpoint_url | string | Configure URL for VPC test environments. Optional.
 iam_url | string | Configure URL for IAM test environments. Optional.
 image_name | string | The name of the resulting custom Image that will appear in your account. Required.
+encryption_key_crn | string | The crn of the key used for encryption, from key mangement service of IBM Cloud like Hyper Protect or [Key Protect](https://cloud.ibm.com/docs/key-protect?topic=key-protect-about)
 communicator | string | Communicators are the mechanism Packer uses to upload files, execute scripts, etc. with the machine being created. Choose between "ssh" (for Linux) and "winrm" (for Windows). Required.
 ***Linux Communicator Variables*** |
 ssh_username | string | The username to connect to SSH with.
