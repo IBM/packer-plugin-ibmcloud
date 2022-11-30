@@ -1,7 +1,7 @@
 // packer {
 //   required_plugins {
 //     ibmcloud = {
-//       version = ">=v3.0.3"
+//       version = ">=v3.0.4"
 //       source = "github.com/IBM/ibmcloud"
 //     }
 //   }
@@ -11,6 +11,10 @@
 variable "ANSIBLE_INVENTORY_FILE" {
   type    = string
   default = "provisioner/hosts"
+}
+
+variable "ENCRYPTION_KEY_CRN" {
+  type = string
 }
 
 variable "IBM_API_KEY" {

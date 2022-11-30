@@ -51,7 +51,7 @@ Starting from version 1.7, Packer supports third-party plugin installation using
     packer {
       required_plugins {
         ibmcloud = {
-          version = ">=v3.0.0"
+          version = ">=v3.0.4"
           source = "github.com/IBM/ibmcloud"
         }
       }
@@ -99,7 +99,7 @@ This is a basic Packer Template used to create a custom CentOS image on IBM Clou
 packer {
   required_plugins {
     ibmcloud = {
-      version = ">=v3.0.0"
+      version = ">=v3.0.4"
       source = "github.com/IBM/ibmcloud"
     }
   }
@@ -199,7 +199,7 @@ vsi_user_data_file | string | User data to be made available when setting up the
 vpc_endpoint_url | string | Configure URL for VPC test environments. Optional.
 iam_url | string | Configure URL for IAM test environments. Optional.
 image_name | string | The name of the resulting custom Image that will appear in your account. Required.
-encryption_key_crn | string | The crn of the key used for encryption, from key mangement service of IBM Cloud like Hyper Protect or [Key Protect](https://cloud.ibm.com/docs/key-protect?topic=key-protect-about)
+encryption_key_crn | string | The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
 communicator | string | Communicators are the mechanism Packer uses to upload files, execute scripts, etc. with the machine being created. Choose between "ssh" (for Linux) and "winrm" (for Windows). Required.
 ***Linux Communicator Variables*** |
 ssh_username | string | The username to connect to SSH with.
@@ -313,6 +313,7 @@ There is a `Makefile` and a `Dockerfile` that automate everything for you.
       SECURITY_GROUP_ID = ""
       RESOURCE_GROUP_ID = ""
       IBM_API_KEY = ""
+      ENCRYPTION_KEY_CRN = ""
       ```
     - Customize your Packer Template: see [`source` Block in detail](#source-block-in-detail) to find a detail description of each field on the Template. Likewise, there are some Packer Template examples on `examples` folder.
     - Create container with Packer Plugin Binary within it:

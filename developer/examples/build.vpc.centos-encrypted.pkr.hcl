@@ -1,11 +1,15 @@
 // packer {
 //   required_plugins {
 //     ibmcloud = {
-//       version = ">=v3.0.3"
+//       version = ">=v3.0.4"
 //       source = "github.com/IBM/ibmcloud"
 //     }
 //   }
 // }
+
+variable "ENCRYPTION_KEY_CRN" {
+  type = string
+}
 
 variable "IBM_API_KEY" {
   type = string
@@ -37,9 +41,9 @@ source "ibmcloud-vpc" "centos-encrypted-image" {
   subnet_id         = var.SUBNET_ID
   resource_group_id = var.RESOURCE_GROUP_ID
   security_group_id = var.SECURITY_GROUP_ID
-  encryption_key_crn = "crn:v1:bluemix:public:kms:us-south:a/7f75c7b025e54bc5635f754b2f888665:e33a2dc9-63b2-49d5-9a14-abaedbf0a9bf:key:ed000596-f68b-46df-a568-1ad866fbaebe"
+  encryption_key_crn = var.ENCRYPTION_KEY_CRN
 
-  vsi_base_image_name = "test-encrypted-packer-img"
+  vsi_base_image_name = "ibm-centos-7-9-minimal-amd64-5"
 
   vsi_profile        = "bx2-2x8"
   vsi_interface      = "public"

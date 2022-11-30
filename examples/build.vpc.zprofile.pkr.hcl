@@ -7,6 +7,10 @@ packer {
   }
 }
 
+variable "ENCRYPTION_KEY_CRN" {
+  type = string
+}
+
 variable "ibm_api_key" {
   type    = string
   default = "${env("IBM_API_KEY")}"
