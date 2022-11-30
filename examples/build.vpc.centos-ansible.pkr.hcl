@@ -6,9 +6,6 @@ packer {
     }
   }
 }
-variable "ENCRYPTION_KEY_CRN" {
-  type = string
-}
 
 variable "ibm_api_key" {
   type    = string

@@ -13,10 +13,6 @@ variable "ANSIBLE_INVENTORY_FILE" {
   default = "provisioner/hosts"
 }
 
-variable "ENCRYPTION_KEY_CRN" {
-  type = string
-}
-
 variable "IBM_API_KEY" {
   type = string
 }

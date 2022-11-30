@@ -7,10 +7,6 @@
 //   }
 // }
 
-variable "ENCRYPTION_KEY_CRN" {
-  type = string
-}
-
 variable "IBM_API_KEY" {
   type = string
 }

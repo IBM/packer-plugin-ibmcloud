@@ -1,14 +1,10 @@
 packer {
   required_plugins {
     ibmcloud = {
-      version = ">=v2.2.0"
+      version = ">=v3.0.4"
       source = "github.com/IBM/ibmcloud"
     }
   }
-}
-
-variable "ENCRYPTION_KEY_CRN" {
-  type = string
 }
 
 variable "ibm_api_key" {
