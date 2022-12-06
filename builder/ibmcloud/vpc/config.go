@@ -21,6 +21,7 @@ type Config struct {
 	IBMApiKey        string `mapstructure:"api_key"`
 	Region           string `mapstructure:"region"`
 	Endpoint         string `mapstructure:"vpc_endpoint_url"`
+	EncryptionKeyCRN string `mapstructure:"encryption_key_crn"`
 	IAMEndpoint      string `mapstructure:"iam_url"`
 	Zone             string `mapstructure-to-hcl2:",skip"`
 	VPCID            string `mapstructure-to-hcl2:",skip"`
