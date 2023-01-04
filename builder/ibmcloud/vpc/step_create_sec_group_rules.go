@@ -27,6 +27,12 @@ func (s *stepCreateSecurityGroupRules) Run(_ context.Context, state multistep.St
 		})
 		options.SetName(config.SecurityGroupName)
 
+		if config.ResourceGroupID != "" {
+			options.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
+				ID: &config.ResourceGroupID,
+			}
+		}
+
 		SecurityGroupData, err := client.createSecurityGroup(state, *options)
 		if err != nil {
 			err := fmt.Errorf("[ERROR] Error creating a Temp Security Group: %s", err)
