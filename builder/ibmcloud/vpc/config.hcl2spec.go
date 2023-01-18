@@ -73,6 +73,8 @@ type FlatConfig struct {
 	EncryptionKeyCRN          *string           `mapstructure:"encryption_key_crn" cty:"encryption_key_crn" hcl:"encryption_key_crn"`
 	IAMEndpoint               *string           `mapstructure:"iam_url" cty:"iam_url" hcl:"iam_url"`
 	SubnetID                  *string           `mapstructure:"subnet_id" cty:"subnet_id" hcl:"subnet_id"`
+	CatalogOfferingCRN        *string           `mapstructure:"catalog_offering_crn" cty:"catalog_offering_crn" hcl:"catalog_offering_crn"`
+	CatalogOfferingVersionCRN *string           `mapstructure:"catalog_offering_version_crn" cty:"catalog_offering_version_crn" hcl:"catalog_offering_version_crn"`
 	ResourceGroupID           *string           `mapstructure:"resource_group_id" cty:"resource_group_id" hcl:"resource_group_id"`
 	SecurityGroupID           *string           `mapstructure:"security_group_id" cty:"security_group_id" hcl:"security_group_id"`
 	VSIBaseImageID            *string           `mapstructure:"vsi_base_image_id" cty:"vsi_base_image_id" hcl:"vsi_base_image_id"`
@@ -159,6 +161,8 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"encryption_key_crn":           &hcldec.AttrSpec{Name: "encryption_key_crn", Type: cty.String, Required: false},
 		"iam_url":                      &hcldec.AttrSpec{Name: "iam_url", Type: cty.String, Required: false},
 		"subnet_id":                    &hcldec.AttrSpec{Name: "subnet_id", Type: cty.String, Required: false},
+		"catalog_offering_crn":         &hcldec.AttrSpec{Name: "catalog_offering_crn", Type: cty.String, Required: false},
+		"catalog_offering_version_crn": &hcldec.AttrSpec{Name: "catalog_offering_version_crn", Type: cty.String, Required: false},
 		"resource_group_id":            &hcldec.AttrSpec{Name: "resource_group_id", Type: cty.String, Required: false},
 		"security_group_id":            &hcldec.AttrSpec{Name: "security_group_id", Type: cty.String, Required: false},
 		"vsi_base_image_id":            &hcldec.AttrSpec{Name: "vsi_base_image_id", Type: cty.String, Required: false},
