@@ -18,21 +18,23 @@ type Config struct {
 	common.PackerConfig `mapstructure:",squash"`
 	Comm                communicator.Config `mapstructure:",squash"`
 
-	IBMApiKey        string `mapstructure:"api_key"`
-	Region           string `mapstructure:"region"`
-	Endpoint         string `mapstructure:"vpc_endpoint_url"`
-	EncryptionKeyCRN string `mapstructure:"encryption_key_crn"`
-	IAMEndpoint      string `mapstructure:"iam_url"`
-	Zone             string `mapstructure-to-hcl2:",skip"`
-	VPCID            string `mapstructure-to-hcl2:",skip"`
-	SubnetID         string `mapstructure:"subnet_id"`
-	ResourceGroupID  string `mapstructure:"resource_group_id"`
-	SecurityGroupID  string `mapstructure:"security_group_id"`
-	VSIBaseImageID   string `mapstructure:"vsi_base_image_id"`
-	VSIBaseImageName string `mapstructure:"vsi_base_image_name"`
-	VSIProfile       string `mapstructure:"vsi_profile"`
-	VSIInterface     string `mapstructure:"vsi_interface"`
-	VSIUserDataFile  string `mapstructure:"vsi_user_data_file"`
+	IBMApiKey                 string `mapstructure:"api_key"`
+	Region                    string `mapstructure:"region"`
+	Endpoint                  string `mapstructure:"vpc_endpoint_url"`
+	EncryptionKeyCRN          string `mapstructure:"encryption_key_crn"`
+	IAMEndpoint               string `mapstructure:"iam_url"`
+	Zone                      string `mapstructure-to-hcl2:",skip"`
+	VPCID                     string `mapstructure-to-hcl2:",skip"`
+	SubnetID                  string `mapstructure:"subnet_id"`
+	CatalogOfferingCRN        string `mapstructure:"catalog_offering_crn"`
+	CatalogOfferingVersionCRN string `mapstructure:"catalog_offering_version_crn"`
+	ResourceGroupID           string `mapstructure:"resource_group_id"`
+	SecurityGroupID           string `mapstructure:"security_group_id"`
+	VSIBaseImageID            string `mapstructure:"vsi_base_image_id"`
+	VSIBaseImageName          string `mapstructure:"vsi_base_image_name"`
+	VSIProfile                string `mapstructure:"vsi_profile"`
+	VSIInterface              string `mapstructure:"vsi_interface"`
+	VSIUserDataFile           string `mapstructure:"vsi_user_data_file"`
 
 	ImageName string `mapstructure:"image_name"`
 
@@ -82,7 +84,17 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	}
 
 	if c.VSIBaseImageID == "" && c.VSIBaseImageName == "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("a vsi_base_image_id or vsi_base_image_name must be specified"))
+		if c.CatalogOfferingCRN == "" && c.CatalogOfferingVersionCRN == "" {
+			errs = packer.MultiErrorAppend(errs, errors.New("one of (vsi_base_image_id or vsi_base_image_name) or (catalog_offering_crn or catalog_offering_version_crn) is required"))
+		} else if c.CatalogOfferingCRN != "" && c.CatalogOfferingVersionCRN != "" {
+			errs = packer.MultiErrorAppend(errs, errors.New("only one of (catalog_offering_crn or catalog_offering_version_crn) is required"))
+		}
+	} else if c.CatalogOfferingCRN == "" && c.CatalogOfferingVersionCRN == "" {
+		if c.VSIBaseImageID != "" && c.VSIBaseImageName != "" {
+			errs = packer.MultiErrorAppend(errs, errors.New("only one of (vsi_base_image_id or vsi_base_image_name) is required"))
+		}
+	} else {
+		errs = packer.MultiErrorAppend(errs, errors.New("only one of (vsi_base_image_id or vsi_base_image_name) or (catalog_offering_crn or catalog_offering_version_crn) is required"))
 	}
 
 	if c.VSIProfile == "" {

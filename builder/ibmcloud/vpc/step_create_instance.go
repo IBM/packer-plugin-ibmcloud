@@ -24,22 +24,24 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 
 	vsiBaseImageName := config.VSIBaseImageName
 	vsiBaseImageID := config.VSIBaseImageID
+	vsiCatalogOfferingCrn := config.CatalogOfferingCRN
+	vsiCatalogOfferingVersionCrn := config.CatalogOfferingVersionCRN
 
-	keyIDentityModel := &vpcv1.KeyIdentityByID{
+	keyIdentityModel := &vpcv1.KeyIdentityByID{
 		ID: &[]string{state.Get("vpc_ssh_key_id").(string)}[0],
 	}
 	instanceProfileIdentityModel := &vpcv1.InstanceProfileIdentityByName{
 		Name: &[]string{config.VSIProfile}[0],
 	}
-	vpcIDentityModel := &vpcv1.VPCIdentityByID{
+	vpcIdentityModel := &vpcv1.VPCIdentityByID{
 		ID: &[]string{state.Get("vpc_id").(string)}[0],
 	}
-	subnetIDentityModel := &vpcv1.SubnetIdentityByID{
+	subnetIdentityModel := &vpcv1.SubnetIdentityByID{
 		ID: &[]string{config.SubnetID}[0],
 	}
 	networkInterfacePrototypeModel := &vpcv1.NetworkInterfacePrototype{
 		Name:   &[]string{"my-instance-modified"}[0],
-		Subnet: subnetIDentityModel,
+		Subnet: subnetIdentityModel,
 	}
 	zoneIdentityModel := &vpcv1.ZoneIdentityByName{
 		Name: &[]string{state.Get("zone").(string)}[0],
@@ -47,81 +49,146 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 
 	ui.Say("Creating Instance...")
 
-	// Get Image ID
-	if vsiBaseImageName != "" {
-		ui.Say("Fetching ImageID...")
+	// For catalog images
+	if vsiCatalogOfferingCrn != "" || vsiCatalogOfferingVersionCrn != "" {
 
-		options := &vpcv1.ListImagesOptions{}
-		options.SetName(vsiBaseImageName)
-		image, _, err := vpcService.ListImages(options)
+		catalogOfferingPrototype := &vpcv1.InstanceCatalogOfferingPrototype{}
 
+		// offering crn
+		if vsiCatalogOfferingCrn != "" {
+			offering := &vpcv1.CatalogOfferingIdentityCatalogOfferingByCRN{
+				CRN: &vsiCatalogOfferingCrn,
+			}
+			catalogOfferingPrototype.Offering = offering
+		} else {
+			versionOffering := &vpcv1.CatalogOfferingVersionIdentityCatalogOfferingVersionByCRN{
+				CRN: &vsiCatalogOfferingVersionCrn,
+			}
+			catalogOfferingPrototype.Version = versionOffering
+		}
+		instancePrototypeModel := &vpcv1.InstancePrototypeInstanceByCatalogOffering{
+			Keys:                    []vpcv1.KeyIdentityIntf{keyIdentityModel},
+			Name:                    &[]string{config.VSIName}[0],
+			Profile:                 instanceProfileIdentityModel,
+			VPC:                     vpcIdentityModel,
+			PrimaryNetworkInterface: networkInterfacePrototypeModel,
+			Zone:                    zoneIdentityModel,
+		}
+		instancePrototypeModel.CatalogOffering = catalogOfferingPrototype
+
+		userDataFilePath := config.VSIUserDataFile
+		if userDataFilePath != "" {
+			content, err := ioutil.ReadFile(userDataFilePath)
+			if err != nil {
+				err := fmt.Errorf("[ERROR] Error reading user data file. Error: %s", err)
+				state.Put("error", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			}
+			instancePrototypeModel.UserData = &[]string{string(content)}[0]
+		}
+
+		if config.ResourceGroupID != "" {
+			instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
+				ID: &config.ResourceGroupID,
+			}
+		}
+
+		state.Put("instance_definition", *instancePrototypeModel)
+
+		createInstanceOptions := vpcService.NewCreateInstanceOptions(
+			instancePrototypeModel,
+		)
+		instanceData, _, err := vpcService.CreateInstance(createInstanceOptions)
+		// End
 		if err != nil {
-			err := fmt.Errorf("[ERROR] Error getting image with name: %s", err)
+			err := fmt.Errorf("[ERROR] Error creating the instance: %s", err)
 			state.Put("error", err)
 			ui.Error(err.Error())
+			// log.Fatalf(err.Error())
 			return multistep.ActionHalt
 		}
-		if image != nil && len(image.Images) == 0 {
-			err := fmt.Errorf("[ERROR] Image %s not found", vsiBaseImageName)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			return multistep.ActionHalt
+		state.Put("instance_data", instanceData)
+		ui.Say("Instance successfully created!")
+		ui.Say(fmt.Sprintf("Instance's Name: %s", *instanceData.Name))
+		ui.Say(fmt.Sprintf("Instance's ID: %s", *instanceData.ID))
+
+	} else {
+		// Get Image ID
+		if vsiBaseImageName != "" {
+			ui.Say("Fetching ImageID...")
+
+			options := &vpcv1.ListImagesOptions{}
+			options.SetName(vsiBaseImageName)
+			image, _, err := vpcService.ListImages(options)
+
+			if err != nil {
+				err := fmt.Errorf("[ERROR] Error getting image with name: %s", err)
+				state.Put("error", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			}
+			if image != nil && len(image.Images) == 0 {
+				err := fmt.Errorf("[ERROR] Image %s not found", vsiBaseImageName)
+				state.Put("error", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			}
+			vsiBaseImageID = *image.Images[0].ID
+			ui.Say(fmt.Sprintf("ImageID fetched: %s", string(vsiBaseImageName)))
 		}
-		vsiBaseImageID = *image.Images[0].ID
-		ui.Say(fmt.Sprintf("ImageID fetched: %s", string(vsiBaseImageName)))
-	}
 
-	imageIDentityModel := &vpcv1.ImageIdentityByID{
-		ID: &[]string{vsiBaseImageID}[0],
-	}
-	instancePrototypeModel := &vpcv1.InstancePrototypeInstanceByImage{
-		Keys:                    []vpcv1.KeyIdentityIntf{keyIDentityModel},
-		Name:                    &[]string{config.VSIName}[0],
-		Profile:                 instanceProfileIdentityModel,
-		VPC:                     vpcIDentityModel,
-		Image:                   imageIDentityModel,
-		PrimaryNetworkInterface: networkInterfacePrototypeModel,
-		Zone:                    zoneIdentityModel,
-	}
+		imageIdentityModel := &vpcv1.ImageIdentityByID{
+			ID: &[]string{vsiBaseImageID}[0],
+		}
+		instancePrototypeModel := &vpcv1.InstancePrototypeInstanceByImage{
+			Keys:                    []vpcv1.KeyIdentityIntf{keyIdentityModel},
+			Name:                    &[]string{config.VSIName}[0],
+			Profile:                 instanceProfileIdentityModel,
+			VPC:                     vpcIdentityModel,
+			Image:                   imageIdentityModel,
+			PrimaryNetworkInterface: networkInterfacePrototypeModel,
+			Zone:                    zoneIdentityModel,
+		}
 
-	userDataFilePath := config.VSIUserDataFile
-	if userDataFilePath != "" {
-		content, err := ioutil.ReadFile(userDataFilePath)
+		userDataFilePath := config.VSIUserDataFile
+		if userDataFilePath != "" {
+			content, err := ioutil.ReadFile(userDataFilePath)
+			if err != nil {
+				err := fmt.Errorf("[ERROR] Error reading user data file. Error: %s", err)
+				state.Put("error", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			}
+			instancePrototypeModel.UserData = &[]string{string(content)}[0]
+		}
+
+		if config.ResourceGroupID != "" {
+			instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
+				ID: &config.ResourceGroupID,
+			}
+		}
+
+		state.Put("instance_definition", *instancePrototypeModel)
+
+		createInstanceOptions := vpcService.NewCreateInstanceOptions(
+			instancePrototypeModel,
+		)
+		instanceData, _, err := vpcService.CreateInstance(createInstanceOptions)
+		// End
 		if err != nil {
-			err := fmt.Errorf("[ERROR] Error reading user data file. Error: %s", err)
+			err := fmt.Errorf("[ERROR] Error creating the instance: %s", err)
 			state.Put("error", err)
 			ui.Error(err.Error())
+			// log.Fatalf(err.Error())
 			return multistep.ActionHalt
 		}
-		instancePrototypeModel.UserData = &[]string{string(content)}[0]
+		state.Put("instance_data", instanceData)
+		ui.Say("Instance successfully created!")
+		ui.Say(fmt.Sprintf("Instance's Name: %s", *instanceData.Name))
+		ui.Say(fmt.Sprintf("Instance's ID: %s", *instanceData.ID))
 	}
 
-	if config.ResourceGroupID != "" {
-		instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
-			ID: &config.ResourceGroupID,
-		}
-	}
-
-	state.Put("instance_definition", *instancePrototypeModel)
-
-	createInstanceOptions := vpcService.NewCreateInstanceOptions(
-		instancePrototypeModel,
-	)
-	instanceData, _, err := vpcService.CreateInstance(createInstanceOptions)
-	// End
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Error creating the instance: %s", err)
-		state.Put("error", err)
-		ui.Error(err.Error())
-		// log.Fatalf(err.Error())
-		return multistep.ActionHalt
-	}
-
-	state.Put("instance_data", instanceData)
-
-	ui.Say("Instance successfully created!")
-	ui.Say(fmt.Sprintf("Instance's Name: %s", *instanceData.Name))
-	ui.Say(fmt.Sprintf("Instance's ID: %s", *instanceData.ID))
 	return multistep.ActionContinue
 }
 

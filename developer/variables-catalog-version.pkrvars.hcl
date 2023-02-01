@@ -1,5 +1,6 @@
 SUBNET_ID="<subnet_id>"
 REGION="<region>"
 SECURITY_GROUP_ID=""
-IBM_API_KEY="<ibm_api_key>"
 RESOURCE_GROUP_ID=""
+IBM_API_KEY="<ibm_api_key>"
+CATALOG_OFFERING_VERSION_CRN="<version_crn>"
