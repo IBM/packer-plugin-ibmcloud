@@ -41,8 +41,8 @@ run-centos-ansible:
 	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos-ansible.pkr.hcl
 
 run-centos-encrypted:
-	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos-encrypted.pkr.hcl
-	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos-encrypted.pkr.hcl
+	cd ..; packer validate -var-file="developer/variables-encrypted.pkrvars.hcl" developer/examples/build.vpc.centos-encrypted.pkr.hcl
+	cd ..; packer build -var-file="developer/variables-encrypted.pkrvars.hcl" developer/examples/build.vpc.centos-encrypted.pkr.hcl
 
 run-rhel:
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.rhel.pkr.hcl

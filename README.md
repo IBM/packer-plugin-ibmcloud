@@ -51,7 +51,7 @@ Starting from version 1.7, Packer supports third-party plugin installation using
     packer {
       required_plugins {
         ibmcloud = {
-          version = ">=v3.1.0"
+          version = ">=v3.0.0"
           source = "github.com/IBM/ibmcloud"
         }
       }
@@ -99,7 +99,7 @@ This is a basic Packer Template used to create a custom CentOS image on IBM Clou
 packer {
   required_plugins {
     ibmcloud = {
-      version = ">=v3.1.0"
+      version = ">=v3.0.0"
       source = "github.com/IBM/ibmcloud"
     }
   }
