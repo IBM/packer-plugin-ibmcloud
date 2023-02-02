@@ -1,13 +1,17 @@
-// packer {
-//   required_plugins {
-//     ibmcloud = {
-//       version = ">=v3.0.0"
-//       source = "github.com/IBM/ibmcloud"
-//     }
-//   }
-// }
+packer {
+  required_plugins {
+    ibmcloud = {
+      version = ">=v3.0.0"
+      source = "github.com/IBM/ibmcloud"
+    }
+  }
+}
 
 variable "IBM_API_KEY" {
+  type = string
+}
+
+variable "CATALOG_OFFERING_VERSION_CRN" {
   type = string
 }
 
@@ -26,25 +30,32 @@ variable "RESOURCE_GROUP_ID" {
 variable "SECURITY_GROUP_ID" {
   type = string
 }
+// variable "VPC_URL" {
+//   type = string
+// }
+// variable "IAM_URL" {
+//   type = string
+// }
+
 
 locals {
   timestamp = regex_replace(timestamp(), "[- TZ:]", "")
 }
 
-source "ibmcloud-vpc" "centos" {
-  api_key = var.IBM_API_KEY
-  region  = var.REGION
-
+source "ibmcloud-vpc" "catalog" {
+  api_key           = var.IBM_API_KEY
+  region            = var.REGION
   subnet_id         = var.SUBNET_ID
   resource_group_id = var.RESOURCE_GROUP_ID
   security_group_id = var.SECURITY_GROUP_ID
 
-  vsi_base_image_name = "ibm-centos-7-9-minimal-amd64-5"
-  vsi_profile         = "bx2-2x8"
-  vsi_interface       = "public"
-  vsi_user_data_file  = "scripts/postscript.sh"
+  catalog_offering_version_crn = var.CATALOG_OFFERING_VERSION_CRN
 
-  image_name = "packer-${local.timestamp}"
+  vsi_profile        = "bx2-2x8"
+  vsi_interface      = "public"
+  vsi_user_data_file = ""
+
+  image_name = "packer-catalog-${local.timestamp}"
 
   communicator = "ssh"
   ssh_username = "root"
@@ -56,7 +67,7 @@ source "ibmcloud-vpc" "centos" {
 
 build {
   sources = [
-    "source.ibmcloud-vpc.centos"
+    "source.ibmcloud-vpc.catalog"
   ]
 
   provisioner "shell" {
@@ -66,9 +77,4 @@ build {
       "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure' >> /hello.txt"
     ]
   }
-
-  provisioner "ansible" {
-    playbook_file = "provisioner/centos-playbook.yml"
-  }
-
 }

@@ -1,7 +1,7 @@
 // packer {
 //   required_plugins {
 //     ibmcloud = {
-//       version = ">=v3.0.4"
+//       version = ">=v3.1.0"
 //       source = "github.com/IBM/ibmcloud"
 //     }
 //   }
@@ -11,7 +11,7 @@ variable "IBM_API_KEY" {
   type = string
 }
 
-variable "CATALOG_OFFERING_VERSION_CRN" {
+variable "CATALOG_OFFERING_CRN" {
   type = string
 }
 
@@ -49,7 +49,7 @@ source "ibmcloud-vpc" "catalog" {
   resource_group_id = var.RESOURCE_GROUP_ID
   security_group_id = var.SECURITY_GROUP_ID
 
-  catalog_offering_version_crn = var.CATALOG_OFFERING_VERSION_CRN
+  catalog_offering_crn = var.CATALOG_OFFERING_CRN
 
   vsi_profile        = "bx2-2x8"
   vsi_interface      = "public"
