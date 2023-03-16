@@ -32,3 +32,6 @@ testacc: dev
 
 generate: install-packer-sdc
 	@go generate ./...
+
+bin: 
+	@PKR_RELEASE=1 sh -c "'$(CURDIR)/scripts/build.sh'"
