@@ -106,16 +106,17 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		c.VSIInterface = "public"
 	}
 
+	// Check for mutual exclusion of User data input via file or as a string.
+	if c.VSIUserDataFile != "" && c.VSIUserDataString != "" {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("mutual exclusion: User data input, either a file as in vsi_user_data_file could be used or a string in vsi_user_data_string, together are not supported"))
+	}
+
 	if c.VSIUserDataFile != "" {
 		if _, err := os.Stat(c.VSIUserDataFile); os.IsNotExist(err) {
 			errs = packer.MultiErrorAppend(
 				errs, fmt.Errorf("failed to read user-data-file: %s", err))
 		}
-	}
-
-	// Check for mutual exclusion of User data input via file or as a string.
-	if c.VSIUserDataFile != "" && c.VSIUserDataString != "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("mutual exclusion: User data input, either a file as in vsi_user_data_file could be used or a string in vsi_user_data_string, together are not supported"))
 	}
 
 	if c.ImageName == "" {
