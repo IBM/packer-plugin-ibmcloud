@@ -35,6 +35,7 @@ type Config struct {
 	VSIProfile                string `mapstructure:"vsi_profile"`
 	VSIInterface              string `mapstructure:"vsi_interface"`
 	VSIUserDataFile           string `mapstructure:"vsi_user_data_file"`
+	VSIUserDataString         string `mapstructure:"vsi_user_data"`
 
 	ImageName string `mapstructure:"image_name"`
 
@@ -103,6 +104,12 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 
 	if c.VSIInterface == "" {
 		c.VSIInterface = "public"
+	}
+
+	// Check for mutual exclusion of User data input via file or as a string.
+	if c.VSIUserDataFile != "" && c.VSIUserDataString != "" {
+		errs = packer.MultiErrorAppend(
+			errs, errors.New("mutual exclusion: User data input, either a file as in vsi_user_data_file could be used or a string in vsi_user_data_string, together are not supported"))
 	}
 
 	if c.VSIUserDataFile != "" {
