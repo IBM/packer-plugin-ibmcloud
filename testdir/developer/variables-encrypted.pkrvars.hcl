@@ -1,0 +1,6 @@
+SUBNET_ID="<subnet_id>"
+REGION="us-south"
+SECURITY_GROUP_ID=""
+RESOURCE_GROUP_ID=""
+IBM_API_KEY="<ibm_api_key>"
+ENCRYPTION_KEY_CRN="<encryption_key_crn>"

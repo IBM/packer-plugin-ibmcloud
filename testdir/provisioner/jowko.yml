@@ -1,0 +1,62 @@
+#!/bin/ansible-playbook
+
+- hosts: all
+  vars:
+    destination: /opt/test
+    user: centos
+
+  become: yes
+  tasks:
+    - name: upgrade all packages
+      yum:
+        name: '*'
+        state: latest
+
+    - name: install epel repository
+      yum:
+        name: epel-release
+        state: latest
+
+    - name: install standard prerequisites
+      yum:
+        name: "{{ packages }}"
+        state: latest
+      vars:
+        packages:
+          - docker
+          - unzip
+
+    - name: download kali linux
+      get_url:
+        url : https://images.kali.org/virtual-images/kali-linux-2021.2-virtualbox-amd64.ova
+        dest: /opt
+
+    - name: download kali linux2
+      get_url:
+        url : https://images.kali.org/virtual-images/kali-linux-2021.2-vmware-amd64.7z
+        dest: /opt
+
+    - name: download kali linux3
+      get_url:
+        url: https://cdimage.kali.org/kali-2021.2/kali-linux-2021.2-installer-amd64.iso
+        dest: /opt
+
+    - name: download kali linux4
+      get_url:
+        url: https://app.vagrantup.com/kalilinux/boxes/rolling/versions/2021.1.0/providers/virtualbox.box
+        dest: /opt
+
+    - name: download Fedora
+      get_url:
+        url : https://download.fedoraproject.org/pub/fedora/linux/releases/34/Workstation/x86_64/iso/Fedora-Workstation-Live-x86_64-34-1.2.iso
+        dest: /opt
+
+    - name: download Fedora2
+      get_url:
+        url : https://download.fedoraproject.org/pub/fedora/linux/releases/34/Workstation/aarch64/iso/Fedora-Workstation-Live-aarch64-34-1.2.iso
+        dest: /opt
+
+    - name: download Fedora3
+      get_url:
+        url : https://download.fedoraproject.org/pub/fedora/linux/releases/34/Workstation/aarch64/images/Fedora-Workstation-34-1.2.aarch64.raw.xz
+        dest: /opt
