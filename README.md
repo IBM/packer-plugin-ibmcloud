@@ -194,6 +194,8 @@ vsi_base_image_name | string | The base image name used to created the VSI. Use 
 catalog_offering_crn | string | The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering version to use when provisioning this virtual server instance. The specified offering version may be in a different account in the same enterprise, subject to IAM policies. Identifies a [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering by a unique property. Optional.
 | OR |
 catalog_offering_version_crn | string | The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering version to use when provisioning this virtual server instance. The specified offering version may be in a different account in the same enterprise, subject to IAM policies. Identifies a version of a [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering by a unique property. Optional.
+| OR |
+vsi_boot_volume_id | string | The ID of the boot volume to be used to create the VSI. Use `ibmcloud is volumes` for available options. It should be a boot volume which has operating system details in it.
 | |
 vsi_profile | string | The profile this VSI uses. Required.
 vsi_interface | string | Set it as "public" to create a Floating IP to connect to the temp VSI. Set it as "private" to use private interface to connect to the temp VSI. Later option requires you run packer plugin inside your VPC.
