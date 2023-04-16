@@ -28,7 +28,7 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 	vsiCatalogOfferingVersionCrn := config.CatalogOfferingVersionCRN
 	vsiBootVolumeID := config.VSIBootVolumeID
 
-	keyIDentityModel := &vpcv1.KeyIdentityByID{
+	keyIdentityModel := &vpcv1.KeyIdentityByID{
 		ID: &[]string{state.Get("vpc_ssh_key_id").(string)}[0],
 	}
 	instanceProfileIdentityModel := &vpcv1.InstanceProfileIdentityByName{
@@ -201,14 +201,13 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 			ID: &vsiBootVolumeID,
 		}
 		bootVolumeAttachment := &vpcv1.VolumeAttachmentPrototypeInstanceByVolumeContext{
-			//DeleteVolumeOnInstanceDelete: &deletebool,
 			Volume: volumeIdentity,
 		}
 		instancePrototypeModel := &vpcv1.InstancePrototypeInstanceByVolume{
-			Keys:                    []vpcv1.KeyIdentityIntf{keyIDentityModel},
+			Keys:                    []vpcv1.KeyIdentityIntf{keyIdentityModel},
 			Name:                    &[]string{config.VSIName}[0],
 			Profile:                 instanceProfileIdentityModel,
-			VPC:                     vpcIDentityModel,
+			VPC:                     vpcIdentityModel,
 			BootVolumeAttachment:    bootVolumeAttachment,
 			PrimaryNetworkInterface: networkInterfacePrototypeModel,
 			Zone:                    zoneIdentityModel,
@@ -252,7 +251,7 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 
 		state.Put("instance_data", instanceData)
 
-		ui.Say("Instance successfully created!")
+		ui.Say("Instance successfully created with the provided boot volume!")
 		ui.Say(fmt.Sprintf("Instance's Name: %s", *instanceData.Name))
 		ui.Say(fmt.Sprintf("Instance's ID: %s", *instanceData.ID))
 	}
