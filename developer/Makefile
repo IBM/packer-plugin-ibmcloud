@@ -9,7 +9,7 @@ setup:
 plugin:
 	cd ..; go mod tidy
 	cd ..; go mod vendor
-	cd ..; go generate ../builder/ibmcloud/...
+	cd ..; go generate ./builder/ibmcloud/...
 	cd ..; go mod vendor
 	cd ..; go build .
 
