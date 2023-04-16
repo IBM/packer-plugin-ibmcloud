@@ -1,10 +1,10 @@
 module packer-plugin-ibmcloud
 
-go 1.17
+go 1.18
 
 require (
-	github.com/IBM/go-sdk-core/v5 v5.10.2
-	github.com/IBM/vpc-go-sdk v0.29.0
+	github.com/IBM/go-sdk-core/v5 v5.12.1
+	github.com/IBM/vpc-go-sdk v0.35.0
 	github.com/hashicorp/hcl/v2 v2.14.1
 	github.com/hashicorp/packer-plugin-sdk v0.2.9
 	github.com/zclconf/go-cty v1.9.1
@@ -37,7 +37,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
+	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.2.0 // indirect
 	github.com/hashicorp/consul/api v1.12.0 // indirect
@@ -116,4 +116,4 @@ require (
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 )
 
-replace github.com/IBM/vpc-go-sdk => ./common/github.com/IBM/vpc-go-sdk
+//replace github.com/IBM/vpc-go-sdk => ./common/github.com/IBM/vpc-go-sdk

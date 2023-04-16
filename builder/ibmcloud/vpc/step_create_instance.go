@@ -215,6 +215,7 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		}
 
 		userDataFilePath := config.VSIUserDataFile
+		userDataString := config.VSIUserDataString
 		if userDataFilePath != "" {
 			content, err := ioutil.ReadFile(userDataFilePath)
 			if err != nil {
@@ -224,6 +225,8 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 				return multistep.ActionHalt
 			}
 			instancePrototypeModel.UserData = &[]string{string(content)}[0]
+		} else if userDataString != "" {
+			instancePrototypeModel.UserData = &[]string{string(userDataString)}[0]
 		}
 
 		if config.ResourceGroupID != "" {
