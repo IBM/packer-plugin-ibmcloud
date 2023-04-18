@@ -9,17 +9,32 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
 
-type stepValidateCustomImage struct{}
+type stepVerifyInput struct{}
 
-func (s *stepValidateCustomImage) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
+func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
 	ui := state.Get("ui").(packer.Ui)
 	config := state.Get("config").(Config)
 
+	// vpc service
 	var vpcService *vpcv1.VpcV1
 	if state.Get("vpcService") != nil {
 		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
 	}
+	// region check
+	getRegionOptions := &vpcv1.GetRegionOptions{
+		Name: &config.Region,
+	}
+	_, _, err := vpcService.GetRegion(getRegionOptions)
+	if err != nil {
+		err := fmt.Errorf("[ERROR] Error fetching region : %s: %s", config.Region, err)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return multistep.ActionHalt
+	}
+	ui.Say("Region verified, check Passed")
+	// region check ends
 
+	// image check
 	ui.Say(fmt.Sprintf("Checking the custom image: %s for redundancy", config.ImageName))
 
 	listImagesOptions := &vpcv1.ListImagesOptions{
@@ -44,12 +59,12 @@ func (s *stepValidateCustomImage) Run(_ context.Context, state multistep.StateBa
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
-
 	ui.Say("Custom Image verified for redundancy, check Passed")
+	// image check ends
 
 	return multistep.ActionContinue
 }
 
-func (s *stepValidateCustomImage) Cleanup(state multistep.StateBag) {
+func (s *stepVerifyInput) Cleanup(state multistep.StateBag) {
 
 }
