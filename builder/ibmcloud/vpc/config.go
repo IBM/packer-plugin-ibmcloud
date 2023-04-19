@@ -31,8 +31,8 @@ type Config struct {
 	ResourceGroupID           string `mapstructure:"resource_group_id"`
 	SecurityGroupID           string `mapstructure:"security_group_id"`
 	VSIBaseImageID            string `mapstructure:"vsi_base_image_id"`
-	VSIBootVolumeID           string `mapstructure:"vsi_boot_volume_id"`
 	VSIBaseImageName          string `mapstructure:"vsi_base_image_name"`
+	VSIBootVolumeID           string `mapstructure:"vsi_boot_volume_id"`
 	VSIProfile                string `mapstructure:"vsi_profile"`
 	VSIInterface              string `mapstructure:"vsi_interface"`
 	VSIUserDataFile           string `mapstructure:"vsi_user_data_file"`
@@ -85,31 +85,6 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		errs = packer.MultiErrorAppend(errs, errors.New("a subnet_id must be specified"))
 	}
 
-	// if c.VSIBaseImageID == "" && c.VSIBaseImageName == "" {
-	// 	if c.CatalogOfferingCRN == "" && c.CatalogOfferingVersionCRN == "" {
-	// 		if c.VSIBootVolumeID == "" {
-	// 			errs = packer.MultiErrorAppend(errs, errors.New("one of (vsi_base_image_id or vsi_base_image_name) or (catalog_offering_crn or catalog_offering_version_crn) or vsi_boot_volume_id  is required"))
-	// 		}
-	// 	} else if (c.CatalogOfferingCRN != "" || c.CatalogOfferingVersionCRN != "") && c.VSIBootVolumeID != "" {
-	// 		errs = packer.MultiErrorAppend(errs, errors.New("only one of (catalog_offering_crn or catalog_offering_version_crn) or vsi_boot_volume_id is required"))
-	// 	} else if c.CatalogOfferingCRN != "" && c.CatalogOfferingVersionCRN != "" {
-	// 		errs = packer.MultiErrorAppend(errs, errors.New("only one of (catalog_offering_crn or catalog_offering_version_crn) is required"))
-	// 	}
-	// } else if c.CatalogOfferingCRN == "" && c.CatalogOfferingVersionCRN == "" {
-	// 	if c.VSIBootVolumeID != "" {
-	// 		errs = packer.MultiErrorAppend(errs, errors.New("only one of (vsi_base_image_id or vsi_base_image_name) or vsi_boot_volume_id is required"))
-	// 	} else if c.VSIBaseImageID != "" && c.VSIBaseImageName != "" {
-	// 		errs = packer.MultiErrorAppend(errs, errors.New("only one of (vsi_base_image_id or vsi_base_image_name) is required"))
-	// 	}
-	// } else {
-	// 	if c.VSIBootVolumeID != "" {
-	// 		errs = packer.MultiErrorAppend(errs, errors.New("only one of (vsi_base_image_id or vsi_base_image_name) or (catalog_offering_crn or catalog_offering_version_crn) or vsi_boot_volume_id is required"))
-	// 	} else {
-	// 		errs = packer.MultiErrorAppend(errs, errors.New("only one of (vsi_base_image_id or vsi_base_image_name) or (catalog_offering_crn or catalog_offering_version_crn) is required"))
-	// 	}
-	// }
-
-	//Method 2
 	if (c.CatalogOfferingCRN != "" || c.CatalogOfferingVersionCRN != "") && (c.VSIBaseImageID != "" || c.VSIBaseImageName != "") && c.VSIBootVolumeID != "" {
 		errs = packer.MultiErrorAppend(errs, errors.New("only one of (vsi_base_image_id or vsi_base_image_name) or (catalog_offering_crn or catalog_offering_version_crn) or vsi_boot_volume_id is required"))
 	} else if (c.CatalogOfferingCRN != "" || c.CatalogOfferingVersionCRN != "") && (c.VSIBaseImageID != "" || c.VSIBaseImageName != "") {
@@ -125,29 +100,6 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	} else if c.CatalogOfferingCRN == "" && c.CatalogOfferingVersionCRN == "" && c.VSIBaseImageID == "" && c.VSIBaseImageName == "" && c.VSIBootVolumeID == "" {
 		errs = packer.MultiErrorAppend(errs, errors.New("one of (vsi_base_image_id or vsi_base_image_name) or (catalog_offering_crn or catalog_offering_version_crn) or vsi_boot_volume_id  is required"))
 	}
-
-	// //Method 3
-	// var intputCount int
-	// if c.VSIBaseImageID != "" {
-	// 	intputCount++
-	// }
-	// if c.VSIBaseImageName != "" {
-	// 	intputCount++
-	// }
-	// if c.CatalogOfferingCRN != "" {
-	// 	intputCount++
-	// }
-	// if c.CatalogOfferingVersionCRN != "" {
-	// 	intputCount++
-	// }
-	// if c.VSIBootVolumeID != "" {
-	// 	intputCount++
-	// }
-	// if intputCount == 0 {
-	// 	errs = packer.MultiErrorAppend(errs, errors.New("one of (vsi_base_image_id or vsi_base_image_name) or (catalog_offering_crn or catalog_offering_version_crn) or vsi_boot_volume_id  is required"))
-	// } else if intputCount > 1 {
-	// 	errs = packer.MultiErrorAppend(errs, errors.New("only one of (vsi_base_image_id or vsi_base_image_name) or (catalog_offering_crn or catalog_offering_version_crn) or vsi_boot_volume_id is required"))
-	// }
 
 	if c.VSIProfile == "" {
 		errs = packer.MultiErrorAppend(errs, errors.New("a vsi_profile must be specified"))

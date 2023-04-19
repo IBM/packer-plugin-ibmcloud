@@ -31,6 +31,10 @@ run-catalog:
 run-centos:
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
 	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
+
+run-centos-boot-volume:
+	cd ..; packer validate -var-file="developer/variables.pkrvars.boot.volume.hcl" developer/examples/build.vpc.centos.boot.volume.pkr.hcl
+	cd ..; packer build -var-file="developer/variables.pkrvars.boot.volume.hcl" developer/examples/build.vpc.centos.boot.volume.pkr.hcl
 	
 run-centos-parallel:
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos-parallel.pkr.hcl
