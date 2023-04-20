@@ -33,6 +33,8 @@ type Config struct {
 	VSIBaseImageID            string `mapstructure:"vsi_base_image_id"`
 	VSIBaseImageName          string `mapstructure:"vsi_base_image_name"`
 	VSIBootVolumeID           string `mapstructure:"vsi_boot_volume_id"`
+	VSIBootCapacity           int    `mapstructure:"vsi_boot_vol_capacity"`
+	VSIVolProfile             string `mapstructure:"vsi_boot_vol_profile"`
 	VSIProfile                string `mapstructure:"vsi_profile"`
 	VSIInterface              string `mapstructure:"vsi_interface"`
 	VSIUserDataFile           string `mapstructure:"vsi_user_data_file"`
@@ -83,6 +85,13 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 
 	if c.SubnetID == "" {
 		errs = packer.MultiErrorAppend(errs, errors.New("a subnet_id must be specified"))
+	}
+
+	if c.VSIBootCapacity != 0 && (c.VSIBootCapacity < 100 || c.VSIBootCapacity > 250) {
+		errs = packer.MultiErrorAppend(errs, errors.New("boot capacity out of bound: provide a valid capacity between 100 to 250"))
+	}
+	if c.VSIVolProfile != "" && (c.VSIVolProfile != "5iops-tier" && c.VSIVolProfile != "10iops-tier" && c.VSIVolProfile != "custom" && c.VSIVolProfile != "general-purpose") {
+		errs = packer.MultiErrorAppend(errs, errors.New("profile must be from:  5iops-tier, 10iops-tier, custom, general-purpose, custom"))
 	}
 
 	if (c.CatalogOfferingCRN != "" || c.CatalogOfferingVersionCRN != "") && (c.VSIBaseImageID != "" || c.VSIBaseImageName != "") && c.VSIBootVolumeID != "" {
