@@ -10,6 +10,7 @@ plugin:
 	cd ..; go mod tidy
 	cd ..; go mod vendor
 	cd ..; go generate ./builder/ibmcloud/...
+	cd ..; go generate ./post-processor/ibmcloud-export/...
 	cd ..; go mod vendor
 	cd ..; go build .
 

@@ -10,15 +10,17 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
 
-type stepCreateVPCServiceInstance struct {
+type StepCreateVPCServiceInstance struct {
 }
 
-func (step *stepCreateVPCServiceInstance) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
+func (step *StepCreateVPCServiceInstance) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
 	client := state.Get("client").(*IBMCloudClient)
 	ui := state.Get("ui").(packer.Ui)
 	config := state.Get("config").(Config)
 
 	ui.Say("Creating VPC service...")
+	ui.Say("Value of IAMEndpoint")
+	ui.Say(config.IAMEndpoint)
 
 	options := &vpcv1.VpcV1Options{
 		Authenticator: &core.IamAuthenticator{
@@ -40,5 +42,5 @@ func (step *stepCreateVPCServiceInstance) Run(_ context.Context, state multistep
 	return multistep.ActionContinue
 }
 
-func (step *stepCreateVPCServiceInstance) Cleanup(state multistep.StateBag) {
+func (step *StepCreateVPCServiceInstance) Cleanup(state multistep.StateBag) {
 }

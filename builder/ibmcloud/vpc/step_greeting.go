@@ -7,10 +7,10 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
 
-type stepGreeting struct {
+type StepGreeting struct {
 }
 
-func (step *stepGreeting) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
+func (step *StepGreeting) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
 	ui := state.Get("ui").(packer.Ui)
 
 	ui.Say("*************************************************************")
@@ -21,5 +21,5 @@ func (step *stepGreeting) Run(_ context.Context, state multistep.StateBag) multi
 	return multistep.ActionContinue
 }
 
-func (step *stepGreeting) Cleanup(state multistep.StateBag) {
+func (step *StepGreeting) Cleanup(state multistep.StateBag) {
 }

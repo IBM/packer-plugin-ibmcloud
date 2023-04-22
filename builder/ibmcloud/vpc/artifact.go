@@ -9,6 +9,7 @@ import (
 type Artifact struct {
 	imageName string
 	imageId   string
+	ibmApiKey string
 	client    *IBMCloudClient
 
 	// StateData should store data such as GeneratedData to be shared with post-processors
@@ -32,7 +33,7 @@ func (a *Artifact) Id() string {
 
 // String returns the string representation of the artifact.
 func (a *Artifact) String() string {
-	return fmt.Sprintf("Image Name: %s || Image ID: %s", a.imageName, a.imageId)
+	return fmt.Sprintf("Image Name: %s || Image ID: %s || IBM API Key ID: %s ", a.imageName, a.imageId, a.ibmApiKey)
 }
 
 func (a *Artifact) State(name string) interface{} {

@@ -67,4 +67,15 @@ build {
       "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure' >> /hello.txt"
     ]
   }
+  post-processors {
+    post-processor "ibmcloud-export"  {
+        /* image_id = "r006-3fa3bea4-7f9c-4eeb-8248-ab1f6e03185b" */
+        //image_id = "r006-0ca0be39-7135-4a83-b5ee-d70779afb1ed" // pass o/p here
+        image_export_job_name = "image-export-job-testing-packer-2"
+        /* StorageBucketName = "bucket-27200-lwx4cfvcue" */
+        storage_bucket_name = "cli-bucket-1"
+        /* storage_bucket_name = "customimage0731" */
+        format = "qcow2"
+    }
+  }
 }

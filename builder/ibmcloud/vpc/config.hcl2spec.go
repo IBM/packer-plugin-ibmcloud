@@ -85,6 +85,10 @@ type FlatConfig struct {
 	VSIUserDataString         *string           `mapstructure:"vsi_user_data" cty:"vsi_user_data" hcl:"vsi_user_data"`
 	ImageName                 *string           `mapstructure:"image_name" cty:"image_name" hcl:"image_name"`
 	RawStateTimeout           *string           `mapstructure:"timeout" cty:"timeout" hcl:"timeout"`
+	ImageID                   *string           `mapstructure:"image_id" cty:"image_id" hcl:"image_id"`
+	ImageExportJobName        *string           `mapstructure:"image_export_job_name" cty:"image_export_job_name" hcl:"image_export_job_name"`
+	StorageBucketName         *string           `mapstructure:"storage_bucket_name" cty:"storage_bucket_name" hcl:"storage_bucket_name"`
+	Format                    *string           `mapstructure:"format" cty:"format" hcl:"format"`
 }
 
 // FlatMapstructure returns a new FlatConfig.
@@ -174,6 +178,10 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"vsi_user_data":                &hcldec.AttrSpec{Name: "vsi_user_data", Type: cty.String, Required: false},
 		"image_name":                   &hcldec.AttrSpec{Name: "image_name", Type: cty.String, Required: false},
 		"timeout":                      &hcldec.AttrSpec{Name: "timeout", Type: cty.String, Required: false},
+		"image_id":                     &hcldec.AttrSpec{Name: "image_id", Type: cty.String, Required: false},
+		"image_export_job_name":        &hcldec.AttrSpec{Name: "image_export_job_name", Type: cty.String, Required: false},
+		"storage_bucket_name":          &hcldec.AttrSpec{Name: "storage_bucket_name", Type: cty.String, Required: false},
+		"format":                       &hcldec.AttrSpec{Name: "format", Type: cty.String, Required: false},
 	}
 	return s
 }

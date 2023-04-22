@@ -47,6 +47,13 @@ type Config struct {
 	RawStateTimeout string              `mapstructure:"timeout"`
 	StateTimeout    time.Duration       `mapstructure-to-hcl2:",skip"`
 	ctx             interpolate.Context `mapstructure-to-hcl2:",skip"`
+
+	ImageID            string `mapstructure:"image_id"`
+	ImageExportJobName string `mapstructure:"image_export_job_name"`
+	//The Cloud Object Storage bucket to export the image to. The bucket must exist and an IAM service authorization must grant Image Service for VPC of VPC Infrastructure Services writer access to the bucket.
+	StorageBucketName string `mapstructure:"storage_bucket_name"`
+	//The format to use for the exported image. If the image is encrypted, only qcow2 is supported.
+	Format string `mapstructure:"format"`
 }
 
 // Prepare processes the build configuration parameters.

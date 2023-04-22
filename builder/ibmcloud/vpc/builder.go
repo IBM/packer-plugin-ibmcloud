@@ -56,8 +56,8 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 	steps := []multistep.Step{}
 	if b.config.Comm.Type == "winrm" {
 		steps = []multistep.Step{
-			new(stepGreeting),
-			new(stepCreateVPCServiceInstance),
+			new(StepGreeting),
+			new(StepCreateVPCServiceInstance),
 			new(stepGetSubnetInfo),
 			new(stepGetBaseImageID),
 			new(stepCreateSshKeyPair),
@@ -73,14 +73,14 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 				WinRMConfig: winRMConfig,
 			},
 			new(commonsteps.StepProvision),
-			new(stepCreateVPCServiceInstance),
+			new(StepCreateVPCServiceInstance),
 			new(stepRebootInstance),
 			new(stepCaptureImage),
 		}
 	} else if b.config.Comm.Type == "ssh" {
 		steps = []multistep.Step{
-			new(stepGreeting),
-			new(stepCreateVPCServiceInstance),
+			new(StepGreeting),
+			new(StepCreateVPCServiceInstance),
 			new(stepGetSubnetInfo),
 			new(stepGetBaseImageID),
 			new(stepCreateSshKeyPair),
@@ -95,7 +95,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 				SSHConfig: sshConfig,
 			},
 			new(commonsteps.StepProvision),
-			new(stepCreateVPCServiceInstance),
+			new(StepCreateVPCServiceInstance),
 			new(stepRebootInstance),
 			new(stepCaptureImage),
 		}
@@ -120,6 +120,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 		imageName: b.config.ImageName,
 		imageId:   state.Get("image_id").(string),
 		client:    client,
+		ibmApiKey: b.config.IBMApiKey,
 
 		// Add the builder generated data to the artifact StateData so that post-processors can access them.
 		StateData: map[string]interface{}{"generated_data": state.Get("generated_data")},
