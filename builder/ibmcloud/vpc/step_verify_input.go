@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
@@ -12,6 +14,7 @@ import (
 type stepVerifyInput struct{}
 
 func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
+	client := state.Get("client").(*IBMCloudClient)
 	ui := state.Get("ui").(packer.Ui)
 	config := state.Get("config").(Config)
 
@@ -33,7 +36,38 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 	}
 	ui.Say("Region verified, check Passed")
 	// region check ends
+	// resource group check
+	if config.ResourceGroupID != "" {
 
+		serviceClientOptions := &resourcemanagerv2.ResourceManagerV2Options{
+			Authenticator: &core.IamAuthenticator{
+				ApiKey: client.IBMApiKey,
+				URL:    config.IAMEndpoint,
+			},
+			// URL: ,
+		}
+		serviceClient, err := resourcemanagerv2.NewResourceManagerV2UsingExternalConfig(serviceClientOptions)
+		if err != nil {
+			err := fmt.Errorf("[ERROR] Error fetching resource group : %s: %s", config.ResourceGroupID, err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
+		result, _, err := serviceClient.GetResourceGroup(serviceClient.NewGetResourceGroupOptions(config.ResourceGroupID))
+		if err != nil {
+			err := fmt.Errorf("[ERROR] Error fetching resource group : %s: %s", config.ResourceGroupID, err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		} else if result == nil {
+			err := fmt.Errorf("[ERROR] Resource group not found resource_group_id : %s: %s", config.ResourceGroupID, err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		} else {
+			ui.Say(fmt.Sprintf("Continuing with resource group : %s", *result.Name))
+		}
+	}
 	// image check
 	ui.Say(fmt.Sprintf("Checking the custom image: %s for redundancy", config.ImageName))
 
@@ -62,6 +96,29 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 	ui.Say("Custom Image verified for redundancy, check Passed")
 	// image check ends
 
+	// security group verification
+	if config.SecurityGroupID != "" {
+		secgrpOption := &vpcv1.GetSecurityGroupOptions{
+			ID: &config.SecurityGroupID,
+		}
+		secGrp, _, err := vpcService.GetSecurityGroup(secgrpOption)
+		if err != nil {
+			err := fmt.Errorf("[ERROR] Error fetching security group %s", err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
+		if *secGrp.ID != "" {
+			ui.Say(fmt.Sprintf("Using provided security group: %s with security_group_id: %s", *secGrp.Name, *secGrp.ID))
+		}
+		// Check for security group's VPC, must be same for the subnet - Check should happen at the subnet level.
+		// if secGrp.VPC.ID != &config.VPCID {
+		// 	ui.Say("Security Group doesn't fall in same VPC as the subnet!")
+		// 	// state.Put("error", err)
+		// 	// ui.Error(err.Error())
+		// 	// return multistep.ActionHalt
+		// }
+	}
 	return multistep.ActionContinue
 }
 
