@@ -1,11 +1,11 @@
-// packer {
-//   required_plugins {
-//     ibmcloud = {
-//       version = ">=v3.0.4"
-//       source = "github.com/IBM/ibmcloud"
-//     }
-//   }
-// }
+packer {
+  required_plugins {
+    ibmcloud = {
+      version = ">=v3.0.0"
+      source = "github.com/IBM/ibmcloud"
+    }
+  }
+}
 
 variable "unique-id" {
   type    = string

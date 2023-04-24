@@ -51,7 +51,7 @@ Starting from version 1.7, Packer supports third-party plugin installation using
     packer {
       required_plugins {
         ibmcloud = {
-          version = ">=v3.0.4"
+          version = ">=v3.0.0"
           source = "github.com/IBM/ibmcloud"
         }
       }
@@ -99,7 +99,7 @@ This is a basic Packer Template used to create a custom CentOS image on IBM Clou
 packer {
   required_plugins {
     ibmcloud = {
-      version = ">=v3.0.4"
+      version = ">=v3.0.0"
       source = "github.com/IBM/ibmcloud"
     }
   }
@@ -200,6 +200,8 @@ vsi_interface | string | Set it as "public" to create a Floating IP to connect t
 | |
 | |
 vsi_user_data_file | string | User data to be made available when setting up the virtual server instance. Optional.
+| OR |
+vsi_user_data | string | User data to be made available when setting up the virtual server instance. Optional. This is the string input variable.
 vpc_endpoint_url | string | Configure URL for VPC test environments. Optional.
 iam_url | string | Configure URL for IAM test environments. Optional.
 image_name | string | The name of the resulting custom Image that will appear in your account. Required.
