@@ -1,6 +1,6 @@
 SUBNET_ID="<subnet_id>"
-REGION="us-south"
+REGION="<region>"
 SECURITY_GROUP_ID=""
 RESOURCE_GROUP_ID=""
 IBM_API_KEY="<ibm_api_key>"
-BOOT_VOLUME_ID="boot_volume_id"
+BOOT_VOLUME_ID="<boot_volume_id>"
