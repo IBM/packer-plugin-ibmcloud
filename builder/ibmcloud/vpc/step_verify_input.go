@@ -110,14 +110,8 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 		}
 		if *secGrp.ID != "" {
 			ui.Say(fmt.Sprintf("Using provided security group: %s with security_group_id: %s", *secGrp.Name, *secGrp.ID))
+			state.Put("user_sec_grp_vpc", *secGrp.VPC.ID) // check for vpc is done as part of subnet fetch.
 		}
-		// Check for security group's VPC, must be same for the subnet - Check should happen at the subnet level.
-		// if secGrp.VPC.ID != &config.VPCID {
-		// 	ui.Say("Security Group doesn't fall in same VPC as the subnet!")
-		// 	// state.Put("error", err)
-		// 	// ui.Error(err.Error())
-		// 	// return multistep.ActionHalt
-		// }
 	}
 	return multistep.ActionContinue
 }

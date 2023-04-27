@@ -34,6 +34,14 @@ func (s *stepGetSubnetInfo) Run(_ context.Context, state multistep.StateBag) mul
 	}
 
 	vpcId := *subnetData.VPC.ID
+	secGrpVPC := state.Get("user_sec_grp_vpc")
+	ui.Say("Verifying the security group and subnet belongs to same VPC..")
+	if vpcId != secGrpVPC {
+		err := fmt.Errorf("[ERROR] Error VPCs of provided security group %s, and subnet's VPC %s, doesnot match", secGrpVPC, vpcId)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return multistep.ActionHalt
+	}
 	zone := *subnetData.Zone.Name
 
 	state.Put("vpc_id", vpcId)
