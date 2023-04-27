@@ -44,7 +44,6 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 				ApiKey: client.IBMApiKey,
 				URL:    config.IAMEndpoint,
 			},
-			// URL: ,
 		}
 		serviceClient, err := resourcemanagerv2.NewResourceManagerV2UsingExternalConfig(serviceClientOptions)
 		if err != nil {
