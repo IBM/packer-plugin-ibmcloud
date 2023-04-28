@@ -46,7 +46,7 @@ locals {
   timestamp = regex_replace(timestamp(), "[- TZ:]", "")
 }
 
-source "ibmcloud-vpc" "centos" {
+source "ibmcloud-vpc" "boot-volume" {
   api_key           = var.IBM_API_KEY
   region            = var.REGION
   subnet_id         = var.SUBNET_ID
@@ -70,7 +70,7 @@ source "ibmcloud-vpc" "centos" {
 
 build {
   sources = [
-    "source.ibmcloud-vpc.centos"
+    "source.ibmcloud-vpc.boot-volume"
   ]
 
   provisioner "shell" {
