@@ -44,6 +44,9 @@ source "ibmcloud-vpc" "centos" {
   vsi_interface       = "public"
   vsi_user_data_file  = "scripts/postscript.sh"
 
+  vsi_boot_vol_capacity = "200"
+  vsi_boot_vol_profile  = "5iops-tier"
+
   image_name = "packer-${local.timestamp}"
 
   communicator = "ssh"
@@ -65,6 +68,7 @@ build {
       "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure'",
       "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure' >> /hello.txt"
     ]
+    pause_before = "60s"
   }
 
   provisioner "ansible" {

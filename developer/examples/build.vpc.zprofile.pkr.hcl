@@ -44,6 +44,9 @@ source "ibmcloud-vpc" "zprofile" {
   vsi_interface      = "public"
   vsi_user_data_file = ""
 
+  vsi_boot_vol_capacity = "200"
+  vsi_boot_vol_profile  = "5iops-tier"
+
   image_name = "packer-zprofile-${local.timestamp}"
 
   communicator = "ssh"
