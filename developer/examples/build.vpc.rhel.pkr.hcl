@@ -44,9 +44,6 @@ source "ibmcloud-vpc" "rhel" {
   vsi_profile         = "bx2-4x16"
   vsi_interface       = "public"
   vsi_user_data_file  = ""
-
-  vsi_boot_vol_capacity = "200"
-  vsi_boot_vol_profile  = "5iops-tier"
   
   image_name = "packer-${local.timestamp}"
 

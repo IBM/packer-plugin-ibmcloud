@@ -35,9 +35,6 @@ source "ibmcloud-vpc" "rhel" {
   vsi_interface       = "public"
   vsi_user_data_file  = ""
 
-  vsi_boot_vol_capacity = "200"
-  vsi_boot_vol_profile  = "5iops-tier"
-
   image_name = "packer-${local.timestamp}"
 
   communicator = "ssh"

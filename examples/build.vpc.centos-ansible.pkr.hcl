@@ -36,9 +36,6 @@ source "ibmcloud-vpc" "centos" {
   vsi_user_data_file  = "scripts/postscript.sh"
   image_name          = "packer-${local.timestamp}"
 
-  vsi_boot_vol_capacity = "200"
-  vsi_boot_vol_profile  = "5iops-tier"
-
   communicator = "ssh"
   ssh_username = "root"
   ssh_port     = 22
