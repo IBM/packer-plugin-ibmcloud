@@ -83,7 +83,7 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 	allrecs := availableImages.Images
 
 	if len(allrecs) != 0 {
-		err := fmt.Errorf("[ERROR] Existing custom image found with name: %s", config.ImageName)
+		err := fmt.Errorf("[ERROR] An Image exist with the same name %s:", config.ImageName)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt
