@@ -34,7 +34,6 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
-	ui.Say("Region verified, check Passed")
 	// region check ends
 	// resource group check
 	if config.ResourceGroupID != "" {
@@ -47,7 +46,7 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 		}
 		serviceClient, err := resourcemanagerv2.NewResourceManagerV2UsingExternalConfig(serviceClientOptions)
 		if err != nil {
-			err := fmt.Errorf("[ERROR] Error fetching resource group : %s: %s", config.ResourceGroupID, err)
+			err := fmt.Errorf("[ERROR] Error creating instance of ResourceManagerV2 for resource group: %s: %s", config.ResourceGroupID, err)
 			state.Put("error", err)
 			ui.Error(err.Error())
 			return multistep.ActionHalt
@@ -63,12 +62,9 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 			state.Put("error", err)
 			ui.Error(err.Error())
 			return multistep.ActionHalt
-		} else {
-			ui.Say(fmt.Sprintf("Continuing with resource group : %s", *result.Name))
 		}
 	}
 	// image check
-	ui.Say(fmt.Sprintf("Checking the custom image: %s for redundancy", config.ImageName))
 
 	listImagesOptions := &vpcv1.ListImagesOptions{
 		Name: &config.ImageName,
@@ -79,7 +75,7 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 	// }
 	availableImages, _, err := vpcService.ListImages(listImagesOptions)
 	if err != nil {
-		err := fmt.Errorf("[ERROR] Error checking custom image %s", err)
+		err := fmt.Errorf("[ERROR] Error fetching custom image %s", err)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt
@@ -92,7 +88,6 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
-	ui.Say("Custom Image verified for redundancy, check Passed")
 	// image check ends
 
 	// security group verification
@@ -108,7 +103,6 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 			return multistep.ActionHalt
 		}
 		if *secGrp.ID != "" {
-			ui.Say(fmt.Sprintf("Using provided security group: %s with security_group_id: %s", *secGrp.Name, *secGrp.ID))
 			state.Put("user_sec_grp_vpc", *secGrp.VPC.ID) // check for vpc is done as part of subnet fetch.
 		}
 	}
