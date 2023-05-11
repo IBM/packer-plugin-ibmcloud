@@ -70,6 +70,10 @@ func (s *stepGetSubnetInfo) Run(_ context.Context, state multistep.StateBag) mul
 			res, _, _ := globalSearchAPIV2.Search(searchOptions)
 			if len(res.Items) != 0 {
 				ui.Say(fmt.Sprintf("%s Catalog information successfully retrieved ...", res.Items[0].GetProperty("name")))
+			} else {
+				state.Put("Catalog information could not be retrieved", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
 			}
 		}
 		// validate catalog version crn
@@ -84,6 +88,10 @@ func (s *stepGetSubnetInfo) Run(_ context.Context, state multistep.StateBag) mul
 			res, _, _ := globalSearchAPIV2.Search(searchOptions)
 			if len(res.Items) != 0 {
 				ui.Say(fmt.Sprintf("%s Catalog information successfully retrieved ...", res.Items[0].GetProperty("name")))
+			} else {
+				state.Put("Catalog information could not be retrieved", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
 			}
 		}
 		// validate encryption key crn
@@ -98,6 +106,10 @@ func (s *stepGetSubnetInfo) Run(_ context.Context, state multistep.StateBag) mul
 			res, _, _ := globalSearchAPIV2.Search(searchOptions)
 			if len(res.Items) != 0 {
 				ui.Say(fmt.Sprintf("%s Encryption information successfully retrieved ...", res.Items[0].GetProperty("name")))
+			} else {
+				state.Put("Encryption information could not be retrieved", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
 			}
 		}
 	}
