@@ -34,13 +34,15 @@ func (s *stepGetSubnetInfo) Run(_ context.Context, state multistep.StateBag) mul
 	}
 
 	vpcId := *subnetData.VPC.ID
-	secGrpVPC := state.Get("user_sec_grp_vpc")
-	ui.Say("Verifying the security group and subnet belongs to same VPC..")
-	if vpcId != secGrpVPC {
-		err := fmt.Errorf("The security group and subnet provided are not connected to the same VPC id: %s", vpcId)
-		state.Put("error", err)
-		ui.Error(err.Error())
-		return multistep.ActionHalt
+	if config.SecurityGroupID != "" { // User provided security group
+		secGrpVPC := state.Get("user_sec_grp_vpc")
+		ui.Say("Verifying the security group and subnet belongs to same VPC..")
+		if vpcId != secGrpVPC {
+			err := fmt.Errorf("The security group and subnet provided are not connected to the same VPC id: %s", vpcId)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
 	}
 	zone := *subnetData.Zone.Name
 
