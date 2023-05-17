@@ -58,6 +58,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 		steps = []multistep.Step{
 			new(stepGreeting),
 			new(stepCreateVPCServiceInstance),
+			new(stepVerifyInput),
 			new(stepGetSubnetInfo),
 			new(stepGetBaseImageID),
 			new(stepCreateSshKeyPair),
@@ -81,6 +82,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 		steps = []multistep.Step{
 			new(stepGreeting),
 			new(stepCreateVPCServiceInstance),
+			new(stepVerifyInput),
 			new(stepGetSubnetInfo),
 			new(stepGetBaseImageID),
 			new(stepCreateSshKeyPair),
