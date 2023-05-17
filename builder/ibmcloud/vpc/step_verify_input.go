@@ -64,6 +64,39 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 			return multistep.ActionHalt
 		}
 	}
+
+	// boot volume id validation
+	if config.VSIBootVolumeID != "" {
+		getVolumeOptions := &vpcv1.GetVolumeOptions{
+			ID: &config.VSIBootVolumeID,
+		}
+		bootVolume, response, err := vpcService.GetVolume(getVolumeOptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				err := fmt.Errorf("[ERROR] Boot volume provided is not found %s:", config.VSIBootVolumeID)
+				state.Put("error", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			}
+			err := fmt.Errorf("[ERROR] Error fetching volume %s", config.VSIBootVolumeID)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
+		if bootVolume.OperatingSystem == nil || bootVolume.OperatingSystem.Architecture == nil {
+			err := fmt.Errorf("[ERROR] Provided volume %s is not a bootable volume. Please provide an unattached bootable volume", config.VSIBootVolumeID)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
+		if bootVolume.AttachmentState != nil && *bootVolume.AttachmentState != "unattached" {
+			err := fmt.Errorf("[ERROR] Provided volume %s is either already attached or unusuble. Please provide an unattached bootable volume", config.VSIBootVolumeID)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
+	}
+
 	// image check
 
 	listImagesOptions := &vpcv1.ListImagesOptions{
