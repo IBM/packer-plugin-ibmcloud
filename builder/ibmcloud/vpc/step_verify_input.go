@@ -3,8 +3,11 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/IBM/go-sdk-core/v5/core"
+	searchv2 "github.com/IBM/platform-services-go-sdk/globalsearchv2"
+
 	"github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
@@ -126,10 +129,8 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 		if config.CatalogOfferingCRN != "" {
 			crnToCheck := fmt.Sprintf("%s%s", strings.Split(config.CatalogOfferingCRN, ":offering")[0], "::")
 			query := fmt.Sprintf("crn:\"%s\"", crnToCheck)
-			isHidden := "any"
 			searchOptions := &searchv2.SearchOptions{
-				Query:    &query,
-				IsHidden: &isHidden,
+				Query: &query,
 			}
 			res, _, _ := globalSearchAPIV2.Search(searchOptions)
 			if len(res.Items) != 0 {
@@ -144,10 +145,8 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 		if config.CatalogOfferingVersionCRN != "" {
 			crnToCheck := fmt.Sprintf("%s%s", strings.Split(config.CatalogOfferingVersionCRN, ":version")[0], "::")
 			query := fmt.Sprintf("crn:\"%s\"", crnToCheck)
-			isHidden := "any"
 			searchOptions := &searchv2.SearchOptions{
-				Query:    &query,
-				IsHidden: &isHidden,
+				Query: &query,
 			}
 			res, _, _ := globalSearchAPIV2.Search(searchOptions)
 			if len(res.Items) != 0 {
@@ -162,10 +161,8 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 		if config.EncryptionKeyCRN != "" {
 			crnToCheck := fmt.Sprintf("%s%s", strings.Split(config.EncryptionKeyCRN, ":key")[0], "::")
 			query := fmt.Sprintf("crn:\"%s\"", crnToCheck)
-			isHidden := "any"
 			searchOptions := &searchv2.SearchOptions{
-				Query:    &query,
-				IsHidden: &isHidden,
+				Query: &query,
 			}
 			res, _, _ := globalSearchAPIV2.Search(searchOptions)
 			if len(res.Items) != 0 {

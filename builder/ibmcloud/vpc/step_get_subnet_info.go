@@ -3,9 +3,7 @@ package vpc
 import (
 	"context"
 	"fmt"
-	"strings"
 
-	searchv2 "github.com/IBM/platform-services-go-sdk/globalsearchv2"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
