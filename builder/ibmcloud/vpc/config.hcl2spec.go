@@ -79,6 +79,7 @@ type FlatConfig struct {
 	SecurityGroupID           *string           `mapstructure:"security_group_id" cty:"security_group_id" hcl:"security_group_id"`
 	VSIBaseImageID            *string           `mapstructure:"vsi_base_image_id" cty:"vsi_base_image_id" hcl:"vsi_base_image_id"`
 	VSIBaseImageName          *string           `mapstructure:"vsi_base_image_name" cty:"vsi_base_image_name" hcl:"vsi_base_image_name"`
+	VSIBootVolumeID           *string           `mapstructure:"vsi_boot_volume_id" cty:"vsi_boot_volume_id" hcl:"vsi_boot_volume_id"`
 	VSIProfile                *string           `mapstructure:"vsi_profile" cty:"vsi_profile" hcl:"vsi_profile"`
 	VSIInterface              *string           `mapstructure:"vsi_interface" cty:"vsi_interface" hcl:"vsi_interface"`
 	VSIUserDataFile           *string           `mapstructure:"vsi_user_data_file" cty:"vsi_user_data_file" hcl:"vsi_user_data_file"`
@@ -168,6 +169,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"security_group_id":            &hcldec.AttrSpec{Name: "security_group_id", Type: cty.String, Required: false},
 		"vsi_base_image_id":            &hcldec.AttrSpec{Name: "vsi_base_image_id", Type: cty.String, Required: false},
 		"vsi_base_image_name":          &hcldec.AttrSpec{Name: "vsi_base_image_name", Type: cty.String, Required: false},
+		"vsi_boot_volume_id":           &hcldec.AttrSpec{Name: "vsi_boot_volume_id", Type: cty.String, Required: false},
 		"vsi_profile":                  &hcldec.AttrSpec{Name: "vsi_profile", Type: cty.String, Required: false},
 		"vsi_interface":                &hcldec.AttrSpec{Name: "vsi_interface", Type: cty.String, Required: false},
 		"vsi_user_data_file":           &hcldec.AttrSpec{Name: "vsi_user_data_file", Type: cty.String, Required: false},
