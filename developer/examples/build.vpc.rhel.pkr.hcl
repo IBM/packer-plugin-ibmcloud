@@ -44,7 +44,7 @@ source "ibmcloud-vpc" "rhel" {
   vsi_profile         = "bx2-4x16"
   vsi_interface       = "public"
   vsi_user_data_file  = ""
-  
+
   image_name = "packer-${local.timestamp}"
 
   communicator = "ssh"

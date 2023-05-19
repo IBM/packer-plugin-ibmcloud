@@ -73,6 +73,7 @@ source "ibmcloud-vpc" "centos-other" {
   vsi_profile        = "bx2-2x8"
   vsi_interface      = "public"
   vsi_user_data_file = ""
+
   image_name = "packer-${local.timestamp}-2"
 
   communicator = "ssh"
