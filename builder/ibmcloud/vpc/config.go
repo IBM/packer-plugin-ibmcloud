@@ -90,8 +90,8 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	if c.VSIBootCapacity != 0 && (c.VSIBootCapacity < 100 || c.VSIBootCapacity > 250) {
 		errs = packer.MultiErrorAppend(errs, errors.New("boot capacity out of bound: provide a valid capacity between 100 to 250"))
 	}
-	if c.VSIBootProfile != "" && (c.VSIBootProfile != "5iops-tier" && c.VSIBootProfile != "10iops-tier" && c.VSIBootProfile != "custom" && c.VSIBootProfile != "general-purpose") {
-		errs = packer.MultiErrorAppend(errs, errors.New("profile must be from:  5iops-tier, 10iops-tier, custom, general-purpose."))
+	if c.VSIBootProfile != "" && (c.VSIBootProfile != "5iops-tier" && c.VSIBootProfile != "10iops-tier" && c.VSIBootProfile != "general-purpose") {
+		errs = packer.MultiErrorAppend(errs, errors.New("profile must be from:  5iops-tier, 10iops-tier, general-purpose"))
 	}
 
 	if (c.CatalogOfferingCRN != "" || c.CatalogOfferingVersionCRN != "") && (c.VSIBaseImageID != "" || c.VSIBaseImageName != "") && c.VSIBootVolumeID != "" {
