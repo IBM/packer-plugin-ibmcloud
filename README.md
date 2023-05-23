@@ -204,8 +204,6 @@ vsi_interface | string | Set it as "public" to create a Floating IP to connect t
 vsi_user_data_file | string | User data to be made available when setting up the virtual server instance. Optional.
 | OR |
 vsi_user_data | string | User data to be made available when setting up the virtual server instance. Optional. This is the string input variable.
-vpc_endpoint_url | string | Configure URL for VPC test environments. Optional.
-iam_url | string | Configure URL for IAM test environments. Optional.
 image_name | string | The name of the resulting custom image that will appear in your account. Required.
 encryption_key_crn | string | The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
 communicator | string | Communicators are the mechanism Packer uses to upload files, execute scripts, etc. with the machine being created. Choose between "ssh" (for Linux) and "winrm" (for Windows). Required.

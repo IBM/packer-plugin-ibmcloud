@@ -39,6 +39,13 @@ There is a `Makefile` and a `Dockerfile` that automate everything for you.
    RESOURCE_GROUP_ID = ""
    IBM_API_KEY = ""
    ```
+   Customize the packer run to point to staging endpoint.
+
+   Variable | Type |Description
+   --- | --- | ---
+   **builder variables** |
+   vpc_endpoint_url | string | Configure URL for VPC test environments. Optional.
+   iam_url | string | Configure URL for IAM test environments. Optional.
 
 - Customize your Packer Template: see [Configuration](#configuration) to find a detail description of each field on the Template. Likewise, there are some Packer Template examples on `examples` folder.
 - Create container with Packer Plugin Binary within it:
