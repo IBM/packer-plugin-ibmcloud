@@ -198,7 +198,7 @@ catalog_offering_version_crn | string | The [catalog](https://cloud.ibm.com/docs
 vsi_boot_volume_id | string | The ID of an existing boot volume.
 | |
 vsi_profile | string | The profile this VSI uses. Required.
-vsi_interface | string | Set it as "public" to create a Floating IP to connect to the temp VSI. Set it as "private" to use private interface to connect to the temp VSI. Later option requires you run packer plugin inside your VPC.
+vsi_interface | string | Set it as "public" to create a Floating IP to connect to the temp VSI. Set it as "private" to use private interface to connect to the temp VSI. Later seeks the private IP under the VPC.
 | |
 | |
 vsi_user_data_file | string | User data to be made available when setting up the virtual server instance. Optional.
