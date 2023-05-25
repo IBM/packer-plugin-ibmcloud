@@ -18,6 +18,7 @@ validate-all:
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos-ansible.pkr.hcl
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.windows.pkr.hcl
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.rhel.pkr.hcl
+	cd ..; packer validate -var-file="developer/variables.boot.volume.pkrvars.hcl" developer/examples/build.vpc.boot.volume.pkr.hcl
 	cd ..; packer validate -var-file="developer/variables-encrypted.pkrvars.hcl" developer/examples/build.vpc.centos-encrypted.pkr.hcl
 	cd ..; packer validate -var-file="developer/variables-catalog-offering.pkrvars.hcl" developer/examples/build.vpc.catalogimage-offering.pkr.hcl
 	cd ..; packer validate -var-file="developer/variables-catalog-version.pkrvars.hcl" developer/examples/build.vpc.catalogimage-version.pkr.hcl
@@ -31,6 +32,10 @@ run-catalog:
 run-centos:
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
 	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
+
+run-boot-volume:
+	cd ..; packer validate -var-file="developer/variables.boot.volume.pkrvars.hcl" developer/examples/build.vpc.boot.volume.pkr.hcl
+	cd ..; packer build -var-file="developer/variables.boot.volume.pkrvars.hcl" developer/examples/build.vpc.boot.volume.pkr.hcl
 	
 run-centos-parallel:
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos-parallel.pkr.hcl
