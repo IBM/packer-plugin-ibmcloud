@@ -169,6 +169,7 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 			if len(res.Items) != 0 {
 				ui.Say(fmt.Sprintf("%s Catalog information successfully retrieved ...", res.Items[0].GetProperty("name")))
 			} else {
+				err := fmt.Errorf("[ERROR] Catalog crn (%s) information could not be retrieved", config.CatalogOfferingCRN)
 				state.Put("Catalog offering crn information could not be retrieved", err)
 				ui.Error(err.Error())
 				return multistep.ActionHalt
@@ -185,6 +186,7 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 			if len(res.Items) != 0 {
 				ui.Say(fmt.Sprintf("%s Catalog information successfully retrieved ...", res.Items[0].GetProperty("name")))
 			} else {
+				err := fmt.Errorf("[ERROR] Catalog version crn (%s) information could not be retrieved", config.CatalogOfferingVersionCRN)
 				state.Put("Catalog version crn information could not be retrieved", err)
 				ui.Error(err.Error())
 				return multistep.ActionHalt
@@ -201,6 +203,7 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 			if len(res.Items) != 0 {
 				ui.Say(fmt.Sprintf("%s Encryption information successfully retrieved ...", res.Items[0].GetProperty("name")))
 			} else {
+				err := fmt.Errorf("[ERROR] Encryption crn (%s) information could not be retrieved", config.EncryptionKeyCRN)
 				state.Put("Encryption information could not be retrieved", err)
 				ui.Error(err.Error())
 				return multistep.ActionHalt
