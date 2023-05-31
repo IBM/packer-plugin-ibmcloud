@@ -38,7 +38,8 @@ type Config struct {
 	VSIUserDataFile           string `mapstructure:"vsi_user_data_file"`
 	VSIUserDataString         string `mapstructure:"vsi_user_data"`
 
-	ImageName string `mapstructure:"image_name"`
+	ImageName string   `mapstructure:"image_name"`
+	ImageTags []string `mapstructure:"tags"`
 
 	VSIName           string `mapstructure-to-hcl2:",skip"`
 	VpcSshKeyName     string `mapstructure-to-hcl2:",skip"`
@@ -125,6 +126,10 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	if c.ImageName == "" {
 		c.ImageName = fmt.Sprintf("packer-vpc-%d", currentTime.Unix())
 	}
+
+	// check for the endpoint details - create an env variable.
+	// use this URL https://tags.global-search-tagging.cloud.ibm.com
+	// if PKR_GLB_SRCH_TAG_URL
 
 	if c.Comm.Type == "winrm" {
 		if c.Comm.WinRMUser == "" {

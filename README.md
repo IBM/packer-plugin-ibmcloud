@@ -186,6 +186,7 @@ region | string | IBM Cloud region where VPC is deployed. Required.
 subnet_id | string | The VPC Subnet identifier. Required.
 resource_group_id | string | The resource group identifier to use. If not specified, IBM packer plugin uses `default` resource group.
 security_group_id | string | The security group identifier to use. If not specified, IBM packer plugin creates a new temporary security group to allow SSH and WinRM access.
+tags | list |  List of tags that you want for your image. Tags can help you find the image more easily later. Tags can be made as `key:value` pair or in `label` format. Optional. Plugin tag images as creator for all the custom images it creates as `creator: IBM-Packer-Plugin` for ease of classifying all the packer generated images.
 | |
 vsi_base_image_id | string | The base image identifier used to created the VSI. Use `ibmcloud is images` for available options.
 | OR |

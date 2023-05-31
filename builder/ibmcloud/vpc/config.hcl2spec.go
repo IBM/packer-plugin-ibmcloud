@@ -85,6 +85,7 @@ type FlatConfig struct {
 	VSIUserDataFile           *string           `mapstructure:"vsi_user_data_file" cty:"vsi_user_data_file" hcl:"vsi_user_data_file"`
 	VSIUserDataString         *string           `mapstructure:"vsi_user_data" cty:"vsi_user_data" hcl:"vsi_user_data"`
 	ImageName                 *string           `mapstructure:"image_name" cty:"image_name" hcl:"image_name"`
+	ImageTags                 []string          `mapstructure:"tags" cty:"tags" hcl:"tags"`
 	RawStateTimeout           *string           `mapstructure:"timeout" cty:"timeout" hcl:"timeout"`
 }
 
@@ -175,6 +176,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"vsi_user_data_file":           &hcldec.AttrSpec{Name: "vsi_user_data_file", Type: cty.String, Required: false},
 		"vsi_user_data":                &hcldec.AttrSpec{Name: "vsi_user_data", Type: cty.String, Required: false},
 		"image_name":                   &hcldec.AttrSpec{Name: "image_name", Type: cty.String, Required: false},
+		"tags":                         &hcldec.AttrSpec{Name: "tags", Type: cty.List(cty.String), Required: false},
 		"timeout":                      &hcldec.AttrSpec{Name: "timeout", Type: cty.String, Required: false},
 	}
 	return s
