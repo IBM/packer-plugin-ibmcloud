@@ -97,6 +97,32 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 		}
 	}
 
+	//boot snapshot support
+	if config.VSIBootSnapshotID != "" {
+		getSnapshotOptions := &vpcv1.GetSnapshotOptions{
+			ID: &config.VSIBootSnapshotID,
+		}
+		bootSnapshot, response, err := vpcService.GetSnapshot(getSnapshotOptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				err := fmt.Errorf("[ERROR] Boot snapahot provided is not found %s:", config.VSIBootSnapshotID)
+				state.Put("error", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			}
+			err := fmt.Errorf("[ERROR] Error fetching snapshot %s", config.VSIBootSnapshotID)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
+		if bootSnapshot.OperatingSystem == nil || bootSnapshot.OperatingSystem.Architecture == nil {
+			err := fmt.Errorf("[ERROR] Provided snapshot %s is not a bootable snapshot. Please provide an unattached bootable snapshot", config.VSIBootSnapshotID)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
+	}
+
 	// image check
 
 	listImagesOptions := &vpcv1.ListImagesOptions{

@@ -294,7 +294,7 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 			ID: &vsiBootSnapshotId,
 		}
 		volumeProfileIdentityModel := &vpcv1.VolumeProfileIdentity{
-			Name: &[]string{config.VSIProfile}[0],
+			Name: &[]string{"general-purpose"}[0], // TODO: should update the profile field from the boot capcity PR changes ones meged
 		}
 		sourceSnapVolumeIdentity := &vpcv1.VolumePrototypeInstanceBySourceSnapshotContext{
 			Profile:        volumeProfileIdentityModel,

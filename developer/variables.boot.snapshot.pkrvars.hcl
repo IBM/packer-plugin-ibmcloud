@@ -1,0 +1,6 @@
+SUBNET_ID="<subnet_id>"
+REGION="<region>"
+SECURITY_GROUP_ID=""
+RESOURCE_GROUP_ID=""
+IBM_API_KEY="<ibm_api_key>"
+BOOT_SNAPSHOT_ID="<boot-snapshot-id>"
