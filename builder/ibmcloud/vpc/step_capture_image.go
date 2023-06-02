@@ -100,13 +100,6 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 
 	imageId := *imageData.ID
 
-	//user-tags
-	if len(config.ImageTags) > 0 {
-		config.ImageTags = append(config.ImageTags, "creator: IBM-Packer-Plugin")
-	} else {
-		config.ImageTags = []string{"creator: IBM-Packer-Plugin"}
-	}
-
 	optGlbTag := globaltaggingv1.GlobalTaggingV1Options{
 		Authenticator: &core.IamAuthenticator{
 			ApiKey: client.IBMApiKey,
