@@ -28,6 +28,9 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 	vsiCatalogOfferingVersionCrn := config.CatalogOfferingVersionCRN
 	vsiBootVolumeID := config.VSIBootVolumeID
 
+	vsiCapacity := config.VSIBootCapacity
+	VSIBootProfile := config.VSIBootProfile
+
 	keyIdentityModel := &vpcv1.KeyIdentityByID{
 		ID: &[]string{state.Get("vpc_ssh_key_id").(string)}[0],
 	}
@@ -74,6 +77,21 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 			VPC:                     vpcIdentityModel,
 			PrimaryNetworkInterface: networkInterfacePrototypeModel,
 			Zone:                    zoneIdentityModel,
+		}
+		if int64(vsiCapacity) != 0 {
+			capacity := int64(vsiCapacity)
+			profile := "general-purpose"
+			if VSIBootProfile != "" {
+				profile = VSIBootProfile
+			}
+			instancePrototypeModel.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
+				Volume: &vpcv1.VolumePrototypeInstanceByImageContext{
+					Capacity: &capacity,
+					Profile: &vpcv1.VolumeProfileIdentity{
+						Name: &profile,
+					},
+				},
+			}
 		}
 		instancePrototypeModel.CatalogOffering = catalogOfferingPrototype
 
@@ -152,6 +170,21 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 			Image:                   imageIdentityModel,
 			PrimaryNetworkInterface: networkInterfacePrototypeModel,
 			Zone:                    zoneIdentityModel,
+		}
+		if int64(vsiCapacity) != 0 {
+			capacity := int64(vsiCapacity)
+			profile := "general-purpose"
+			if VSIBootProfile != "" {
+				profile = VSIBootProfile
+			}
+			instancePrototypeModel.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
+				Volume: &vpcv1.VolumePrototypeInstanceByImageContext{
+					Capacity: &capacity,
+					Profile: &vpcv1.VolumeProfileIdentity{
+						Name: &profile,
+					},
+				},
+			}
 		}
 
 		userDataFilePath := config.VSIUserDataFile
