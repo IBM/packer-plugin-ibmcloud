@@ -3,8 +3,11 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/IBM/go-sdk-core/v5/core"
+	searchv2 "github.com/IBM/platform-services-go-sdk/globalsearchv2"
+
 	"github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
@@ -137,6 +140,74 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 		}
 		if *secGrp.ID != "" {
 			state.Put("user_sec_grp_vpc", *secGrp.VPC.ID) // check for vpc is done as part of subnet fetch.
+		}
+	}
+
+	// crn validation
+
+	if config.CatalogOfferingCRN != "" || config.CatalogOfferingVersionCRN != "" || config.EncryptionKeyCRN != "" {
+		// validate crn
+
+		searchURL := "https://api.global-search-tagging.cloud.ibm.com"
+		globalSearchV2Options := &searchv2.GlobalSearchV2Options{
+			URL:           searchURL,
+			Authenticator: vpcService.Service.Options.Authenticator,
+		}
+		globalSearchAPIV2, err := searchv2.NewGlobalSearchV2(globalSearchV2Options)
+
+		if err != nil {
+			fmt.Println("GlobalSearch Service creation failed.", err)
+		}
+		// validate catalog offering crn
+		if config.CatalogOfferingCRN != "" {
+			crnToCheck := fmt.Sprintf("%s%s", strings.Split(config.CatalogOfferingCRN, ":offering")[0], "::")
+			query := fmt.Sprintf("crn:\"%s\"", crnToCheck)
+			searchOptions := &searchv2.SearchOptions{
+				Query: &query,
+			}
+			res, _, _ := globalSearchAPIV2.Search(searchOptions)
+			if len(res.Items) != 0 {
+				ui.Say(fmt.Sprintf("%s Catalog information successfully retrieved ...", res.Items[0].GetProperty("name")))
+			} else {
+				err := fmt.Errorf("[ERROR] Catalog crn (%s) information could not be retrieved", config.CatalogOfferingCRN)
+				state.Put("Catalog offering crn information could not be retrieved", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			}
+		}
+		// validate catalog version crn
+		if config.CatalogOfferingVersionCRN != "" {
+			crnToCheck := fmt.Sprintf("%s%s", strings.Split(config.CatalogOfferingVersionCRN, ":version")[0], "::")
+			query := fmt.Sprintf("crn:\"%s\"", crnToCheck)
+			searchOptions := &searchv2.SearchOptions{
+				Query: &query,
+			}
+			res, _, _ := globalSearchAPIV2.Search(searchOptions)
+			if len(res.Items) != 0 {
+				ui.Say(fmt.Sprintf("%s Catalog information successfully retrieved ...", res.Items[0].GetProperty("name")))
+			} else {
+				err := fmt.Errorf("[ERROR] Catalog version crn (%s) information could not be retrieved", config.CatalogOfferingVersionCRN)
+				state.Put("Catalog version crn information could not be retrieved", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			}
+		}
+		// validate encryption key crn
+		if config.EncryptionKeyCRN != "" {
+			crnToCheck := fmt.Sprintf("%s%s", strings.Split(config.EncryptionKeyCRN, ":key")[0], "::")
+			query := fmt.Sprintf("crn:\"%s\"", crnToCheck)
+			searchOptions := &searchv2.SearchOptions{
+				Query: &query,
+			}
+			res, _, _ := globalSearchAPIV2.Search(searchOptions)
+			if len(res.Items) != 0 {
+				ui.Say(fmt.Sprintf("%s Encryption information successfully retrieved ...", res.Items[0].GetProperty("name")))
+			} else {
+				err := fmt.Errorf("[ERROR] Encryption crn (%s) information could not be retrieved", config.EncryptionKeyCRN)
+				state.Put("Encryption information could not be retrieved", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			}
 		}
 	}
 	return multistep.ActionContinue

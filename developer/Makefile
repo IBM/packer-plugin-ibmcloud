@@ -29,6 +29,14 @@ run-catalog:
 	cd ..; packer validate -var-file="developer/variables-catalog-version.pkrvars.hcl" developer/examples/build.vpc.catalogimage-version.pkr.hcl
 	cd ..; packer build -var-file="developer/variables-catalog-version.pkrvars.hcl" developer/examples/build.vpc.catalogimage-version.pkr.hcl
 	
+run-catalog-version-crn:
+	cd ..; packer validate -var-file="developer/variables-catalog-version.pkrvars.hcl" developer/examples/build.vpc.catalogimage-version.pkr.hcl
+	cd ..; packer build -var-file="developer/variables-catalog-version.pkrvars.hcl" developer/examples/build.vpc.catalogimage-version.pkr.hcl
+	
+run-catalog-offering-crn:
+	cd ..; packer validate -var-file="developer/variables-catalog-offering.pkrvars.hcl" developer/examples/build.vpc.catalogimage-offering.pkr.hcl
+	cd ..; packer build -var-file="developer/variables-catalog-offering.pkrvars.hcl" developer/examples/build.vpc.catalogimage-offering.pkr.hcl
+	
 run-centos:
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
 	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
