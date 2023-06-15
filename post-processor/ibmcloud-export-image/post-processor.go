@@ -110,7 +110,7 @@ func (p *PostProcessor) PostProcess(ctx context.Context, ui packersdk.Ui, source
 	region := source.State("region").(string)
 	vpc_endpoint_url := source.State("vpc_endpoint_url").(string)
 	iam_url := source.State("iam_url").(string)
-	imageId := source.State("imageId").(string)
+	imageId := source.State("image_id").(string)
 	imageName := source.State("image_name").(string)
 
 	if p.config.ImageID == "" {
@@ -167,7 +167,7 @@ func (p *PostProcessor) PostProcess(ctx context.Context, ui packersdk.Ui, source
 			"region":           region,
 			"vpc_endpoint_url": vpc_endpoint_url,
 			"iam_url":          iam_url,
-			"imageId":          imageId,
+			"image_id":         imageId,
 			"image_name":       imageName,
 		},
 	}

@@ -128,7 +128,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 			"region":           b.config.Region,
 			"vpc_endpoint_url": b.config.Endpoint,
 			"iam_url":          b.config.IAMEndpoint,
-			"imageId":          state.Get("image_id").(string),
+			"image_id":         state.Get("image_id").(string),
 			"image_name":       b.config.ImageName,
 		},
 	}
