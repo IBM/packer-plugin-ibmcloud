@@ -10,6 +10,7 @@ plugin:
 	cd ..; go mod tidy
 	cd ..; go mod vendor
 	cd ..; go generate ./builder/ibmcloud/...
+	cd ..; go generate ./post-processor/ibmcloud-export-image/...
 	cd ..; go mod vendor
 	cd ..; go build .
 
@@ -69,3 +70,7 @@ run-windows:
 run-zprofile:
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.zprofile.pkr.hcl
 	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.zprofile.pkr.hcl
+
+run-rhel-post-processor:
+	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/postprocessor.vpc.rhel.pkr.hcl
+	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/postprocessor.vpc.rhel.pkr.hcl

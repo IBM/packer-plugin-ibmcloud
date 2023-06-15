@@ -11,12 +11,15 @@ import (
 
 	"packer-plugin-ibmcloud/builder/ibmcloud/classic"
 	"packer-plugin-ibmcloud/builder/ibmcloud/vpc"
+
+	ibmcloudexport "packer-plugin-ibmcloud/post-processor/ibmcloud-export-image"
 )
 
 func main() {
 	pps := plugin.NewSet()
 	pps.RegisterBuilder("vpc", new(vpc.Builder))
 	pps.RegisterBuilder("classic", new(classic.Builder))
+	pps.RegisterPostProcessor("export-image", new(ibmcloudexport.PostProcessor))
 	pps.SetVersion(version.IBMCloudPluginVersion)
 	err := pps.Run()
 	log.Println("IBM Cloud Packer Plugin Version", version.IBMCloudPluginVersion)
