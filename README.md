@@ -200,7 +200,7 @@ vsi_boot_volume_id | string | The ID of an existing boot volume.
 vsi_boot_snapshot_id | string | The ID of an existing boot snapshot.
 | |
 vsi_profile | string | The profile this VSI uses. Required.
-vsi_interface | string | Set it as "public" to create a Floating IP to connect to the temp VSI. Set it as "private" to use private interface to connect to the temp VSI. Later option requires you run packer plugin inside your VPC.
+vsi_interface | string | Set it as "public" to create a Floating IP to connect to the temp VSI. Set it as "private" to use private interface to connect to the temp VSI. Later seeks the private IP under the VPC.
 | |
 | |
 vsi_user_data_file | string | User data to be made available when setting up the virtual server instance. Optional.
@@ -208,8 +208,6 @@ vsi_user_data_file | string | User data to be made available when setting up the
 vsi_user_data | string | User data to be made available when setting up the virtual server instance. Optional. This is the string input variable.
 vsi_boot_vol_capacity | string | The capacity to use for the volume (in gigabytes). Must be at least the image's minimum_provisioned_size. The maximum value may increase in the future. Optional.
 vsi_boot_vol_profile | string | User can provide the available profile for volume attachments. Supported profiles: `5iops-tier`, `10iops-tier`, `general-purpose`. Refer https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles&interface=ui for profile info. Optional. 
-vpc_endpoint_url | string | Configure URL for VPC test environments. Optional.
-iam_url | string | Configure URL for IAM test environments. Optional.
 image_name | string | The name of the resulting custom image that will appear in your account. Required.
 encryption_key_crn | string | The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
 communicator | string | Communicators are the mechanism Packer uses to upload files, execute scripts, etc. with the machine being created. Choose between "ssh" (for Linux) and "winrm" (for Windows). Required.
