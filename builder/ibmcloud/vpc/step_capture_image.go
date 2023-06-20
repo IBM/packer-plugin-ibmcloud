@@ -70,10 +70,17 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 			CRN: &config.EncryptionKeyCRN,
 		}
 	}
-
 	if config.ResourceGroupID != "" {
 		imagePrototype.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
 			ID: &config.ResourceGroupID,
+		}
+	} else if config.ResourceGroupName != "" {
+		derivedResourceGroupId := state.Get("derived_resource_group_id")
+		if derivedResourceGroupId != nil && derivedResourceGroupId.(string) != "" {
+			derivedResourceGroupIdStr := derivedResourceGroupId.(string)
+			imagePrototype.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
+				ID: &derivedResourceGroupIdStr,
+			}
 		}
 	}
 

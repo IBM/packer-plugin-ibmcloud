@@ -20,7 +20,6 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 	client := state.Get("client").(*IBMCloudClient)
 	ui := state.Get("ui").(packer.Ui)
 	config := state.Get("config").(Config)
-
 	// vpc service
 	var vpcService *vpcv1.VpcV1
 	if state.Get("vpcService") != nil {
@@ -39,32 +38,63 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 	}
 	// region check ends
 	// resource group check
-	if config.ResourceGroupID != "" {
-
+	if config.ResourceGroupID != "" && config.ResourceGroupName != "" {
+		err := fmt.Errorf("[ERROR] Either one of resource_group_name or resource_group_id can be given, both together are not supported")
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return multistep.ActionHalt
+	} else if config.ResourceGroupID != "" || config.ResourceGroupName != "" {
+		rcUrl := config.RCEndpoint
 		serviceClientOptions := &resourcemanagerv2.ResourceManagerV2Options{
 			Authenticator: &core.IamAuthenticator{
 				ApiKey: client.IBMApiKey,
 				URL:    config.IAMEndpoint,
 			},
+			URL: rcUrl,
 		}
-		serviceClient, err := resourcemanagerv2.NewResourceManagerV2UsingExternalConfig(serviceClientOptions)
+		serviceClient, err := resourcemanagerv2.NewResourceManagerV2(serviceClientOptions)
 		if err != nil {
 			err := fmt.Errorf("[ERROR] Error creating instance of ResourceManagerV2 for resource group: %s: %s", config.ResourceGroupID, err)
 			state.Put("error", err)
 			ui.Error(err.Error())
 			return multistep.ActionHalt
 		}
-		result, _, err := serviceClient.GetResourceGroup(serviceClient.NewGetResourceGroupOptions(config.ResourceGroupID))
-		if err != nil {
-			err := fmt.Errorf("[ERROR] Error fetching resource group : %s: %s", config.ResourceGroupID, err)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			return multistep.ActionHalt
-		} else if result == nil {
-			err := fmt.Errorf("[ERROR] Resource group not found resource_group_id : %s: %s", config.ResourceGroupID, err)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			return multistep.ActionHalt
+		if config.ResourceGroupName != "" {
+			reGrpName := resourcemanagerv2.ListResourceGroupsOptions{
+				Name: &config.ResourceGroupName,
+			}
+			ResourceGroupName, _, errResNam := serviceClient.ListResourceGroups(&reGrpName)
+			if errResNam != nil {
+				err := fmt.Errorf("[ERROR] Error fetching resource group : %s: %s", config.ResourceGroupName, err)
+				state.Put("error", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			}
+			if len(ResourceGroupName.Resources) == 1 {
+				state.Put("derived_resource_group_id", *ResourceGroupName.Resources[0].ID)
+			} else if len(ResourceGroupName.Resources) > 1 {
+				id := *ResourceGroupName.Resources[0].ID
+				state.Put("derived_resource_group_id", *ResourceGroupName.Resources[0].ID)
+				ui.Say(fmt.Sprintf("[ERROR] Multiple resource group with the provided names found, using resource group with id: %s", id))
+			} else {
+				err := fmt.Errorf("[ERROR] Error fetching resource group, no resource group found with name : %s", config.ResourceGroupName)
+				state.Put("error", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			}
+		} else {
+			result, _, err := serviceClient.GetResourceGroup(serviceClient.NewGetResourceGroupOptions(config.ResourceGroupID))
+			if err != nil {
+				err := fmt.Errorf("[ERROR] Error fetching resource group : %s: %s", config.ResourceGroupID, err)
+				state.Put("error", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			} else if result == nil {
+				err := fmt.Errorf("[ERROR] Resource group not found resource_group_id : %s: %s", config.ResourceGroupID, err)
+				state.Put("error", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			}
 		}
 	}
 
@@ -76,7 +106,7 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 		bootVolume, response, err := vpcService.GetVolume(getVolumeOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				err := fmt.Errorf("[ERROR] Boot volume provided is not found %s:", config.VSIBootVolumeID)
+				err := fmt.Errorf("[ERROR] Boot volume provided is not found : %s", config.VSIBootVolumeID)
 				state.Put("error", err)
 				ui.Error(err.Error())
 				return multistep.ActionHalt
@@ -119,7 +149,7 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 	allrecs := availableImages.Images
 
 	if len(allrecs) != 0 {
-		err := fmt.Errorf("[ERROR] An Image exist with the same name %s:", config.ImageName)
+		err := fmt.Errorf("[ERROR] An Image exist with the same name : %s", config.ImageName)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt
