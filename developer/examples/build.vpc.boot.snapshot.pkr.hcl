@@ -31,14 +31,6 @@ variable "BOOT_SNAPSHOT_ID" {
   type = string
 }
 
-// variable "VPC_URL" {
-//   type = string
-// }
-// variable "IAM_URL" {
-//   type = string
-// }
-
-
 locals {
   timestamp = regex_replace(timestamp(), "[- TZ:]", "")
 }

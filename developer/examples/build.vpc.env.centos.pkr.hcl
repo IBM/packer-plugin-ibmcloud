@@ -1,13 +1,22 @@
-packer {
-  required_plugins {
-    ibmcloud = {
-      version = ">=v3.0.0"
-      source = "github.com/IBM/ibmcloud"
-    }
-  }
-}
+// packer {
+//   required_plugins {
+//     ibmcloud = {
+//       version = ">=v3.0.0"
+//       source = "github.com/IBM/ibmcloud"
+//     }
+//   }
+// }
 
 variable "IBM_API_KEY" {
+  type = string
+  default = "${env("IC_API_KEY")}"
+}
+
+variable "VPC_URL" {
+  type = string
+}
+
+variable "IAM_URL" {
   type = string
 }
 
@@ -27,22 +36,21 @@ variable "SECURITY_GROUP_ID" {
   type = string
 }
 
-variable "BOOT_SNAPSHOT_ID" {
-  type = string
-}
-
 locals {
   timestamp = regex_replace(timestamp(), "[- TZ:]", "")
 }
 
-source "ibmcloud-vpc" "boot-snapshot" {
+source "ibmcloud-vpc" "centos" {
   api_key           = var.IBM_API_KEY
+  vpc_endpoint_url  = var.VPC_URL
+  iam_url           = var.IAM_URL
   region            = var.REGION
   subnet_id         = var.SUBNET_ID
   resource_group_id = var.RESOURCE_GROUP_ID
   security_group_id = var.SECURITY_GROUP_ID
-    
-  vsi_boot_snapshot_id = var.BOOT_SNAPSHOT_ID
+
+  vsi_base_image_name = "ibm-centos-7-9-minimal-amd64-5"
+
   vsi_profile        = "bx2-2x8"
   vsi_interface      = "public"
   vsi_user_data_file = ""
@@ -59,7 +67,7 @@ source "ibmcloud-vpc" "boot-snapshot" {
 
 build {
   sources = [
-    "source.ibmcloud-vpc.boot-snapshot"
+    "source.ibmcloud-vpc.centos"
   ]
 
   provisioner "shell" {
