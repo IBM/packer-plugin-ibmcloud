@@ -33,7 +33,10 @@ type Config struct {
 	SecurityGroupID           string `mapstructure:"security_group_id"`
 	VSIBaseImageID            string `mapstructure:"vsi_base_image_id"`
 	VSIBaseImageName          string `mapstructure:"vsi_base_image_name"`
+	VSIBootCapacity           int    `mapstructure:"vsi_boot_vol_capacity"`
+	VSIBootProfile            string `mapstructure:"vsi_boot_vol_profile"`
 	VSIBootVolumeID           string `mapstructure:"vsi_boot_volume_id"`
+	VSIBootSnapshotID         string `mapstructure:"vsi_boot_snapshot_id"`
 	VSIProfile                string `mapstructure:"vsi_profile"`
 	VSIInterface              string `mapstructure:"vsi_interface"`
 	VSIUserDataFile           string `mapstructure:"vsi_user_data_file"`
@@ -50,6 +53,14 @@ type Config struct {
 	RawStateTimeout string              `mapstructure:"timeout"`
 	StateTimeout    time.Duration       `mapstructure-to-hcl2:",skip"`
 	ctx             interpolate.Context `mapstructure-to-hcl2:",skip"`
+
+	ImageID            string `mapstructure:"image_id"`
+	ImageExportJobName string `mapstructure:"image_export_job_name"`
+	//The Cloud Object Storage bucket to export the image to. The bucket must exist and an IAM service authorization must grant Image Service for VPC of VPC Infrastructure Services writer access to the bucket.
+	StorageBucketName string `mapstructure:"storage_bucket_name"`
+	StorageBucketCRN  string `mapstructure:"storage_bucket_crn"`
+	//The format to use for the exported image. If the image is encrypted, only qcow2 is supported.
+	Format string `mapstructure:"format"`
 }
 
 // Prepare processes the build configuration parameters.
@@ -87,20 +98,36 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		errs = packer.MultiErrorAppend(errs, errors.New("a subnet_id must be specified"))
 	}
 
-	if (c.CatalogOfferingCRN != "" || c.CatalogOfferingVersionCRN != "") && (c.VSIBaseImageID != "" || c.VSIBaseImageName != "") && c.VSIBootVolumeID != "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("only one of (vsi_base_image_id or vsi_base_image_name) or (catalog_offering_crn or catalog_offering_version_crn) or vsi_boot_volume_id is required"))
-	} else if (c.CatalogOfferingCRN != "" || c.CatalogOfferingVersionCRN != "") && (c.VSIBaseImageID != "" || c.VSIBaseImageName != "") {
-		errs = packer.MultiErrorAppend(errs, errors.New("only one of (vsi_base_image_id or vsi_base_image_name) or (catalog_offering_crn or catalog_offering_version_crn) is required"))
-	} else if (c.CatalogOfferingCRN != "" || c.CatalogOfferingVersionCRN != "") && c.VSIBootVolumeID != "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("only one of (catalog_offering_crn or catalog_offering_version_crn) or vsi_boot_volume_id is required"))
-	} else if (c.VSIBaseImageID != "" || c.VSIBaseImageName != "") && c.VSIBootVolumeID != "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("only one of (vsi_base_image_id or vsi_base_image_name) or vsi_boot_volume_id is required"))
-	} else if c.CatalogOfferingCRN != "" && c.CatalogOfferingVersionCRN != "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("only one of (catalog_offering_crn or catalog_offering_version_crn) is required"))
-	} else if c.VSIBaseImageID != "" && c.VSIBaseImageName != "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("only one of (vsi_base_image_id or vsi_base_image_name) is required"))
-	} else if c.CatalogOfferingCRN == "" && c.CatalogOfferingVersionCRN == "" && c.VSIBaseImageID == "" && c.VSIBaseImageName == "" && c.VSIBootVolumeID == "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("one of (vsi_base_image_id or vsi_base_image_name) or (catalog_offering_crn or catalog_offering_version_crn) or vsi_boot_volume_id  is required"))
+	if c.VSIBootCapacity != 0 && (c.VSIBootCapacity < 100 || c.VSIBootCapacity > 250) {
+		errs = packer.MultiErrorAppend(errs, errors.New("boot capacity out of bound: provide a valid capacity between 100 to 250"))
+	}
+	if c.VSIBootProfile != "" && (c.VSIBootProfile != "5iops-tier" && c.VSIBootProfile != "10iops-tier" && c.VSIBootProfile != "general-purpose") {
+		errs = packer.MultiErrorAppend(errs, errors.New("profile must be from:  5iops-tier, 10iops-tier, general-purpose"))
+	}
+
+	var oneOfInput int // validation for mutually exclusive fields.
+
+	if c.VSIBaseImageID != "" {
+		oneOfInput = oneOfInput + 1
+	}
+	if c.VSIBaseImageName != "" {
+		oneOfInput = oneOfInput + 1
+	}
+	if c.CatalogOfferingCRN != "" {
+		oneOfInput = oneOfInput + 1
+	}
+	if c.CatalogOfferingVersionCRN != "" {
+		oneOfInput = oneOfInput + 1
+	}
+	if c.VSIBootVolumeID != "" {
+		oneOfInput = oneOfInput + 1
+	}
+	if c.VSIBootSnapshotID != "" {
+		oneOfInput = oneOfInput + 1
+	}
+
+	if oneOfInput != 1 {
+		errs = packer.MultiErrorAppend(errs, errors.New("only one of (vsi_base_image_id or vsi_base_image_name) or (catalog_offering_crn or catalog_offering_version_crn) or vsi_boot_volume_id or vsi_boot_snapshot_id is required"))
 	}
 
 	if c.VSIProfile == "" {

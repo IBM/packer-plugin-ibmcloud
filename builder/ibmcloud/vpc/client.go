@@ -290,7 +290,7 @@ func (client IBMCloudClient) createFloatingIP(state multistep.StateBag) (*vpcv1.
 	options := &vpcv1.CreateFloatingIPOptions{}
 	options.SetFloatingIPPrototype(&vpcv1.FloatingIPPrototype{
 		Name: &config.FloatingIPName,
-		Target: &vpcv1.FloatingIPByTargetNetworkInterfaceIdentityNetworkInterfaceIdentityByID{
+		Target: &vpcv1.FloatingIPTargetPrototype{
 			ID: &networkInterfaceID,
 		},
 		ResourceGroup: &vpcv1.ResourceGroupIdentityByID{

@@ -80,7 +80,10 @@ type FlatConfig struct {
 	SecurityGroupID           *string           `mapstructure:"security_group_id" cty:"security_group_id" hcl:"security_group_id"`
 	VSIBaseImageID            *string           `mapstructure:"vsi_base_image_id" cty:"vsi_base_image_id" hcl:"vsi_base_image_id"`
 	VSIBaseImageName          *string           `mapstructure:"vsi_base_image_name" cty:"vsi_base_image_name" hcl:"vsi_base_image_name"`
+	VSIBootCapacity           *int              `mapstructure:"vsi_boot_vol_capacity" cty:"vsi_boot_vol_capacity" hcl:"vsi_boot_vol_capacity"`
+	VSIBootProfile            *string           `mapstructure:"vsi_boot_vol_profile" cty:"vsi_boot_vol_profile" hcl:"vsi_boot_vol_profile"`
 	VSIBootVolumeID           *string           `mapstructure:"vsi_boot_volume_id" cty:"vsi_boot_volume_id" hcl:"vsi_boot_volume_id"`
+	VSIBootSnapshotID         *string           `mapstructure:"vsi_boot_snapshot_id" cty:"vsi_boot_snapshot_id" hcl:"vsi_boot_snapshot_id"`
 	VSIProfile                *string           `mapstructure:"vsi_profile" cty:"vsi_profile" hcl:"vsi_profile"`
 	VSIInterface              *string           `mapstructure:"vsi_interface" cty:"vsi_interface" hcl:"vsi_interface"`
 	VSIUserDataFile           *string           `mapstructure:"vsi_user_data_file" cty:"vsi_user_data_file" hcl:"vsi_user_data_file"`
@@ -88,6 +91,11 @@ type FlatConfig struct {
 	ImageName                 *string           `mapstructure:"image_name" cty:"image_name" hcl:"image_name"`
 	ImageTags                 []string          `mapstructure:"tags" cty:"tags" hcl:"tags"`
 	RawStateTimeout           *string           `mapstructure:"timeout" cty:"timeout" hcl:"timeout"`
+	ImageID                   *string           `mapstructure:"image_id" cty:"image_id" hcl:"image_id"`
+	ImageExportJobName        *string           `mapstructure:"image_export_job_name" cty:"image_export_job_name" hcl:"image_export_job_name"`
+	StorageBucketName         *string           `mapstructure:"storage_bucket_name" cty:"storage_bucket_name" hcl:"storage_bucket_name"`
+	StorageBucketCRN          *string           `mapstructure:"storage_bucket_crn" cty:"storage_bucket_crn" hcl:"storage_bucket_crn"`
+	Format                    *string           `mapstructure:"format" cty:"format" hcl:"format"`
 }
 
 // FlatMapstructure returns a new FlatConfig.
@@ -172,7 +180,10 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"security_group_id":            &hcldec.AttrSpec{Name: "security_group_id", Type: cty.String, Required: false},
 		"vsi_base_image_id":            &hcldec.AttrSpec{Name: "vsi_base_image_id", Type: cty.String, Required: false},
 		"vsi_base_image_name":          &hcldec.AttrSpec{Name: "vsi_base_image_name", Type: cty.String, Required: false},
+		"vsi_boot_vol_capacity":        &hcldec.AttrSpec{Name: "vsi_boot_vol_capacity", Type: cty.Number, Required: false},
+		"vsi_boot_vol_profile":         &hcldec.AttrSpec{Name: "vsi_boot_vol_profile", Type: cty.String, Required: false},
 		"vsi_boot_volume_id":           &hcldec.AttrSpec{Name: "vsi_boot_volume_id", Type: cty.String, Required: false},
+		"vsi_boot_snapshot_id":         &hcldec.AttrSpec{Name: "vsi_boot_snapshot_id", Type: cty.String, Required: false},
 		"vsi_profile":                  &hcldec.AttrSpec{Name: "vsi_profile", Type: cty.String, Required: false},
 		"vsi_interface":                &hcldec.AttrSpec{Name: "vsi_interface", Type: cty.String, Required: false},
 		"vsi_user_data_file":           &hcldec.AttrSpec{Name: "vsi_user_data_file", Type: cty.String, Required: false},
@@ -180,6 +191,11 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"image_name":                   &hcldec.AttrSpec{Name: "image_name", Type: cty.String, Required: false},
 		"tags":                         &hcldec.AttrSpec{Name: "tags", Type: cty.List(cty.String), Required: false},
 		"timeout":                      &hcldec.AttrSpec{Name: "timeout", Type: cty.String, Required: false},
+		"image_id":                     &hcldec.AttrSpec{Name: "image_id", Type: cty.String, Required: false},
+		"image_export_job_name":        &hcldec.AttrSpec{Name: "image_export_job_name", Type: cty.String, Required: false},
+		"storage_bucket_name":          &hcldec.AttrSpec{Name: "storage_bucket_name", Type: cty.String, Required: false},
+		"storage_bucket_crn":           &hcldec.AttrSpec{Name: "storage_bucket_crn", Type: cty.String, Required: false},
+		"format":                       &hcldec.AttrSpec{Name: "format", Type: cty.String, Required: false},
 	}
 	return s
 }

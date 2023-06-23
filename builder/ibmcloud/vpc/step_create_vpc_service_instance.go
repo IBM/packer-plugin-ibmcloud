@@ -10,10 +10,10 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
 
-type stepCreateVPCServiceInstance struct {
+type StepCreateVPCServiceInstance struct {
 }
 
-func (step *stepCreateVPCServiceInstance) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
+func (step *StepCreateVPCServiceInstance) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
 	client := state.Get("client").(*IBMCloudClient)
 	ui := state.Get("ui").(packer.Ui)
 	config := state.Get("config").(Config)
@@ -40,5 +40,5 @@ func (step *stepCreateVPCServiceInstance) Run(_ context.Context, state multistep
 	return multistep.ActionContinue
 }
 
-func (step *stepCreateVPCServiceInstance) Cleanup(state multistep.StateBag) {
+func (step *StepCreateVPCServiceInstance) Cleanup(state multistep.StateBag) {
 }

@@ -27,6 +27,10 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 	vsiCatalogOfferingCrn := config.CatalogOfferingCRN
 	vsiCatalogOfferingVersionCrn := config.CatalogOfferingVersionCRN
 	vsiBootVolumeID := config.VSIBootVolumeID
+	vsiBootSnapshotId := config.VSIBootSnapshotID
+
+	vsiCapacity := config.VSIBootCapacity
+	VSIBootProfile := config.VSIBootProfile
 
 	keyIdentityModel := &vpcv1.KeyIdentityByID{
 		ID: &[]string{state.Get("vpc_ssh_key_id").(string)}[0],
@@ -74,6 +78,21 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 			VPC:                     vpcIdentityModel,
 			PrimaryNetworkInterface: networkInterfacePrototypeModel,
 			Zone:                    zoneIdentityModel,
+		}
+		if int64(vsiCapacity) != 0 {
+			capacity := int64(vsiCapacity)
+			profile := "general-purpose"
+			if VSIBootProfile != "" {
+				profile = VSIBootProfile
+			}
+			instancePrototypeModel.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
+				Volume: &vpcv1.VolumePrototypeInstanceByImageContext{
+					Capacity: &capacity,
+					Profile: &vpcv1.VolumeProfileIdentity{
+						Name: &profile,
+					},
+				},
+			}
 		}
 		instancePrototypeModel.CatalogOffering = catalogOfferingPrototype
 
@@ -152,6 +171,21 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 			Image:                   imageIdentityModel,
 			PrimaryNetworkInterface: networkInterfacePrototypeModel,
 			Zone:                    zoneIdentityModel,
+		}
+		if int64(vsiCapacity) != 0 {
+			capacity := int64(vsiCapacity)
+			profile := "general-purpose"
+			if VSIBootProfile != "" {
+				profile = VSIBootProfile
+			}
+			instancePrototypeModel.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
+				Volume: &vpcv1.VolumePrototypeInstanceByImageContext{
+					Capacity: &capacity,
+					Profile: &vpcv1.VolumeProfileIdentity{
+						Name: &profile,
+					},
+				},
+			}
 		}
 
 		userDataFilePath := config.VSIUserDataFile
@@ -252,6 +286,72 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		state.Put("instance_data", instanceData)
 
 		ui.Say("Instance successfully created with the provided boot volume!")
+		ui.Say(fmt.Sprintf("Instance's Name: %s", *instanceData.Name))
+		ui.Say(fmt.Sprintf("Instance's ID: %s", *instanceData.ID))
+	} else if vsiBootSnapshotId != "" {
+		ui.Say("Creating instance with boot snapshot ID")
+		sourceSnapshot := &vpcv1.SnapshotIdentity{
+			ID: &vsiBootSnapshotId,
+		}
+		volumeProfileIdentityModel := &vpcv1.VolumeProfileIdentity{
+			Name: &[]string{"general-purpose"}[0], // TODO: should update the profile field from the boot capcity PR changes ones meged
+		}
+		sourceSnapVolumeIdentity := &vpcv1.VolumePrototypeInstanceBySourceSnapshotContext{
+			Profile:        volumeProfileIdentityModel,
+			SourceSnapshot: sourceSnapshot,
+		}
+		bootVolumeAttachment := &vpcv1.VolumeAttachmentPrototypeInstanceBySourceSnapshotContext{
+			Volume: sourceSnapVolumeIdentity,
+		}
+		instancePrototypeModel := &vpcv1.InstancePrototypeInstanceBySourceSnapshot{
+			Keys:                    []vpcv1.KeyIdentityIntf{keyIdentityModel},
+			Name:                    &[]string{config.VSIName}[0],
+			Profile:                 instanceProfileIdentityModel,
+			VPC:                     vpcIdentityModel,
+			BootVolumeAttachment:    bootVolumeAttachment,
+			PrimaryNetworkInterface: networkInterfacePrototypeModel,
+			Zone:                    zoneIdentityModel,
+		}
+
+		userDataFilePath := config.VSIUserDataFile
+		userDataString := config.VSIUserDataString
+		if userDataFilePath != "" {
+			content, err := ioutil.ReadFile(userDataFilePath)
+			if err != nil {
+				err := fmt.Errorf("[ERROR] Error reading user data file. Error: %s", err)
+				state.Put("error", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			}
+			instancePrototypeModel.UserData = &[]string{string(content)}[0]
+		} else if userDataString != "" {
+			instancePrototypeModel.UserData = &[]string{string(userDataString)}[0]
+		}
+
+		if config.ResourceGroupID != "" {
+			instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
+				ID: &config.ResourceGroupID,
+			}
+		}
+
+		state.Put("instance_definition", *instancePrototypeModel)
+
+		createInstanceOptions := vpcService.NewCreateInstanceOptions(
+			instancePrototypeModel,
+		)
+		instanceData, _, err := vpcService.CreateInstance(createInstanceOptions)
+		// End
+		if err != nil {
+			err := fmt.Errorf("[ERROR] Error creating the instance: %s", err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			// log.Fatalf(err.Error())
+			return multistep.ActionHalt
+		}
+
+		state.Put("instance_data", instanceData)
+
+		ui.Say("Instance successfully created with the provided boot snapshot!")
 		ui.Say(fmt.Sprintf("Instance's Name: %s", *instanceData.Name))
 		ui.Say(fmt.Sprintf("Instance's ID: %s", *instanceData.ID))
 	}

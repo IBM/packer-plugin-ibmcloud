@@ -7,19 +7,28 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
 
-type stepGreeting struct {
+type StepGreeting struct {
 }
 
-func (step *stepGreeting) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
+func (step *StepGreeting) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
+	config := state.Get("config").(Config)
 	ui := state.Get("ui").(packer.Ui)
 
-	ui.Say("*************************************************************")
-	ui.Say("* Initializing IBM Cloud Packer Plugin - VPC Infrastructure *")
-	ui.Say("*************************************************************")
-	ui.Say("")
+	imageID := config.ImageID
+	if imageID == "" {
+		ui.Say("*************************************************************")
+		ui.Say("* Initializing IBM Cloud Packer Plugin - VPC Infrastructure *")
+		ui.Say("*************************************************************")
+		ui.Say("")
+	} else {
+		ui.Say("**********************************************************************************************")
+		ui.Say("* Initializing IBM Cloud Packer Post Processor Plugin for Image Export  - VPC Infrastructure *")
+		ui.Say("**********************************************************************************************")
+		ui.Say("")
+	}
 
 	return multistep.ActionContinue
 }
 
-func (step *stepGreeting) Cleanup(state multistep.StateBag) {
+func (step *StepGreeting) Cleanup(state multistep.StateBag) {
 }
