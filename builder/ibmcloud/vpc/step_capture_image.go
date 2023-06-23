@@ -106,12 +106,14 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 			URL:    config.IAMEndpoint,
 		},
 	}
+	if config.GTEndpoint != "" {
+		optGlbTag.URL = config.GTEndpoint
+	}
 	serviceClientOptions, errOpt := globaltaggingv1.NewGlobalTaggingV1(&optGlbTag)
 	if errOpt != nil {
-		err := fmt.Errorf("[ERROR] Error creating global tagging client options: %s", errOpt)
+		err := fmt.Errorf("[ERROR] Error creating global tagging client: %s", errOpt)
 		state.Put("error", err)
 		ui.Error(err.Error())
-		// log.Fatalf(err.Error())
 		return multistep.ActionHalt
 	}
 

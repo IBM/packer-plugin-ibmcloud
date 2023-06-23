@@ -21,6 +21,7 @@ type Config struct {
 	IBMApiKey                 string `mapstructure:"api_key"`
 	Region                    string `mapstructure:"region"`
 	Endpoint                  string `mapstructure:"vpc_endpoint_url"`
+	GTEndpoint                string `mapstructure:"gt_endpoint_url"`
 	EncryptionKeyCRN          string `mapstructure:"encryption_key_crn"`
 	IAMEndpoint               string `mapstructure:"iam_url"`
 	Zone                      string `mapstructure-to-hcl2:",skip"`
@@ -126,10 +127,6 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	if c.ImageName == "" {
 		c.ImageName = fmt.Sprintf("packer-vpc-%d", currentTime.Unix())
 	}
-
-	// check for the endpoint details - create an env variable.
-	// use this URL https://tags.global-search-tagging.cloud.ibm.com
-	// if PKR_GLB_SRCH_TAG_URL
 
 	if c.Comm.Type == "winrm" {
 		if c.Comm.WinRMUser == "" {
