@@ -70,7 +70,7 @@ type FlatConfig struct {
 	IBMApiKey                 *string           `mapstructure:"api_key" cty:"api_key" hcl:"api_key"`
 	Region                    *string           `mapstructure:"region" cty:"region" hcl:"region"`
 	Endpoint                  *string           `mapstructure:"vpc_endpoint_url" cty:"vpc_endpoint_url" hcl:"vpc_endpoint_url"`
-	GTEndpoint                *string           `mapstructure:"gt_endpoint_url" cty:"gt_endpoint_url" hcl:"gt_endpoint_url"`
+	GhostEndpoint             *string           `mapstructure:"ghost_endpoint_url" cty:"ghost_endpoint_url" hcl:"ghost_endpoint_url"`
 	EncryptionKeyCRN          *string           `mapstructure:"encryption_key_crn" cty:"encryption_key_crn" hcl:"encryption_key_crn"`
 	IAMEndpoint               *string           `mapstructure:"iam_url" cty:"iam_url" hcl:"iam_url"`
 	SubnetID                  *string           `mapstructure:"subnet_id" cty:"subnet_id" hcl:"subnet_id"`
@@ -170,7 +170,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"api_key":                      &hcldec.AttrSpec{Name: "api_key", Type: cty.String, Required: false},
 		"region":                       &hcldec.AttrSpec{Name: "region", Type: cty.String, Required: false},
 		"vpc_endpoint_url":             &hcldec.AttrSpec{Name: "vpc_endpoint_url", Type: cty.String, Required: false},
-		"gt_endpoint_url":              &hcldec.AttrSpec{Name: "gt_endpoint_url", Type: cty.String, Required: false},
+		"ghost_endpoint_url":           &hcldec.AttrSpec{Name: "ghost_endpoint_url", Type: cty.String, Required: false},
 		"encryption_key_crn":           &hcldec.AttrSpec{Name: "encryption_key_crn", Type: cty.String, Required: false},
 		"iam_url":                      &hcldec.AttrSpec{Name: "iam_url", Type: cty.String, Required: false},
 		"subnet_id":                    &hcldec.AttrSpec{Name: "subnet_id", Type: cty.String, Required: false},

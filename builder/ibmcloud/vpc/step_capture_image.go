@@ -106,8 +106,8 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 			URL:    config.IAMEndpoint,
 		},
 	}
-	if config.GTEndpoint != "" {
-		optGlbTag.URL = config.GTEndpoint
+	if config.GhostEndpoint != "" {
+		optGlbTag.URL = config.GhostEndpoint
 	}
 	serviceClientOptions, errOpt := globaltaggingv1.NewGlobalTaggingV1(&optGlbTag)
 	if errOpt != nil {
@@ -129,10 +129,9 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 
 	_, resp, err := serviceClientOptions.AttachTag(AttachTagOptions)
 	if err != nil {
-		errUserTags := fmt.Errorf("[ERROR] Error adding tags %v : %s\n%s", config.ImageTags, err, resp)
+		errUserTags := fmt.Errorf("[ERROR] Error attaching tags %v : %s\n%s", config.ImageTags, err, resp)
 		state.Put("error", errUserTags)
-		ui.Error(err.Error())
-		return multistep.ActionHalt
+		ui.Say(errUserTags.Error())
 	}
 
 	state.Put("image_id", imageId)
