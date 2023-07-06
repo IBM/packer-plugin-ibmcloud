@@ -6,6 +6,8 @@ import (
 	"log"
 	"regexp"
 
+	"github.com/IBM/go-sdk-core/v5/core"
+	globaltaggingv1 "github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
@@ -97,6 +99,41 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 	}
 
 	imageId := *imageData.ID
+
+	optGlbTag := globaltaggingv1.GlobalTaggingV1Options{
+		Authenticator: &core.IamAuthenticator{
+			ApiKey: client.IBMApiKey,
+			URL:    config.IAMEndpoint,
+		},
+	}
+	if config.GhostEndpoint != "" {
+		optGlbTag.URL = config.GhostEndpoint
+	}
+	serviceClientOptions, errOpt := globaltaggingv1.NewGlobalTaggingV1(&optGlbTag)
+	if errOpt != nil {
+		err := fmt.Errorf("[ERROR] Error creating global tagging client: %s", errOpt)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return multistep.ActionHalt
+	}
+
+	var tagType = new(string)
+	*tagType = "user"
+	resources := []globaltaggingv1.Resource{}
+	r := globaltaggingv1.Resource{ResourceID: imageData.CRN, ResourceType: nil}
+	resources = append(resources, r)
+	AttachTagOptions := &globaltaggingv1.AttachTagOptions{}
+	AttachTagOptions.Resources = resources
+	AttachTagOptions.TagNames = config.ImageTags
+	AttachTagOptions.TagType = tagType
+
+	_, resp, err := serviceClientOptions.AttachTag(AttachTagOptions)
+	if err != nil {
+		errUserTags := fmt.Errorf("[ERROR] Error attaching tags %v : %s\n%s", config.ImageTags, err, resp)
+		state.Put("error", errUserTags)
+		ui.Say(errUserTags.Error())
+	}
+
 	state.Put("image_id", imageId)
 
 	ui.Say("Image Successfully created!")

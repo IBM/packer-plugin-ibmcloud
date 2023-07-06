@@ -145,12 +145,24 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 	allrecs := availableImages.Images
 
 	if len(allrecs) != 0 {
-		err := fmt.Errorf("[ERROR] An Image exist with the same name %s:", config.ImageName)
+		err := fmt.Errorf("[ERROR] An Image exist with the same name :%s", config.ImageName)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
 	// image check ends
+
+	// usertags validation for blanks.
+	if len(config.ImageTags) > 0 {
+		for i := 0; i < len(config.ImageTags); i++ {
+			if config.ImageTags[i] == "" {
+				err := fmt.Errorf("[ERROR] Invalid user tag \"\", tags can be in `key:value` or `label` format, for example:, tags:\"my_tag\" ")
+				state.Put("error", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			}
+		}
+	}
 
 	// security group verification
 	if config.SecurityGroupID != "" {

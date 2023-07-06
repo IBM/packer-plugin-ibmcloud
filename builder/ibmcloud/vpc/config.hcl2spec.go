@@ -70,6 +70,7 @@ type FlatConfig struct {
 	IBMApiKey                 *string           `mapstructure:"api_key" cty:"api_key" hcl:"api_key"`
 	Region                    *string           `mapstructure:"region" cty:"region" hcl:"region"`
 	Endpoint                  *string           `mapstructure:"vpc_endpoint_url" cty:"vpc_endpoint_url" hcl:"vpc_endpoint_url"`
+	GhostEndpoint             *string           `mapstructure:"ghost_endpoint_url" cty:"ghost_endpoint_url" hcl:"ghost_endpoint_url"`
 	EncryptionKeyCRN          *string           `mapstructure:"encryption_key_crn" cty:"encryption_key_crn" hcl:"encryption_key_crn"`
 	IAMEndpoint               *string           `mapstructure:"iam_url" cty:"iam_url" hcl:"iam_url"`
 	SubnetID                  *string           `mapstructure:"subnet_id" cty:"subnet_id" hcl:"subnet_id"`
@@ -88,6 +89,7 @@ type FlatConfig struct {
 	VSIUserDataFile           *string           `mapstructure:"vsi_user_data_file" cty:"vsi_user_data_file" hcl:"vsi_user_data_file"`
 	VSIUserDataString         *string           `mapstructure:"vsi_user_data" cty:"vsi_user_data" hcl:"vsi_user_data"`
 	ImageName                 *string           `mapstructure:"image_name" cty:"image_name" hcl:"image_name"`
+	ImageTags                 []string          `mapstructure:"tags" cty:"tags" hcl:"tags"`
 	RawStateTimeout           *string           `mapstructure:"timeout" cty:"timeout" hcl:"timeout"`
 	ImageID                   *string           `mapstructure:"image_id" cty:"image_id" hcl:"image_id"`
 	ImageExportJobName        *string           `mapstructure:"image_export_job_name" cty:"image_export_job_name" hcl:"image_export_job_name"`
@@ -168,6 +170,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"api_key":                      &hcldec.AttrSpec{Name: "api_key", Type: cty.String, Required: false},
 		"region":                       &hcldec.AttrSpec{Name: "region", Type: cty.String, Required: false},
 		"vpc_endpoint_url":             &hcldec.AttrSpec{Name: "vpc_endpoint_url", Type: cty.String, Required: false},
+		"ghost_endpoint_url":           &hcldec.AttrSpec{Name: "ghost_endpoint_url", Type: cty.String, Required: false},
 		"encryption_key_crn":           &hcldec.AttrSpec{Name: "encryption_key_crn", Type: cty.String, Required: false},
 		"iam_url":                      &hcldec.AttrSpec{Name: "iam_url", Type: cty.String, Required: false},
 		"subnet_id":                    &hcldec.AttrSpec{Name: "subnet_id", Type: cty.String, Required: false},
@@ -186,6 +189,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"vsi_user_data_file":           &hcldec.AttrSpec{Name: "vsi_user_data_file", Type: cty.String, Required: false},
 		"vsi_user_data":                &hcldec.AttrSpec{Name: "vsi_user_data", Type: cty.String, Required: false},
 		"image_name":                   &hcldec.AttrSpec{Name: "image_name", Type: cty.String, Required: false},
+		"tags":                         &hcldec.AttrSpec{Name: "tags", Type: cty.List(cty.String), Required: false},
 		"timeout":                      &hcldec.AttrSpec{Name: "timeout", Type: cty.String, Required: false},
 		"image_id":                     &hcldec.AttrSpec{Name: "image_id", Type: cty.String, Required: false},
 		"image_export_job_name":        &hcldec.AttrSpec{Name: "image_export_job_name", Type: cty.String, Required: false},

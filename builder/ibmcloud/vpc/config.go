@@ -21,6 +21,7 @@ type Config struct {
 	IBMApiKey                 string `mapstructure:"api_key"`
 	Region                    string `mapstructure:"region"`
 	Endpoint                  string `mapstructure:"vpc_endpoint_url"`
+	GhostEndpoint             string `mapstructure:"ghost_endpoint_url"`
 	EncryptionKeyCRN          string `mapstructure:"encryption_key_crn"`
 	IAMEndpoint               string `mapstructure:"iam_url"`
 	Zone                      string `mapstructure-to-hcl2:",skip"`
@@ -41,7 +42,8 @@ type Config struct {
 	VSIUserDataFile           string `mapstructure:"vsi_user_data_file"`
 	VSIUserDataString         string `mapstructure:"vsi_user_data"`
 
-	ImageName string `mapstructure:"image_name"`
+	ImageName string   `mapstructure:"image_name"`
+	ImageTags []string `mapstructure:"tags"`
 
 	VSIName           string `mapstructure-to-hcl2:",skip"`
 	VpcSshKeyName     string `mapstructure-to-hcl2:",skip"`
