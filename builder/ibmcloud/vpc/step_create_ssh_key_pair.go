@@ -83,7 +83,7 @@ func (s *stepCreateSshKeyPair) Run(_ context.Context, state multistep.StateBag) 
 		// Creating new RSA Private key
 		rsaKey, err := rsa.GenerateKey(rand.Reader, 2014)
 		if err != nil {
-			err := fmt.Errorf("[ERROR] Error, cannot generate Private SSH Key: %s", err)
+			err := fmt.Errorf("[ERROR] Error, unable to generate ED25519 keypair: %s", err)
 			state.Put("error", err)
 			ui.Error(err.Error())
 			return multistep.ActionHalt
@@ -119,7 +119,7 @@ func (s *stepCreateSshKeyPair) Run(_ context.Context, state multistep.StateBag) 
 		// Creating new RSA Public key
 		pub, err := ssh.NewPublicKey(&rsaKey.PublicKey)
 		if err != nil {
-			err := fmt.Errorf("[ERROR] Error, cannot generate SSH Public Key: %s", err)
+			err := fmt.Errorf("[ERROR] Error, unable to generate RSA keypair: %s", err)
 			state.Put("error", err)
 			ui.Error(err.Error())
 			return multistep.ActionHalt
