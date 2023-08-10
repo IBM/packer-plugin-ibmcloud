@@ -37,6 +37,10 @@ run-catalog-version-crn:
 run-catalog-offering-crn:
 	cd ..; packer validate -var-file="developer/variables-catalog-offering.pkrvars.hcl" developer/examples/build.vpc.catalogimage-offering.pkr.hcl
 	cd ..; packer build -var-file="developer/variables-catalog-offering.pkrvars.hcl" developer/examples/build.vpc.catalogimage-offering.pkr.hcl
+
+run-ssh-ed25519:
+	cd ..; packer validate -var-file="developer/variables.ssh-pkrvars.hcl" developer/examples/build.vpc.centos-ssh-ed25519.pkr.hcl
+	cd ..; packer build -var-file="developer/variables.ssh-pkrvars.hcl" developer/examples/build.vpc.centos-ssh-ed25519.pkr.hcl
 	
 run-centos:
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl

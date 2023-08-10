@@ -27,6 +27,7 @@ type Config struct {
 	Zone                      string `mapstructure-to-hcl2:",skip"`
 	VPCID                     string `mapstructure-to-hcl2:",skip"`
 	SubnetID                  string `mapstructure:"subnet_id"`
+	SshKeyType                string `mapstructure:"ssh_key_type"`
 	CatalogOfferingCRN        string `mapstructure:"catalog_offering_crn"`
 	CatalogOfferingVersionCRN string `mapstructure:"catalog_offering_version_crn"`
 	ResourceGroupID           string `mapstructure:"resource_group_id"`

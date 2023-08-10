@@ -187,6 +187,8 @@ subnet_id | string | The VPC Subnet identifier. Required.
 resource_group_id | string | The resource group identifier to use. If not specified, IBM packer plugin uses `default` resource group.
 security_group_id | string | The security group identifier to use. If not specified, IBM packer plugin creates a new temporary security group to allow SSH and WinRM access.
 | |
+ssh_key_type | string | The type of ssh key to use(`rsa`/`ed25519`). If not specified, IBM packer plugin uses `rsa` type as default.
+| |
 vsi_base_image_id | string | The base image identifier used to created the VSI. Use `ibmcloud is images` for available options.
 | OR |
 vsi_base_image_name | string | The base image name used to created the VSI. Use `ibmcloud is images` for available options.
