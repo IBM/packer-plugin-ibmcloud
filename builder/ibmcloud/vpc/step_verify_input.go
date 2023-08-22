@@ -130,6 +130,32 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 		}
 	}
 
+	//boot snapshot support
+	if config.VSIBootSnapshotID != "" {
+		getSnapshotOptions := &vpcv1.GetSnapshotOptions{
+			ID: &config.VSIBootSnapshotID,
+		}
+		bootSnapshot, response, err := vpcService.GetSnapshot(getSnapshotOptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				err := fmt.Errorf("[ERROR] Boot snapahot provided is not found %s:", config.VSIBootSnapshotID)
+				state.Put("error", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			}
+			err := fmt.Errorf("[ERROR] Error fetching snapshot %s", config.VSIBootSnapshotID)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
+		if bootSnapshot.OperatingSystem == nil || bootSnapshot.OperatingSystem.Architecture == nil {
+			err := fmt.Errorf("[ERROR] Provided snapshot %s is not a bootable snapshot. Please provide an unattached bootable snapshot", config.VSIBootSnapshotID)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
+	}
+
 	// image check
 
 	listImagesOptions := &vpcv1.ListImagesOptions{
@@ -149,12 +175,24 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 	allrecs := availableImages.Images
 
 	if len(allrecs) != 0 {
-		err := fmt.Errorf("[ERROR] An Image exist with the same name : %s", config.ImageName)
+		err := fmt.Errorf("[ERROR] An Image exist with the same name :%s", config.ImageName)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt
 	}
 	// image check ends
+
+	// usertags validation for blanks.
+	if len(config.ImageTags) > 0 {
+		for i := 0; i < len(config.ImageTags); i++ {
+			if config.ImageTags[i] == "" {
+				err := fmt.Errorf("[ERROR] Invalid user tag \"\", tags can be in `key:value` or `label` format, for example:, tags:\"my_tag\" ")
+				state.Put("error", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			}
+		}
+	}
 
 	// security group verification
 	if config.SecurityGroupID != "" {

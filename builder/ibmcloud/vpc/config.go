@@ -22,11 +22,13 @@ type Config struct {
 	Region                    string `mapstructure:"region"`
 	Endpoint                  string `mapstructure:"vpc_endpoint_url"`
 	RCEndpoint                string `mapstructure:"rc_endpoint_url"`
+	GhostEndpoint             string `mapstructure:"ghost_endpoint_url"`
 	EncryptionKeyCRN          string `mapstructure:"encryption_key_crn"`
 	IAMEndpoint               string `mapstructure:"iam_url"`
 	Zone                      string `mapstructure-to-hcl2:",skip"`
 	VPCID                     string `mapstructure-to-hcl2:",skip"`
 	SubnetID                  string `mapstructure:"subnet_id"`
+	SshKeyType                string `mapstructure:"ssh_key_type"`
 	CatalogOfferingCRN        string `mapstructure:"catalog_offering_crn"`
 	CatalogOfferingVersionCRN string `mapstructure:"catalog_offering_version_crn"`
 	ResourceGroupID           string `mapstructure:"resource_group_id"`
@@ -37,12 +39,14 @@ type Config struct {
 	VSIBootCapacity           int    `mapstructure:"vsi_boot_vol_capacity"`
 	VSIBootProfile            string `mapstructure:"vsi_boot_vol_profile"`
 	VSIBootVolumeID           string `mapstructure:"vsi_boot_volume_id"`
+	VSIBootSnapshotID         string `mapstructure:"vsi_boot_snapshot_id"`
 	VSIProfile                string `mapstructure:"vsi_profile"`
 	VSIInterface              string `mapstructure:"vsi_interface"`
 	VSIUserDataFile           string `mapstructure:"vsi_user_data_file"`
 	VSIUserDataString         string `mapstructure:"vsi_user_data"`
 
-	ImageName string `mapstructure:"image_name"`
+	ImageName string   `mapstructure:"image_name"`
+	ImageTags []string `mapstructure:"tags"`
 
 	VSIName           string `mapstructure-to-hcl2:",skip"`
 	VpcSshKeyName     string `mapstructure-to-hcl2:",skip"`
@@ -107,20 +111,29 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		errs = packer.MultiErrorAppend(errs, errors.New("profile must be from:  5iops-tier, 10iops-tier, general-purpose"))
 	}
 
-	if (c.CatalogOfferingCRN != "" || c.CatalogOfferingVersionCRN != "") && (c.VSIBaseImageID != "" || c.VSIBaseImageName != "") && c.VSIBootVolumeID != "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("only one of (vsi_base_image_id or vsi_base_image_name) or (catalog_offering_crn or catalog_offering_version_crn) or vsi_boot_volume_id is required"))
-	} else if (c.CatalogOfferingCRN != "" || c.CatalogOfferingVersionCRN != "") && (c.VSIBaseImageID != "" || c.VSIBaseImageName != "") {
-		errs = packer.MultiErrorAppend(errs, errors.New("only one of (vsi_base_image_id or vsi_base_image_name) or (catalog_offering_crn or catalog_offering_version_crn) is required"))
-	} else if (c.CatalogOfferingCRN != "" || c.CatalogOfferingVersionCRN != "") && c.VSIBootVolumeID != "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("only one of (catalog_offering_crn or catalog_offering_version_crn) or vsi_boot_volume_id is required"))
-	} else if (c.VSIBaseImageID != "" || c.VSIBaseImageName != "") && c.VSIBootVolumeID != "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("only one of (vsi_base_image_id or vsi_base_image_name) or vsi_boot_volume_id is required"))
-	} else if c.CatalogOfferingCRN != "" && c.CatalogOfferingVersionCRN != "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("only one of (catalog_offering_crn or catalog_offering_version_crn) is required"))
-	} else if c.VSIBaseImageID != "" && c.VSIBaseImageName != "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("only one of (vsi_base_image_id or vsi_base_image_name) is required"))
-	} else if c.CatalogOfferingCRN == "" && c.CatalogOfferingVersionCRN == "" && c.VSIBaseImageID == "" && c.VSIBaseImageName == "" && c.VSIBootVolumeID == "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("one of (vsi_base_image_id or vsi_base_image_name) or (catalog_offering_crn or catalog_offering_version_crn) or vsi_boot_volume_id  is required"))
+	var oneOfInput int // validation for mutually exclusive fields.
+
+	if c.VSIBaseImageID != "" {
+		oneOfInput = oneOfInput + 1
+	}
+	if c.VSIBaseImageName != "" {
+		oneOfInput = oneOfInput + 1
+	}
+	if c.CatalogOfferingCRN != "" {
+		oneOfInput = oneOfInput + 1
+	}
+	if c.CatalogOfferingVersionCRN != "" {
+		oneOfInput = oneOfInput + 1
+	}
+	if c.VSIBootVolumeID != "" {
+		oneOfInput = oneOfInput + 1
+	}
+	if c.VSIBootSnapshotID != "" {
+		oneOfInput = oneOfInput + 1
+	}
+
+	if oneOfInput != 1 {
+		errs = packer.MultiErrorAppend(errs, errors.New("only one of (vsi_base_image_id or vsi_base_image_name) or (catalog_offering_crn or catalog_offering_version_crn) or vsi_boot_volume_id or vsi_boot_snapshot_id is required"))
 	}
 
 	if c.VSIProfile == "" {

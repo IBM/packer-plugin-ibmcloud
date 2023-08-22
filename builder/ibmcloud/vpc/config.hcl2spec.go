@@ -70,25 +70,27 @@ type FlatConfig struct {
 	IBMApiKey                 *string           `mapstructure:"api_key" cty:"api_key" hcl:"api_key"`
 	Region                    *string           `mapstructure:"region" cty:"region" hcl:"region"`
 	Endpoint                  *string           `mapstructure:"vpc_endpoint_url" cty:"vpc_endpoint_url" hcl:"vpc_endpoint_url"`
-	RCEndpoint                *string           `mapstructure:"rc_endpoint_url" cty:"rc_endpoint_url" hcl:"rc_endpoint_url"`
+	GhostEndpoint             *string           `mapstructure:"ghost_endpoint_url" cty:"ghost_endpoint_url" hcl:"ghost_endpoint_url"`
 	EncryptionKeyCRN          *string           `mapstructure:"encryption_key_crn" cty:"encryption_key_crn" hcl:"encryption_key_crn"`
 	IAMEndpoint               *string           `mapstructure:"iam_url" cty:"iam_url" hcl:"iam_url"`
 	SubnetID                  *string           `mapstructure:"subnet_id" cty:"subnet_id" hcl:"subnet_id"`
+	SshKeyType                *string           `mapstructure:"ssh_key_type" cty:"ssh_key_type" hcl:"ssh_key_type"`
 	CatalogOfferingCRN        *string           `mapstructure:"catalog_offering_crn" cty:"catalog_offering_crn" hcl:"catalog_offering_crn"`
 	CatalogOfferingVersionCRN *string           `mapstructure:"catalog_offering_version_crn" cty:"catalog_offering_version_crn" hcl:"catalog_offering_version_crn"`
 	ResourceGroupID           *string           `mapstructure:"resource_group_id" cty:"resource_group_id" hcl:"resource_group_id"`
-	ResourceGroupName         *string           `mapstructure:"resource_group_name" cty:"resource_group_name" hcl:"resource_group_name"`
 	SecurityGroupID           *string           `mapstructure:"security_group_id" cty:"security_group_id" hcl:"security_group_id"`
 	VSIBaseImageID            *string           `mapstructure:"vsi_base_image_id" cty:"vsi_base_image_id" hcl:"vsi_base_image_id"`
 	VSIBaseImageName          *string           `mapstructure:"vsi_base_image_name" cty:"vsi_base_image_name" hcl:"vsi_base_image_name"`
 	VSIBootCapacity           *int              `mapstructure:"vsi_boot_vol_capacity" cty:"vsi_boot_vol_capacity" hcl:"vsi_boot_vol_capacity"`
 	VSIBootProfile            *string           `mapstructure:"vsi_boot_vol_profile" cty:"vsi_boot_vol_profile" hcl:"vsi_boot_vol_profile"`
 	VSIBootVolumeID           *string           `mapstructure:"vsi_boot_volume_id" cty:"vsi_boot_volume_id" hcl:"vsi_boot_volume_id"`
+	VSIBootSnapshotID         *string           `mapstructure:"vsi_boot_snapshot_id" cty:"vsi_boot_snapshot_id" hcl:"vsi_boot_snapshot_id"`
 	VSIProfile                *string           `mapstructure:"vsi_profile" cty:"vsi_profile" hcl:"vsi_profile"`
 	VSIInterface              *string           `mapstructure:"vsi_interface" cty:"vsi_interface" hcl:"vsi_interface"`
 	VSIUserDataFile           *string           `mapstructure:"vsi_user_data_file" cty:"vsi_user_data_file" hcl:"vsi_user_data_file"`
 	VSIUserDataString         *string           `mapstructure:"vsi_user_data" cty:"vsi_user_data" hcl:"vsi_user_data"`
 	ImageName                 *string           `mapstructure:"image_name" cty:"image_name" hcl:"image_name"`
+	ImageTags                 []string          `mapstructure:"tags" cty:"tags" hcl:"tags"`
 	RawStateTimeout           *string           `mapstructure:"timeout" cty:"timeout" hcl:"timeout"`
 	ImageID                   *string           `mapstructure:"image_id" cty:"image_id" hcl:"image_id"`
 	ImageExportJobName        *string           `mapstructure:"image_export_job_name" cty:"image_export_job_name" hcl:"image_export_job_name"`
@@ -169,25 +171,27 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"api_key":                      &hcldec.AttrSpec{Name: "api_key", Type: cty.String, Required: false},
 		"region":                       &hcldec.AttrSpec{Name: "region", Type: cty.String, Required: false},
 		"vpc_endpoint_url":             &hcldec.AttrSpec{Name: "vpc_endpoint_url", Type: cty.String, Required: false},
-		"rc_endpoint_url":              &hcldec.AttrSpec{Name: "rc_endpoint_url", Type: cty.String, Required: false},
+		"ghost_endpoint_url":           &hcldec.AttrSpec{Name: "ghost_endpoint_url", Type: cty.String, Required: false},
 		"encryption_key_crn":           &hcldec.AttrSpec{Name: "encryption_key_crn", Type: cty.String, Required: false},
 		"iam_url":                      &hcldec.AttrSpec{Name: "iam_url", Type: cty.String, Required: false},
 		"subnet_id":                    &hcldec.AttrSpec{Name: "subnet_id", Type: cty.String, Required: false},
+		"ssh_key_type":                 &hcldec.AttrSpec{Name: "ssh_key_type", Type: cty.String, Required: false},
 		"catalog_offering_crn":         &hcldec.AttrSpec{Name: "catalog_offering_crn", Type: cty.String, Required: false},
 		"catalog_offering_version_crn": &hcldec.AttrSpec{Name: "catalog_offering_version_crn", Type: cty.String, Required: false},
 		"resource_group_id":            &hcldec.AttrSpec{Name: "resource_group_id", Type: cty.String, Required: false},
-		"resource_group_name":          &hcldec.AttrSpec{Name: "resource_group_name", Type: cty.String, Required: false},
 		"security_group_id":            &hcldec.AttrSpec{Name: "security_group_id", Type: cty.String, Required: false},
 		"vsi_base_image_id":            &hcldec.AttrSpec{Name: "vsi_base_image_id", Type: cty.String, Required: false},
 		"vsi_base_image_name":          &hcldec.AttrSpec{Name: "vsi_base_image_name", Type: cty.String, Required: false},
 		"vsi_boot_vol_capacity":        &hcldec.AttrSpec{Name: "vsi_boot_vol_capacity", Type: cty.Number, Required: false},
 		"vsi_boot_vol_profile":         &hcldec.AttrSpec{Name: "vsi_boot_vol_profile", Type: cty.String, Required: false},
 		"vsi_boot_volume_id":           &hcldec.AttrSpec{Name: "vsi_boot_volume_id", Type: cty.String, Required: false},
+		"vsi_boot_snapshot_id":         &hcldec.AttrSpec{Name: "vsi_boot_snapshot_id", Type: cty.String, Required: false},
 		"vsi_profile":                  &hcldec.AttrSpec{Name: "vsi_profile", Type: cty.String, Required: false},
 		"vsi_interface":                &hcldec.AttrSpec{Name: "vsi_interface", Type: cty.String, Required: false},
 		"vsi_user_data_file":           &hcldec.AttrSpec{Name: "vsi_user_data_file", Type: cty.String, Required: false},
 		"vsi_user_data":                &hcldec.AttrSpec{Name: "vsi_user_data", Type: cty.String, Required: false},
 		"image_name":                   &hcldec.AttrSpec{Name: "image_name", Type: cty.String, Required: false},
+		"tags":                         &hcldec.AttrSpec{Name: "tags", Type: cty.List(cty.String), Required: false},
 		"timeout":                      &hcldec.AttrSpec{Name: "timeout", Type: cty.String, Required: false},
 		"image_id":                     &hcldec.AttrSpec{Name: "image_id", Type: cty.String, Required: false},
 		"image_export_job_name":        &hcldec.AttrSpec{Name: "image_export_job_name", Type: cty.String, Required: false},

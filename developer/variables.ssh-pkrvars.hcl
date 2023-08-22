@@ -1,0 +1,6 @@
+SUBNET_ID="<subnet_id>"
+REGION="<region>"
+SECURITY_GROUP_ID=""
+RESOURCE_GROUP_ID=""
+IBM_API_KEY="<ibm_api_key>"
+SSH_KEY_TYPE="ed25519"
