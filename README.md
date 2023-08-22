@@ -189,19 +189,19 @@ resource_group_id | string | Optional | The resource group identifier to use. If
 | OR |
 resource_group_name | string | Optional | The resource group name to use. If not specified, IBM packer plugin uses `default` resource group.
 | |
-ssh_key_type | string | The type of ssh key to use(`rsa`/`ed25519`). If not specified, IBM packer plugin uses `rsa` type as default.
+ssh_key_type | string | Optional | The type of ssh key to use(`rsa`/`ed25519`). If not specified, IBM packer plugin uses `rsa` type as default.
 | |
-vsi_base_image_id | string | The base image identifier used to created the VSI. Use `ibmcloud is images` for available options.
+vsi_base_image_id | string | Required | The base image identifier used to created the VSI. Use `ibmcloud is images` for available options.
 | OR |
-vsi_base_image_name | string | The base image name used to created the VSI. Use `ibmcloud is images` for available options.
+vsi_base_image_name | string | Required | The base image name used to created the VSI. Use `ibmcloud is images` for available options.
 | OR |
-catalog_offering_crn | string | The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering version to use when provisioning this virtual server instance. The specified offering version may be in a different account in the same enterprise, subject to IAM policies. Identifies a [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering by a unique property. Optional.
+catalog_offering_crn | string | Required | The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering version to use when provisioning this virtual server instance. The specified offering version may be in a different account in the same enterprise, subject to IAM policies. Identifies a [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering by a unique property. Optional.
 | OR |
-catalog_offering_version_crn | string | The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering version to use when provisioning this virtual server instance. The specified offering version may be in a different account in the same enterprise, subject to IAM policies. Identifies a version of a [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering by a unique property. Optional.
+catalog_offering_version_crn | string | Required | The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering version to use when provisioning this virtual server instance. The specified offering version may be in a different account in the same enterprise, subject to IAM policies. Identifies a version of a [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering by a unique property. Optional.
 | OR |
-vsi_boot_volume_id | string | The ID of an existing boot volume.
+vsi_boot_volume_id | string | Required | The ID of an existing boot volume.
 | OR |
-vsi_boot_snapshot_id | string | The ID of an existing boot snapshot.
+vsi_boot_snapshot_id | string | Required | The ID of an existing boot snapshot.
 | |
 security_group_id | string | Optional | The security group identifier to use. If not specified, IBM packer plugin creates a new temporary security group to allow SSH and WinRM access.
 | |
@@ -216,9 +216,8 @@ vsi_boot_vol_capacity | string | Optional | The capacity to use for the volume (
 vsi_boot_vol_profile | string | Optional | User can provide the available profile for volume attachments. Supported profiles: `5iops-tier`, `10iops-tier`, `general-purpose`. Refer https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles&interface=ui for profile info. 
 image_name | string | Optional | The name of the resulting custom image that will appear in your account. Required.
 encryption_key_crn | string | Optional | The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
-communicator | string | Optional | Communicators are the mechanism Packer uses to upload files, execute scripts, etc. with the machine being created. Choose between "ssh" (for Linux) and "winrm" (for Windows). Required.
-tags | list |  List of user tags for this image. Tags can be made as `key:value` pair or in `label` format. Optional.
-communicator | string | Communicators are the mechanism Packer uses to upload files, execute scripts, etc. with the machine being created. Choose between "ssh" (for Linux) and "winrm" (for Windows). Required.
+communicator | string | Required | Communicators are the mechanism Packer uses to upload files, execute scripts, etc. with the machine being created. Choose between "ssh" (for Linux) and "winrm" (for Windows). Required.
+tags | list | Optional | List of user tags for this image. Tags can be made as `key:value` pair or in `label` format.
 ***Linux Communicator Variables*** |
 ssh_username | string | Optional | The username to connect to SSH with.
 ssh_port | int | Optional | The port that SSH will be available on. Defaults to port 22.
