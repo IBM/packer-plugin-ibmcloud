@@ -219,7 +219,7 @@ encryption_key_crn | string | Optional | The CRN of the [Key Protect Root Key](h
 communicator | string | Required | Communicators are the mechanism Packer uses to upload files, execute scripts, etc. with the machine being created. Choose between "ssh" (for Linux) and "winrm" (for Windows). Required.
 tags | list | Optional | List of user tags for this image. Tags can be made as `key:value` pair or in `label` format.
 ***Linux Communicator Variables*** |
-ssh_username | string | Optional | The username to connect to SSH with.
+ssh_username | string | Optional | The username to connect to SSH with. Defaults to root.
 ssh_port | int | Optional | The port that SSH will be available on. Defaults to port 22.
 ssh_timeout | string | Optional | The time to wait for SSH to become available before timing out. The format of this value is a duration such as "5s" or "5m".
 ***Windows Communicator Variables*** |
