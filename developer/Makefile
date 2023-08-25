@@ -37,11 +37,19 @@ run-catalog-version-crn:
 run-catalog-offering-crn:
 	cd ..; packer validate -var-file="developer/variables-catalog-offering.pkrvars.hcl" developer/examples/build.vpc.catalogimage-offering.pkr.hcl
 	cd ..; packer build -var-file="developer/variables-catalog-offering.pkrvars.hcl" developer/examples/build.vpc.catalogimage-offering.pkr.hcl
+
+run-ssh-ed25519:
+	cd ..; packer validate -var-file="developer/variables.ssh-pkrvars.hcl" developer/examples/build.vpc.centos-ssh-ed25519.pkr.hcl
+	cd ..; packer build -var-file="developer/variables.ssh-pkrvars.hcl" developer/examples/build.vpc.centos-ssh-ed25519.pkr.hcl
 	
 run-centos:
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
 	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
 
+run-centos-resource-group-name:
+	cd ..; packer validate -var-file="developer/variables-resource-group-name.pkrvars.hcl" developer/examples/build.vpc.centos-resource-group-name.pkr.hcl
+	cd ..; packer build -var-file="developer/variables-resource-group-name.pkrvars.hcl" developer/examples/build.vpc.centos-resource-group-name.pkr.hcl
+	
 run-env-centos:
 	cd ..; packer validate -var-file="developer/variables.env.pkrvars.hcl" developer/examples/build.vpc.env.centos.pkr.hcl
 	cd ..; packer build -var-file="developer/variables.env.pkrvars.hcl" developer/examples/build.vpc.env.centos.pkr.hcl

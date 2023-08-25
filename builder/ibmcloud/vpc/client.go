@@ -383,6 +383,9 @@ func (client IBMCloudClient) createSSHKeyVPC(state multistep.StateBag) (*vpcv1.K
 	state.Put("ssh_public_key", publicKey)
 
 	options := &vpcv1.CreateKeyOptions{}
+	if config.SshKeyType != "" && config.SshKeyType == "ed25519" {
+		options.SetType("ed25519")
+	}
 	options.SetName(config.VpcSshKeyName)
 	options.SetPublicKey(publicKey)
 	if config.ResourceGroupID != "" {

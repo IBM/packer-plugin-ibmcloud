@@ -115,6 +115,14 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 			instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
 				ID: &config.ResourceGroupID,
 			}
+		} else if config.ResourceGroupName != "" {
+			derivedResourceGroupId := state.Get("derived_resource_group_id")
+			if derivedResourceGroupId != nil && derivedResourceGroupId.(string) != "" {
+				derivedResourceGroupIdStr := derivedResourceGroupId.(string)
+				instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
+					ID: &derivedResourceGroupIdStr,
+				}
+			}
 		}
 
 		state.Put("instance_definition", *instancePrototypeModel)
@@ -207,6 +215,14 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 			instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
 				ID: &config.ResourceGroupID,
 			}
+		} else if config.ResourceGroupName != "" {
+			derivedResourceGroupId := state.Get("derived_resource_group_id")
+			if derivedResourceGroupId != nil && derivedResourceGroupId.(string) != "" {
+				derivedResourceGroupIdStr := derivedResourceGroupId.(string)
+				instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
+					ID: &derivedResourceGroupIdStr,
+				}
+			}
 		}
 
 		state.Put("instance_definition", *instancePrototypeModel)
@@ -265,6 +281,14 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		if config.ResourceGroupID != "" {
 			instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
 				ID: &config.ResourceGroupID,
+			}
+		} else if config.ResourceGroupName != "" {
+			derivedResourceGroupId := state.Get("derived_resource_group_id")
+			if derivedResourceGroupId != nil && derivedResourceGroupId.(string) != "" {
+				derivedResourceGroupIdStr := derivedResourceGroupId.(string)
+				instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
+					ID: &derivedResourceGroupIdStr,
+				}
 			}
 		}
 

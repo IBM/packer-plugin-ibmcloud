@@ -21,15 +21,18 @@ type Config struct {
 	IBMApiKey                 string `mapstructure:"api_key"`
 	Region                    string `mapstructure:"region"`
 	Endpoint                  string `mapstructure:"vpc_endpoint_url"`
+	RCEndpoint                string `mapstructure:"rc_endpoint_url"`
 	GhostEndpoint             string `mapstructure:"ghost_endpoint_url"`
 	EncryptionKeyCRN          string `mapstructure:"encryption_key_crn"`
 	IAMEndpoint               string `mapstructure:"iam_url"`
 	Zone                      string `mapstructure-to-hcl2:",skip"`
 	VPCID                     string `mapstructure-to-hcl2:",skip"`
 	SubnetID                  string `mapstructure:"subnet_id"`
+	SshKeyType                string `mapstructure:"ssh_key_type"`
 	CatalogOfferingCRN        string `mapstructure:"catalog_offering_crn"`
 	CatalogOfferingVersionCRN string `mapstructure:"catalog_offering_version_crn"`
 	ResourceGroupID           string `mapstructure:"resource_group_id"`
+	ResourceGroupName         string `mapstructure:"resource_group_name"`
 	SecurityGroupID           string `mapstructure:"security_group_id"`
 	VSIBaseImageID            string `mapstructure:"vsi_base_image_id"`
 	VSIBaseImageName          string `mapstructure:"vsi_base_image_name"`
@@ -92,6 +95,9 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	// Configure IBM Cloud Endpoint and other IBM Cloud API constants
 	if c.Endpoint == "" {
 		c.Endpoint = "https://" + c.Region + ".iaas.cloud.ibm.com/v1/"
+	}
+	if c.RCEndpoint == "" {
+		c.RCEndpoint = "https://resource-controller.cloud.ibm.com"
 	}
 
 	if c.SubnetID == "" {
