@@ -176,56 +176,60 @@ The top-level `source` block defines reusable builder configuration blocks.
 source "ibmcloud" "vpc-centos" {
    ...
 ```
-Variable | Type |Description
---- | --- | ---
+Variable | Type  | Required | Description
+--- | --- | --- | ---
 **builder variables** |
-type | string | Set it as "ibmcloud"
+type | string |  | Set it as "ibmcloud"
 | |
-api_key | string | The IBM Cloud platform API key. Required.
-region | string | IBM Cloud region where VPC is deployed. Required.
-subnet_id | string | The VPC Subnet identifier. Required.
-resource_group_id | string | The resource group identifier to use. If not specified, IBM packer plugin uses `default` resource group.
-security_group_id | string | The security group identifier to use. If not specified, IBM packer plugin creates a new temporary security group to allow SSH and WinRM access.
+api_key | string | Required | The IBM Cloud platform API key.
+region | string | Required | IBM Cloud region where VPC is deployed.
+subnet_id | string | Required | The VPC Subnet identifier. Required.
 | |
-ssh_key_type | string | The type of ssh key to use(`rsa`/`ed25519`). If not specified, IBM packer plugin uses `rsa` type as default.
+resource_group_id | string | Optional | The resource group identifier to use. If not specified, IBM packer plugin uses `default` resource group.
+| OR |
+resource_group_name | string | Optional | The resource group name to use. If not specified, IBM packer plugin uses `default` resource group.
 | |
-vsi_base_image_id | string | The base image identifier used to created the VSI. Use `ibmcloud is images` for available options.
-| OR |
-vsi_base_image_name | string | The base image name used to created the VSI. Use `ibmcloud is images` for available options.
-| OR |
-catalog_offering_crn | string | The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering version to use when provisioning this virtual server instance. The specified offering version may be in a different account in the same enterprise, subject to IAM policies. Identifies a [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering by a unique property. Optional.
-| OR |
-catalog_offering_version_crn | string | The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering version to use when provisioning this virtual server instance. The specified offering version may be in a different account in the same enterprise, subject to IAM policies. Identifies a version of a [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering by a unique property. Optional.
-| OR |
-vsi_boot_volume_id | string | The ID of an existing boot volume.
-| OR |
-vsi_boot_snapshot_id | string | The ID of an existing boot snapshot.
+ssh_key_type | string | Optional | The type of ssh key to use(`rsa`/`ed25519`). If not specified, IBM packer plugin uses `rsa` type as default.
 | |
-vsi_profile | string | The profile this VSI uses. Required.
-vsi_interface | string | Set it as "public" to create a Floating IP to connect to the temp VSI. Set it as "private" to use private interface to connect to the temp VSI. Later seeks the private IP under the VPC.
-| |
-| |
-vsi_user_data_file | string | User data to be made available when setting up the virtual server instance. Optional.
+vsi_base_image_id | string | Required | The base image identifier used to created the VSI. Use `ibmcloud is images` for available options.
 | OR |
-vsi_user_data | string | User data to be made available when setting up the virtual server instance. Optional. This is the string input variable.
-vsi_boot_vol_capacity | string | The capacity to use for the volume (in gigabytes). Must be at least the image's minimum_provisioned_size. The maximum value may increase in the future. Optional.
-vsi_boot_vol_profile | string | User can provide the available profile for volume attachments. Supported profiles: `5iops-tier`, `10iops-tier`, `general-purpose`. Refer https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles&interface=ui for profile info. Optional. 
-image_name | string | The name of the resulting custom image that will appear in your account. Required.
-encryption_key_crn | string | The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
-tags | list |  List of user tags for this image. Tags can be made as `key:value` pair or in `label` format. Optional.
-communicator | string | Communicators are the mechanism Packer uses to upload files, execute scripts, etc. with the machine being created. Choose between "ssh" (for Linux) and "winrm" (for Windows). Required.
+vsi_base_image_name | string | Required | The base image name used to created the VSI. Use `ibmcloud is images` for available options.
+| OR |
+catalog_offering_crn | string | Required | The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering version to use when provisioning this virtual server instance. The specified offering version may be in a different account in the same enterprise, subject to IAM policies. Identifies a [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering by a unique property. Optional.
+| OR |
+catalog_offering_version_crn | string | Required | The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering version to use when provisioning this virtual server instance. The specified offering version may be in a different account in the same enterprise, subject to IAM policies. Identifies a version of a [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user) offering by a unique property. Optional.
+| OR |
+vsi_boot_volume_id | string | Required | The ID of an existing boot volume.
+| OR |
+vsi_boot_snapshot_id | string | Required | The ID of an existing boot snapshot.
+| |
+security_group_id | string | Optional | The security group identifier to use. If not specified, IBM packer plugin creates a new temporary security group to allow SSH and WinRM access.
+| |
+vsi_profile | string | Required | The profile this VSI uses.
+vsi_interface | string | Optional | Set it as "public" to create a Floating IP to connect to the temp VSI. Set it as "private" to use private interface to connect to the temp VSI. Later seeks the private IP under the VPC.
+| |
+vsi_user_data_file | string | Optional | User data to be made available when setting up the virtual server instance. Optional.
+| OR |
+vsi_user_data | string | Optional | User data to be made available when setting up the virtual server instance. Optional. This is the string input variable.
+| |
+vsi_boot_vol_capacity | string | Optional | The capacity to use for the volume (in gigabytes). Must be at least the image's minimum_provisioned_size. The maximum value may increase in the future.
+vsi_boot_vol_profile | string | Optional | User can provide the available profile for volume attachments. Supported profiles: `5iops-tier`, `10iops-tier`, `general-purpose`. Refer https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles&interface=ui for profile info. 
+image_name | string | Optional | The name of the resulting custom image that will appear in your account. Required.
+encryption_key_crn | string | Optional | The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
+communicator | string | Required | Communicators are the mechanism Packer uses to upload files, execute scripts, etc. with the machine being created. Choose between "ssh" (for Linux) and "winrm" (for Windows). Required.
+tags | list | Optional | List of user tags for this image. Tags can be made as `key:value` pair or in `label` format.
 ***Linux Communicator Variables*** |
-ssh_username | string | The username to connect to SSH with.
-ssh_port | int |The port that SSH will be available on. Defaults to port 22.
-ssh_timeout | string | The time to wait for SSH to become available before timing out. The format of this value is a duration such as "5s" or "5m".
+ssh_username | string | Optional | The username to connect to SSH with. Defaults to root.
+ssh_port | int | Optional | The port that SSH will be available on. Defaults to port 22.
+ssh_timeout | string | Optional | The time to wait for SSH to become available before timing out. The format of this value is a duration such as "5s" or "5m".
 ***Windows Communicator Variables*** |
-winrm_username | string | The username to use to connect to WinRM.
-winrm_port | int |The port that WinRM will be available on. Defaults to port 5986.
-winrm_timeout | string | The time to wait for WinRM to become available before timing out.
-winrm_insecure | bool | If true, do not check server certificate chain and host name.
-winrm_use_ssl | bool | If true, use HTTPS for WinRM.
+winrm_username | string | Optional | The username to use to connect to WinRM.
+winrm_port | int | Optional | The port that WinRM will be available on. Defaults to port 5986.
+winrm_timeout | string | Optional | The time to wait for WinRM to become available before timing out.
+winrm_insecure | bool | Optional | If true, do not check server certificate chain and host name.
+winrm_use_ssl | bool | Optional | If true, use HTTPS for WinRM.
 | |
-timeout | string | The amount of time to wait before considering that the provisioner failed. Optional.
+timeout | string | Optional | The amount of time to wait before considering that the provisioner failed. Optional.
 
 ***********
 

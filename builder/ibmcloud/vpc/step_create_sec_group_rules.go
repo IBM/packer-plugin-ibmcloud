@@ -31,6 +31,14 @@ func (s *stepCreateSecurityGroupRules) Run(_ context.Context, state multistep.St
 			options.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
 				ID: &config.ResourceGroupID,
 			}
+		} else if config.ResourceGroupName != "" {
+			derivedResourceGroupId := state.Get("derived_resource_group_id")
+			if derivedResourceGroupId != nil && derivedResourceGroupId.(string) != "" {
+				derivedResourceGroupIdStr := derivedResourceGroupId.(string)
+				options.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
+					ID: &derivedResourceGroupIdStr,
+				}
+			}
 		}
 
 		SecurityGroupData, err := client.createSecurityGroup(state, *options)

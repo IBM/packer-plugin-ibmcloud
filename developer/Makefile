@@ -46,6 +46,10 @@ run-centos:
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
 	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
 
+run-centos-resource-group-name:
+	cd ..; packer validate -var-file="developer/variables-resource-group-name.pkrvars.hcl" developer/examples/build.vpc.centos-resource-group-name.pkr.hcl
+	cd ..; packer build -var-file="developer/variables-resource-group-name.pkrvars.hcl" developer/examples/build.vpc.centos-resource-group-name.pkr.hcl
+	
 run-env-centos:
 	cd ..; packer validate -var-file="developer/variables.env.pkrvars.hcl" developer/examples/build.vpc.env.centos.pkr.hcl
 	cd ..; packer build -var-file="developer/variables.env.pkrvars.hcl" developer/examples/build.vpc.env.centos.pkr.hcl

@@ -1,0 +1,5 @@
+SUBNET_ID="<subnet_id>"
+REGION="<region>"
+SECURITY_GROUP_ID=""
+IBM_API_KEY="<ibm_api_key>"
+RESOURCE_GROUP_NAME="<resource_group_name>"

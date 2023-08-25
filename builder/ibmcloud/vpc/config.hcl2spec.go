@@ -70,6 +70,7 @@ type FlatConfig struct {
 	IBMApiKey                 *string           `mapstructure:"api_key" cty:"api_key" hcl:"api_key"`
 	Region                    *string           `mapstructure:"region" cty:"region" hcl:"region"`
 	Endpoint                  *string           `mapstructure:"vpc_endpoint_url" cty:"vpc_endpoint_url" hcl:"vpc_endpoint_url"`
+	RCEndpoint                *string           `mapstructure:"rc_endpoint_url" cty:"rc_endpoint_url" hcl:"rc_endpoint_url"`
 	GhostEndpoint             *string           `mapstructure:"ghost_endpoint_url" cty:"ghost_endpoint_url" hcl:"ghost_endpoint_url"`
 	EncryptionKeyCRN          *string           `mapstructure:"encryption_key_crn" cty:"encryption_key_crn" hcl:"encryption_key_crn"`
 	IAMEndpoint               *string           `mapstructure:"iam_url" cty:"iam_url" hcl:"iam_url"`
@@ -78,6 +79,7 @@ type FlatConfig struct {
 	CatalogOfferingCRN        *string           `mapstructure:"catalog_offering_crn" cty:"catalog_offering_crn" hcl:"catalog_offering_crn"`
 	CatalogOfferingVersionCRN *string           `mapstructure:"catalog_offering_version_crn" cty:"catalog_offering_version_crn" hcl:"catalog_offering_version_crn"`
 	ResourceGroupID           *string           `mapstructure:"resource_group_id" cty:"resource_group_id" hcl:"resource_group_id"`
+	ResourceGroupName         *string           `mapstructure:"resource_group_name" cty:"resource_group_name" hcl:"resource_group_name"`
 	SecurityGroupID           *string           `mapstructure:"security_group_id" cty:"security_group_id" hcl:"security_group_id"`
 	VSIBaseImageID            *string           `mapstructure:"vsi_base_image_id" cty:"vsi_base_image_id" hcl:"vsi_base_image_id"`
 	VSIBaseImageName          *string           `mapstructure:"vsi_base_image_name" cty:"vsi_base_image_name" hcl:"vsi_base_image_name"`
@@ -171,6 +173,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"api_key":                      &hcldec.AttrSpec{Name: "api_key", Type: cty.String, Required: false},
 		"region":                       &hcldec.AttrSpec{Name: "region", Type: cty.String, Required: false},
 		"vpc_endpoint_url":             &hcldec.AttrSpec{Name: "vpc_endpoint_url", Type: cty.String, Required: false},
+		"rc_endpoint_url":              &hcldec.AttrSpec{Name: "rc_endpoint_url", Type: cty.String, Required: false},
 		"ghost_endpoint_url":           &hcldec.AttrSpec{Name: "ghost_endpoint_url", Type: cty.String, Required: false},
 		"encryption_key_crn":           &hcldec.AttrSpec{Name: "encryption_key_crn", Type: cty.String, Required: false},
 		"iam_url":                      &hcldec.AttrSpec{Name: "iam_url", Type: cty.String, Required: false},
@@ -179,6 +182,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"catalog_offering_crn":         &hcldec.AttrSpec{Name: "catalog_offering_crn", Type: cty.String, Required: false},
 		"catalog_offering_version_crn": &hcldec.AttrSpec{Name: "catalog_offering_version_crn", Type: cty.String, Required: false},
 		"resource_group_id":            &hcldec.AttrSpec{Name: "resource_group_id", Type: cty.String, Required: false},
+		"resource_group_name":          &hcldec.AttrSpec{Name: "resource_group_name", Type: cty.String, Required: false},
 		"security_group_id":            &hcldec.AttrSpec{Name: "security_group_id", Type: cty.String, Required: false},
 		"vsi_base_image_id":            &hcldec.AttrSpec{Name: "vsi_base_image_id", Type: cty.String, Required: false},
 		"vsi_base_image_name":          &hcldec.AttrSpec{Name: "vsi_base_image_name", Type: cty.String, Required: false},
