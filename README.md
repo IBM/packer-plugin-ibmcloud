@@ -4,10 +4,9 @@
 The IBM Packer Plugin can be used to create custom Images on IBM Cloud.
 
 ## Description
-IBM Packer Plugin adds on two **Packer Builders**: one for *Classic Infrastructure* and one for *VPC Infrastructure*. A **Packer Builder** is a Packer component responsible for creating a machine image. A Builder reads in a **Packer Template**, a configuration file that defines the image you want to build and how to build it. From this configuration file the Builder takes a source OS image (Linux or Windows) and provisions a VSI. Then, the **Builder** installs software for your specific use-case and generates an Image out of the VSI. This generated Image can be reused to launch new VSI Instances within IBM Cloud.
+IBM Packer Plugin adds on **Packer Builders**: *VPC Infrastructure*. A **Packer Builder** is a Packer component responsible for creating a machine image. A Builder reads in a **Packer Template**, a configuration file that defines the image you want to build and how to build it. From this configuration file the Builder takes a source OS image (Linux or Windows) and provisions a VSI. Then, the **Builder** installs software for your specific use-case and generates an Image out of the VSI. This generated Image can be reused to launch new VSI Instances within IBM Cloud.
 
 ### Builders
-- [classic](builders/classic) - The `classic` builder support the creation of custom Images(.VHD) on IBM Cloud - Classic Infrastructure.
 - [vpc](builders/vpc) - The `vpc` builder support the creation of custom Images on IBM Cloud - VPC Infrastructure.
 
 ### Prerequisites
@@ -29,9 +28,6 @@ IBM Packer Plugin adds on two **Packer Builders**: one for *Classic Infrastructu
   ```shell
   # VPC
   export IBM_API_KEY=""
-  # Classic
-  export SL_USERNAME=""
-  export SL_API_KEY=""
 
   export ANSIBLE_INVENTORY_FILE="provisioner/hosts"
   export ANSIBLE_HOST_KEY_CHECKING=False
@@ -319,9 +315,6 @@ There is a `Makefile` and a `Dockerfile` that automate everything for you.
       ```shell
       # VPC
       IBM_API_KEY=###...###
-      # Classic
-      SL_USERNAME=###...###
-      SL_API_KEY=###....###
       ```
       Or create a file `variables.pkrvars.hcl` with the following content.
       ```

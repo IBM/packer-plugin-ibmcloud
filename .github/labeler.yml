@@ -7,9 +7,6 @@ templates:
 core-vpc:
 - builder/vpc/**/*
 
-core-classic:
-- builder/classic/**/*
-
 provisioner:
 - provisioner
 

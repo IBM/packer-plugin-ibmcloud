@@ -1,12 +1,11 @@
 # IBM Packer Plugin
-The IBM Packer Plugin can be used to create custom Images on IBM Cloud. There is one Packer Builder for Classic Infrastructure and one Packer Builder for VPC Infrastructure.
+The IBM Packer Plugin can be used to create custom Images on IBM Cloud VPC Infrastructure.
 
 ## Description
 The builder takes a source OS base Linux or Windows image (identified by it's global ID), provisions an Instance, adds additional applications and services to it and generates an Image out of the Instance. This generated Image can be reused to launch new VSI Instances within IBM Cloud.
 The builder does not manage Images. Once it creates an Image, it is up to you to use it or delete it.
 
 ### Builders
-- [classic](builders/classic) - The `classic` builder support the creation of Image template(.VHD) with pre-configured OS and installed softwares on IBM Cloud - Classic Infrastructure. **- Not yet available. Clone `classic` branch instead**
 - [vpc](builders/vpc) - The `vpc` builder support the creation of custom Images on IBM Cloud - VPC Infrastructure.
 
 
@@ -26,9 +25,6 @@ There is a `Makefile` and a `Dockerfile` that automate everything for you.
    ```
    # VPC
    IBM_API_KEY=###...###
-   # Classic
-   SL_USERNAME=###...###
-   SL_API_KEY=###....###
    ```
 
    Also, create a file `variables.pkrvars.hcl` with the following content.
