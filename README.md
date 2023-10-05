@@ -191,6 +191,8 @@ resource_group_name | string | Optional | The resource group name to use. If not
 | |
 ssh_key_type | string | Optional | The type of ssh key to use(`rsa`/`ed25519`). If not specified, IBM packer plugin uses `rsa` type as default.
 | |
+skip_reboot | bool | Optional | Skip reboot instance step. If not specified, IBM packer plugin uses `false` as default.
+| |
 vsi_base_image_id | string | Required | The base image identifier used to created the VSI. Use `ibmcloud is images` for available options.
 | OR |
 vsi_base_image_name | string | Required | The base image name used to created the VSI. Use `ibmcloud is images` for available options.

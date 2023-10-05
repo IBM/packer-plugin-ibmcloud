@@ -63,7 +63,8 @@ type Config struct {
 	StorageBucketName string `mapstructure:"storage_bucket_name"`
 	StorageBucketCRN  string `mapstructure:"storage_bucket_crn"`
 	//The format to use for the exported image. If the image is encrypted, only qcow2 is supported.
-	Format string `mapstructure:"format"`
+	Format     string `mapstructure:"format"`
+	SkipReboot bool   `mapstructure:"skip_reboot"`
 }
 
 // Prepare processes the build configuration parameters.

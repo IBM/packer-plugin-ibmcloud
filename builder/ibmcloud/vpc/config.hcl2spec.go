@@ -99,6 +99,7 @@ type FlatConfig struct {
 	StorageBucketName         *string           `mapstructure:"storage_bucket_name" cty:"storage_bucket_name" hcl:"storage_bucket_name"`
 	StorageBucketCRN          *string           `mapstructure:"storage_bucket_crn" cty:"storage_bucket_crn" hcl:"storage_bucket_crn"`
 	Format                    *string           `mapstructure:"format" cty:"format" hcl:"format"`
+	SkipReboot                *bool             `mapstructure:"skip_reboot" cty:"skip_reboot" hcl:"skip_reboot"`
 }
 
 // FlatMapstructure returns a new FlatConfig.
@@ -202,6 +203,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"storage_bucket_name":          &hcldec.AttrSpec{Name: "storage_bucket_name", Type: cty.String, Required: false},
 		"storage_bucket_crn":           &hcldec.AttrSpec{Name: "storage_bucket_crn", Type: cty.String, Required: false},
 		"format":                       &hcldec.AttrSpec{Name: "format", Type: cty.String, Required: false},
+		"skip_reboot":                  &hcldec.AttrSpec{Name: "skip_reboot", Type: cty.Bool, Required: false},
 	}
 	return s
 }

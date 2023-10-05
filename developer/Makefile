@@ -90,3 +90,7 @@ run-zprofile:
 run-rhel-post-processor:
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/postprocessor.vpc.rhel.pkr.hcl
 	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/postprocessor.vpc.rhel.pkr.hcl
+
+run-rhel-skip-reboot:
+	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.rhel.pkr.hcl
+	cd ..; packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.rhel.skip.reboot.pkr.hcl
