@@ -16,22 +16,13 @@ func (s *stepRebootInstance) Run(_ context.Context, state multistep.StateBag) mu
 	config := state.Get("config").(Config)
 	ui := state.Get("ui").(packer.Ui)
 
-	ui.Say("Rebooting instance to cleanly complete any installed software components...")
+	if config.SkipReboot {
+		ui.Say("Rebooting instance to cleanly complete any installed software components...")
 
-	instanceData := state.Get("instance_data").(*vpcv1.Instance)
-	instanceID := *instanceData.ID
+		instanceData := state.Get("instance_data").(*vpcv1.Instance)
+		instanceID := *instanceData.ID
 
-	status, err := client.manageInstance(instanceID, "reboot", state)
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Error rebooting the instance: %s", err)
-		state.Put("error", err)
-		ui.Error(err.Error())
-		// log.Fatalf(err.Error())
-		return multistep.ActionHalt
-	}
-
-	if status != "running" {
-		err := client.waitForResourceReady(instanceID, "instances", config.StateTimeout, state)
+		status, err := client.manageInstance(instanceID, "reboot", state)
 		if err != nil {
 			err := fmt.Errorf("[ERROR] Error rebooting the instance: %s", err)
 			state.Put("error", err)
@@ -39,19 +30,31 @@ func (s *stepRebootInstance) Run(_ context.Context, state multistep.StateBag) mu
 			// log.Fatalf(err.Error())
 			return multistep.ActionHalt
 		}
-	}
 
-	newInstanceData, err := client.retrieveResource(instanceID, state)
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Error updating the instance: %s", err)
-		state.Put("error", err)
-		ui.Error(err.Error())
-		// log.Fatalf(err.Error())
-		return multistep.ActionHalt
-	}
-	state.Put("instance_data", newInstanceData)
+		if status != "running" {
+			err := client.waitForResourceReady(instanceID, "instances", config.StateTimeout, state)
+			if err != nil {
+				err := fmt.Errorf("[ERROR] Error rebooting the instance: %s", err)
+				state.Put("error", err)
+				ui.Error(err.Error())
+				// log.Fatalf(err.Error())
+				return multistep.ActionHalt
+			}
+		}
 
-	ui.Say("Instance is ACTIVE!")
+		newInstanceData, err := client.retrieveResource(instanceID, state)
+		if err != nil {
+			err := fmt.Errorf("[ERROR] Error updating the instance: %s", err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			// log.Fatalf(err.Error())
+			return multistep.ActionHalt
+		}
+		state.Put("instance_data", newInstanceData)
+
+		ui.Say("Instance is ACTIVE!")
+		return multistep.ActionContinue
+	}
 	return multistep.ActionContinue
 }
 
