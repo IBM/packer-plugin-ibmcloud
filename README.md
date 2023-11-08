@@ -7,8 +7,8 @@ The IBM Packer Plugin can be used to create custom Images on IBM Cloud.
 IBM Packer Plugin adds on two **Packer Builders**: one for *Classic Infrastructure* and one for *VPC Infrastructure*. A **Packer Builder** is a Packer component responsible for creating a machine image. A Builder reads in a **Packer Template**, a configuration file that defines the image you want to build and how to build it. From this configuration file the Builder takes a source OS image (Linux or Windows) and provisions a VSI. Then, the **Builder** installs software for your specific use-case and generates an Image out of the VSI. This generated Image can be reused to launch new VSI Instances within IBM Cloud.
 
 ### Builders
-- [classic](builder/classic) - The `classic` builder support the creation of custom Images(.VHD) on IBM Cloud - Classic Infrastructure.
-- [vpc](builder/vpc) - The `vpc` builder support the creation of custom Images on IBM Cloud - VPC Infrastructure.
+- [classic](builder/ibmcloud/classic) - The `classic` builder support the creation of custom Images(.VHD) on IBM Cloud - Classic Infrastructure.
+- [vpc](builder/ibmcloud/vpc) - The `vpc` builder support the creation of custom Images on IBM Cloud - VPC Infrastructure.
 
 ### Prerequisites
 - Install [Packer](https://www.packer.io/downloads) >= 1.7
@@ -215,7 +215,7 @@ vsi_user_data_file | string | Optional | User data to be made available when set
 vsi_user_data | string | Optional | User data to be made available when setting up the virtual server instance. Optional. This is the string input variable.
 | |
 vsi_boot_vol_capacity | string | Optional | The capacity to use for the volume (in gigabytes). Must be at least the image's minimum_provisioned_size. The maximum value may increase in the future.
-vsi_boot_vol_profile | string | Optional | User can provide the available profile for volume attachments. Supported profiles: `5iops-tier`, `10iops-tier`, `general-purpose`. Refer https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles&interface=ui for profile info. 
+vsi_boot_vol_profile | string | Optional | User can provide the available profile for volume attachments. Supported profiles: `5iops-tier`, `10iops-tier`, `general-purpose`. Refer https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles&interface=ui for profile info.
 image_name | string | Optional | The name of the resulting custom image that will appear in your account. Required.
 encryption_key_crn | string | Optional | The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
 communicator | string | Required | Communicators are the mechanism Packer uses to upload files, execute scripts, etc. with the machine being created. Choose between "ssh" (for Linux) and "winrm" (for Windows). Required.
