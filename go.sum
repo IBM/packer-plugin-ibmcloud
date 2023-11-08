@@ -42,8 +42,8 @@ github.com/IBM/go-sdk-core/v5 v5.13.4 h1:kJvBNQOwhFRkXCPapjNvKVC7n7n2vd1Nr6uUtDZ
 github.com/IBM/go-sdk-core/v5 v5.13.4/go.mod h1:gKRSB+YyKsGlRQW7v5frlLbue5afulSvrRa4O26o4MM=
 github.com/IBM/platform-services-go-sdk v0.37.4 h1:MPzuoImfo4cWV1Zf1qMdxuAMSGdJnTJkvff43xoJKXg=
 github.com/IBM/platform-services-go-sdk v0.37.4/go.mod h1:rb1IaHGwT8QI8pCYgNbf2VbkuKMgOowl91pZ2QWZuJ4=
-github.com/IBM/vpc-go-sdk v0.40.0 h1:p4E1dIQc6+WmqLwRTzgWA2udqFw6nypOg+8R0WxTgX0=
-github.com/IBM/vpc-go-sdk v0.40.0/go.mod h1:MgZrbITC067AlcE5oy4hwylasFvrePL4RVxeF6GTdKQ=
+github.com/IBM/vpc-go-sdk v0.43.0 h1:uy/qWIqETCXraUG2cq5sjScr6pZ79ZteY1v5iLUVQ3Q=
+github.com/IBM/vpc-go-sdk v0.43.0/go.mod h1:kRz9tqPvpHoA/qGrC/qVjTbi4ICuTChpG76L89liGL4=
 github.com/agext/levenshtein v1.2.3 h1:YB2fHEn0UJagG8T1rrWknE3ZQzWM06O8AMAatNn7lmo=
 github.com/agext/levenshtein v1.2.3/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
