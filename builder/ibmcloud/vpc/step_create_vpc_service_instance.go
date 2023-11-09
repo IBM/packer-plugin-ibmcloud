@@ -17,7 +17,6 @@ func (step *StepCreateVPCServiceInstance) Run(_ context.Context, state multistep
 	client := state.Get("client").(*IBMCloudClient)
 	ui := state.Get("ui").(packer.Ui)
 	config := state.Get("config").(Config)
-
 	ui.Say("Creating VPC service...")
 
 	options := &vpcv1.VpcV1Options{

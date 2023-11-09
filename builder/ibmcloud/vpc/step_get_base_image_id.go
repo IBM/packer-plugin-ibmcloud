@@ -26,10 +26,12 @@ func (step *stepGetBaseImageID) Run(_ context.Context, state multistep.StateBag)
 		options := &vpcv1.ListImagesOptions{
 			Name: &config.VSIBaseImageName,
 		}
-		imageList, _, err := vpcService.ListImages(options)
+		imageList, response, err := vpcService.ListImages(options)
 
 		if err != nil {
-			err := fmt.Errorf("[ERROR] Error getting base-image ID: %s", err)
+			xRequestId := response.Headers["X-Request-Id"][0]
+			xCorrelationId := response.Headers["X-Correlation-Id"][0]
+			err := fmt.Errorf("[ERROR] Error getting base-image ID: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
 			state.Put("error", err)
 			ui.Error(err.Error())
 			return multistep.ActionHalt

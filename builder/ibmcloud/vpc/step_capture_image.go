@@ -88,17 +88,21 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 
 	options.SetImagePrototype(imagePrototype)
 
-	imageData, _, err := vpcService.CreateImage(options)
+	imageData, response, err := vpcService.CreateImage(options)
 
 	if err != nil {
-		err := fmt.Errorf("[ERROR] Error sending the HTTP request that creates the image. Error: %s", err)
+		xRequestId := response.Headers["X-Request-Id"][0]
+		xCorrelationId := response.Headers["X-Correlation-Id"][0]
+		err := fmt.Errorf("[ERROR] Error sending the HTTP request that creates the image. Error: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return multistep.ActionHalt
 	}
 
 	if err != nil {
-		err := fmt.Errorf("[ERROR] Error creating the Image: %s", err)
+		xRequestId := response.Headers["X-Request-Id"][0]
+		xCorrelationId := response.Headers["X-Correlation-Id"][0]
+		err := fmt.Errorf("[ERROR] Error creating the Image: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		// log.Fatalf(err.Error())

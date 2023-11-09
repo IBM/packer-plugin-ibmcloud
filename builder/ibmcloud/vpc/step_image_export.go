@@ -41,9 +41,11 @@ func (step *StepImageExport) Run(_ context.Context, state multistep.StateBag) mu
 	createImageExportJobOptions.SetFormat(format)
 	createImageExportJobOptions.SetName(imageExportJobName)
 
-	imageExportJob, _, err := vpcService.CreateImageExportJob(createImageExportJobOptions)
+	imageExportJob, response, err := vpcService.CreateImageExportJob(createImageExportJobOptions)
 	if err != nil {
-		err := fmt.Errorf("[ERROR] Error creating image export job: %s", err)
+		xRequestId := response.Headers["X-Request-Id"][0]
+		xCorrelationId := response.Headers["X-Correlation-Id"][0]
+		err := fmt.Errorf("[ERROR] Error creating image export job: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt
