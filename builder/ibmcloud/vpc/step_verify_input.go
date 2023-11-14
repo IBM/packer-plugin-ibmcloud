@@ -32,8 +32,11 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 	_, response, err := vpcService.GetRegion(getRegionOptions)
 	if err != nil {
 		xRequestId := response.Headers["X-Request-Id"][0]
-		xCorrelationId := response.Headers["X-Correlation-Id"][0]
-		err := fmt.Errorf("[ERROR] Error fetching region : %s: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", config.Region, err, xRequestId, xCorrelationId)
+		xCorrelationId := ""
+		if len(response.Headers["X-Correlation-Id"]) != 0 {
+			xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+		}
+		err := fmt.Errorf("[ERROR] Error fetching region : %s: %s \n X-Request-Id : %s  %s", config.Region, err, xRequestId, xCorrelationId)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt
@@ -88,8 +91,11 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 			result, response, err := serviceClient.GetResourceGroup(serviceClient.NewGetResourceGroupOptions(config.ResourceGroupID))
 			if err != nil {
 				xRequestId := response.Headers["X-Request-Id"][0]
-				xCorrelationId := response.Headers["X-Correlation-Id"][0]
-				err := fmt.Errorf("[ERROR] Error fetching resource group : %s: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", config.ResourceGroupID, err, xRequestId, xCorrelationId)
+				xCorrelationId := ""
+				if len(response.Headers["X-Correlation-Id"]) != 0 {
+					xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+				}
+				err := fmt.Errorf("[ERROR] Error fetching resource group : %s: %s \n X-Request-Id : %s  %s", config.ResourceGroupID, err, xRequestId, xCorrelationId)
 				state.Put("error", err)
 				ui.Error(err.Error())
 				return multistep.ActionHalt
@@ -110,14 +116,17 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 		bootVolume, response, err := vpcService.GetVolume(getVolumeOptions)
 		if err != nil {
 			xRequestId := response.Headers["X-Request-Id"][0]
-			xCorrelationId := response.Headers["X-Correlation-Id"][0]
+			xCorrelationId := ""
+			if len(response.Headers["X-Correlation-Id"]) != 0 {
+				xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+			}
 			if response != nil && response.StatusCode == 404 {
-				err := fmt.Errorf("[ERROR] Boot volume provided is not found : %s \n X-Request-Id : %s \n X-Correlation-Id : %s", config.VSIBootVolumeID, xRequestId, xCorrelationId)
+				err := fmt.Errorf("[ERROR] Boot volume provided is not found : %s \n X-Request-Id : %s  %s", config.VSIBootVolumeID, xRequestId, xCorrelationId)
 				state.Put("error", err)
 				ui.Error(err.Error())
 				return multistep.ActionHalt
 			}
-			err := fmt.Errorf("[ERROR] Error fetching volume %s \n X-Request-Id : %s \n X-Correlation-Id : %s", config.VSIBootVolumeID, xRequestId, xCorrelationId)
+			err := fmt.Errorf("[ERROR] Error fetching volume %s \n X-Request-Id : %s  %s", config.VSIBootVolumeID, xRequestId, xCorrelationId)
 			state.Put("error", err)
 			ui.Error(err.Error())
 			return multistep.ActionHalt
@@ -144,14 +153,17 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 		bootSnapshot, response, err := vpcService.GetSnapshot(getSnapshotOptions)
 		if err != nil {
 			xRequestId := response.Headers["X-Request-Id"][0]
-			xCorrelationId := response.Headers["X-Correlation-Id"][0]
+			xCorrelationId := ""
+			if len(response.Headers["X-Correlation-Id"]) != 0 {
+				xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+			}
 			if response != nil && response.StatusCode == 404 {
-				err := fmt.Errorf("[ERROR] Boot snapshot provided is not found %s:  \n X-Request-Id : %s \n X-Correlation-Id : %s", config.VSIBootSnapshotID, xRequestId, xCorrelationId)
+				err := fmt.Errorf("[ERROR] Boot snapshot provided is not found %s:  \n X-Request-Id : %s  %s", config.VSIBootSnapshotID, xRequestId, xCorrelationId)
 				state.Put("error", err)
 				ui.Error(err.Error())
 				return multistep.ActionHalt
 			}
-			err := fmt.Errorf("[ERROR] Error fetching snapshot %s \n X-Request-Id : %s \n X-Correlation-Id : %s", config.VSIBootSnapshotID, xRequestId, xCorrelationId)
+			err := fmt.Errorf("[ERROR] Error fetching snapshot %s \n X-Request-Id : %s  %s", config.VSIBootSnapshotID, xRequestId, xCorrelationId)
 			state.Put("error", err)
 			ui.Error(err.Error())
 			return multistep.ActionHalt
@@ -176,8 +188,11 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 	availableImages, response, err := vpcService.ListImages(listImagesOptions)
 	if err != nil {
 		xRequestId := response.Headers["X-Request-Id"][0]
-		xCorrelationId := response.Headers["X-Correlation-Id"][0]
-		err := fmt.Errorf("[ERROR] Error fetching custom image %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+		xCorrelationId := ""
+		if len(response.Headers["X-Correlation-Id"]) != 0 {
+			xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+		}
+		err := fmt.Errorf("[ERROR] Error fetching custom image %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt
@@ -212,8 +227,11 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 		secGrp, response, err := vpcService.GetSecurityGroup(secgrpOption)
 		if err != nil {
 			xRequestId := response.Headers["X-Request-Id"][0]
-			xCorrelationId := response.Headers["X-Correlation-Id"][0]
-			err := fmt.Errorf("[ERROR] Error fetching security group %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+			xCorrelationId := ""
+			if len(response.Headers["X-Correlation-Id"]) != 0 {
+				xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+			}
+			err := fmt.Errorf("[ERROR] Error fetching security group %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 			state.Put("error", err)
 			ui.Error(err.Error())
 			return multistep.ActionHalt

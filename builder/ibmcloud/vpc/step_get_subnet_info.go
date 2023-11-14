@@ -28,8 +28,11 @@ func (s *stepGetSubnetInfo) Run(_ context.Context, state multistep.StateBag) mul
 
 	if err != nil {
 		xRequestId := response.Headers["X-Request-Id"][0]
-		xCorrelationId := response.Headers["X-Correlation-Id"][0]
-		err := fmt.Errorf("[ERROR] Error fetching subnet %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+		xCorrelationId := ""
+		if len(response.Headers["X-Correlation-Id"]) != 0 {
+			xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+		}
+		err := fmt.Errorf("[ERROR] Error fetching subnet %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt

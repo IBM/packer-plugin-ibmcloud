@@ -44,6 +44,7 @@ type Config struct {
 	VSIInterface              string `mapstructure:"vsi_interface"`
 	VSIUserDataFile           string `mapstructure:"vsi_user_data_file"`
 	VSIUserDataString         string `mapstructure:"vsi_user_data"`
+	VPCDebugLogs              string `mapstructure:"vpc_log"`
 
 	ImageName string   `mapstructure:"image_name"`
 	ImageTags []string `mapstructure:"tags"`

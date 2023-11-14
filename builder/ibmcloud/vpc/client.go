@@ -211,8 +211,11 @@ func (client IBMCloudClient) isResourceDown(resourceID string, resourceType stri
 		instance, response, err := vpcService.GetInstance(options)
 		if err != nil {
 			xRequestId := response.Headers["X-Request-Id"][0]
-			xCorrelationId := response.Headers["X-Correlation-Id"][0]
-			err := fmt.Errorf("[ERROR] Failed retrieving resource information. Error: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+			xCorrelationId := ""
+			if len(response.Headers["X-Correlation-Id"]) != 0 {
+				xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+			}
+			err := fmt.Errorf("[ERROR] Failed retrieving resource information. Error: %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 			ui.Error(err.Error())
 			log.Println(err.Error())
 			return false, err
@@ -241,8 +244,11 @@ func (client IBMCloudClient) manageInstance(resourceID string, action string, st
 	response, res, err := vpcService.CreateInstanceAction(options)
 	if err != nil {
 		xRequestId := res.Headers["X-Request-Id"][0]
-		xCorrelationId := res.Headers["X-Correlation-Id"][0]
-		err := fmt.Errorf("[ERROR] Failed to perform %s action over instance. Error: %s  \n X-Request-Id : %s \n X-Correlation-Id : %s", action, err, xRequestId, xCorrelationId)
+		xCorrelationId := ""
+		if len(res.Headers["X-Correlation-Id"]) != 0 {
+			xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", res.Headers["X-Correlation-Id"][0])
+		}
+		err := fmt.Errorf("[ERROR] Failed to perform %s action over instance. Error: %s  \n X-Request-Id : %s  %s", action, err, xRequestId, xCorrelationId)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return "", err
@@ -267,8 +273,11 @@ func (client IBMCloudClient) retrieveResource(resourceID string, state multistep
 
 	if err != nil {
 		xRequestId := response.Headers["X-Request-Id"][0]
-		xCorrelationId := response.Headers["X-Correlation-Id"][0]
-		err := fmt.Errorf("[ERROR] Failed retrieving resource information. Error: %s  \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+		xCorrelationId := ""
+		if len(response.Headers["X-Correlation-Id"]) != 0 {
+			xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+		}
+		err := fmt.Errorf("[ERROR] Failed retrieving resource information. Error: %s  \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return nil, err
@@ -306,8 +315,11 @@ func (client IBMCloudClient) createFloatingIP(state multistep.StateBag) (*vpcv1.
 	floatingIP, response, err := vpcService.CreateFloatingIP(options)
 	if err != nil {
 		xRequestId := response.Headers["X-Request-Id"][0]
-		xCorrelationId := response.Headers["X-Correlation-Id"][0]
-		err := fmt.Errorf("[ERROR] Failed creating Floating IP Request. Error: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+		xCorrelationId := ""
+		if len(response.Headers["X-Correlation-Id"]) != 0 {
+			xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+		}
+		err := fmt.Errorf("[ERROR] Failed creating Floating IP Request. Error: %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return nil, err
@@ -327,8 +339,11 @@ func (client IBMCloudClient) GrabCredentials(instanceID string, state multistep.
 	instanceCredentials, response, err := vpcService.GetInstanceInitialization(options)
 	if err != nil {
 		xRequestId := response.Headers["X-Request-Id"][0]
-		xCorrelationId := response.Headers["X-Correlation-Id"][0]
-		err := fmt.Errorf("[ERROR] Failed getting instance initialization data. Error: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+		xCorrelationId := ""
+		if len(response.Headers["X-Correlation-Id"]) != 0 {
+			xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+		}
+		err := fmt.Errorf("[ERROR] Failed getting instance initialization data. Error: %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return "", "", err
@@ -413,8 +428,11 @@ func (client IBMCloudClient) createSSHKeyVPC(state multistep.StateBag) (*vpcv1.K
 	key, response, err := vpcService.CreateKey(options)
 	if err != nil {
 		xRequestId := response.Headers["X-Request-Id"][0]
-		xCorrelationId := response.Headers["X-Correlation-Id"][0]
-		err := fmt.Errorf("[ERROR] Error sending the HTTP request that creates the SSH Key for VPC. Error: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+		xCorrelationId := ""
+		if len(response.Headers["X-Correlation-Id"]) != 0 {
+			xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+		}
+		err := fmt.Errorf("[ERROR] Error sending the HTTP request that creates the SSH Key for VPC. Error: %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return nil, err
@@ -432,8 +450,11 @@ func (client IBMCloudClient) getSecurityGroup(state multistep.StateBag, security
 	securityGroup, response, err := vpcService.GetSecurityGroup(&securityGroupData)
 	if err != nil {
 		xRequestId := response.Headers["X-Request-Id"][0]
-		xCorrelationId := response.Headers["X-Correlation-Id"][0]
-		err := fmt.Errorf("[ERROR] Error getting the Security Group. Error: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+		xCorrelationId := ""
+		if len(response.Headers["X-Correlation-Id"]) != 0 {
+			xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+		}
+		err := fmt.Errorf("[ERROR] Error getting the Security Group. Error: %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return nil, err
@@ -451,8 +472,11 @@ func (client IBMCloudClient) createSecurityGroup(state multistep.StateBag, secur
 	securityGroup, response, err := vpcService.CreateSecurityGroup(&securityGroupData)
 	if err != nil {
 		xRequestId := response.Headers["X-Request-Id"][0]
-		xCorrelationId := response.Headers["X-Correlation-Id"][0]
-		err := fmt.Errorf("[ERROR] Error creating the Security Group. Error: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+		xCorrelationId := ""
+		if len(response.Headers["X-Correlation-Id"]) != 0 {
+			xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+		}
+		err := fmt.Errorf("[ERROR] Error creating the Security Group. Error: %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return nil, err
@@ -473,8 +497,11 @@ func (client IBMCloudClient) createRule(rule vpcv1.CreateSecurityGroupRuleOption
 
 	if err != nil {
 		xRequestId := response.Headers["X-Request-Id"][0]
-		xCorrelationId := response.Headers["X-Correlation-Id"][0]
-		err := fmt.Errorf("[ERROR] Error sending the HTTP request that creates a Security Group's rule. Error: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+		xCorrelationId := ""
+		if len(response.Headers["X-Correlation-Id"]) != 0 {
+			xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+		}
+		err := fmt.Errorf("[ERROR] Error sending the HTTP request that creates a Security Group's rule. Error: %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return nil, err
@@ -495,8 +522,11 @@ func (client IBMCloudClient) addNetworkInterfaceToSecurityGroup(securityGroupID 
 	securityGroupTargetReferenceIntf, response, err := vpcService.CreateSecurityGroupTargetBinding(options)
 	if err != nil {
 		xRequestId := response.Headers["X-Request-Id"][0]
-		xCorrelationId := response.Headers["X-Correlation-Id"][0]
-		err := fmt.Errorf("[ERROR] Error sending the HTTP request that Add the VSI's network interface to the Security Group. Error: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+		xCorrelationId := ""
+		if len(response.Headers["X-Correlation-Id"]) != 0 {
+			xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+		}
+		err := fmt.Errorf("[ERROR] Error sending the HTTP request that Add the VSI's network interface to the Security Group. Error: %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return nil, err

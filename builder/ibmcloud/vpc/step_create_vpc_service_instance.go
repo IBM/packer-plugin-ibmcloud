@@ -3,6 +3,7 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -18,7 +19,11 @@ func (step *StepCreateVPCServiceInstance) Run(_ context.Context, state multistep
 	ui := state.Get("ui").(packer.Ui)
 	config := state.Get("config").(Config)
 	ui.Say("Creating VPC service...")
-
+	if config.VPCDebugLogs == "debug" {
+		logDestination := log.Writer()
+		goLogger := log.New(logDestination, "", log.LstdFlags)
+		core.SetLogger(core.NewLogger(core.LevelDebug, goLogger, goLogger))
+	}
 	options := &vpcv1.VpcV1Options{
 		Authenticator: &core.IamAuthenticator{
 			ApiKey: client.IBMApiKey,

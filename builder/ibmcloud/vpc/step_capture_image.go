@@ -92,8 +92,11 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 
 	if err != nil {
 		xRequestId := response.Headers["X-Request-Id"][0]
-		xCorrelationId := response.Headers["X-Correlation-Id"][0]
-		err := fmt.Errorf("[ERROR] Error sending the HTTP request that creates the image. Error: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+		xCorrelationId := ""
+		if len(response.Headers["X-Correlation-Id"]) != 0 {
+			xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+		}
+		err := fmt.Errorf("[ERROR] Error sending the HTTP request that creates the image. Error: %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return multistep.ActionHalt
@@ -101,8 +104,11 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 
 	if err != nil {
 		xRequestId := response.Headers["X-Request-Id"][0]
-		xCorrelationId := response.Headers["X-Correlation-Id"][0]
-		err := fmt.Errorf("[ERROR] Error creating the Image: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+		xCorrelationId := ""
+		if len(response.Headers["X-Correlation-Id"]) != 0 {
+			xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+		}
+		err := fmt.Errorf("[ERROR] Error creating the Image: %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		// log.Fatalf(err.Error())

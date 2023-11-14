@@ -54,8 +54,11 @@ func (s *stepCreateSshKeyVPC) Cleanup(state multistep.StateBag) {
 
 	if err != nil {
 		xRequestId := response.Headers["X-Request-Id"][0]
-		xCorrelationId := response.Headers["X-Correlation-Id"][0]
-		err := fmt.Errorf("[ERROR] Error deleting SSH key for VPC %s. Please delete it manually: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", state.Get("vpc_ssh_key_name").(string), err, xRequestId, xCorrelationId)
+		xCorrelationId := ""
+		if len(response.Headers["X-Correlation-Id"]) != 0 {
+			xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+		}
+		err := fmt.Errorf("[ERROR] Error deleting SSH key for VPC %s. Please delete it manually: %s \n X-Request-Id : %s  %s", state.Get("vpc_ssh_key_name").(string), err, xRequestId, xCorrelationId)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		// log.Fatalf(err.Error())

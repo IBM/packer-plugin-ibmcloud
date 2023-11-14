@@ -134,8 +134,11 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		// End
 		if err != nil {
 			xRequestId := response.Headers["X-Request-Id"][0]
-			xCorrelationId := response.Headers["X-Correlation-Id"][0]
-			err := fmt.Errorf("[ERROR] Error creating the instance: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+			xCorrelationId := ""
+			if len(response.Headers["X-Correlation-Id"]) != 0 {
+				xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+			}
+			err := fmt.Errorf("[ERROR] Error creating the instance: %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 			state.Put("error", err)
 			ui.Error(err.Error())
 			// log.Fatalf(err.Error())
@@ -157,8 +160,11 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 
 		if err != nil {
 			xRequestId := response.Headers["X-Request-Id"][0]
-			xCorrelationId := response.Headers["X-Correlation-Id"][0]
-			err := fmt.Errorf("[ERROR] Error getting image with name: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+			xCorrelationId := ""
+			if len(response.Headers["X-Correlation-Id"]) != 0 {
+				xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+			}
+			err := fmt.Errorf("[ERROR] Error getting image with name: %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 			state.Put("error", err)
 			ui.Error(err.Error())
 			return multistep.ActionHalt
@@ -238,8 +244,11 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		// End
 		if err != nil {
 			xRequestId := response.Headers["X-Request-Id"][0]
-			xCorrelationId := response.Headers["X-Correlation-Id"][0]
-			err := fmt.Errorf("[ERROR] Error creating the instance: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+			xCorrelationId := ""
+			if len(response.Headers["X-Correlation-Id"]) != 0 {
+				xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+			}
+			err := fmt.Errorf("[ERROR] Error creating the instance: %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 			state.Put("error", err)
 			ui.Error(err.Error())
 			// log.Fatalf(err.Error())
@@ -307,8 +316,11 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		// End
 		if err != nil {
 			xRequestId := response.Headers["X-Request-Id"][0]
-			xCorrelationId := response.Headers["X-Correlation-Id"][0]
-			err := fmt.Errorf("[ERROR] Error creating the instance: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+			xCorrelationId := ""
+			if len(response.Headers["X-Correlation-Id"]) != 0 {
+				xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+			}
+			err := fmt.Errorf("[ERROR] Error creating the instance: %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 			state.Put("error", err)
 			ui.Error(err.Error())
 			// log.Fatalf(err.Error())
@@ -375,8 +387,11 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		// End
 		if err != nil {
 			xRequestId := response.Headers["X-Request-Id"][0]
-			xCorrelationId := response.Headers["X-Correlation-Id"][0]
-			err := fmt.Errorf("[ERROR] Error creating the instance: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+			xCorrelationId := ""
+			if len(response.Headers["X-Correlation-Id"]) != 0 {
+				xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+			}
+			err := fmt.Errorf("[ERROR] Error creating the instance: %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 			state.Put("error", err)
 			ui.Error(err.Error())
 			// log.Fatalf(err.Error())
@@ -411,8 +426,11 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 		floatingIPresponse, response, err := vpcService.GetFloatingIP(options)
 		if err != nil {
 			xRequestId := response.Headers["X-Request-Id"][0]
-			xCorrelationId := response.Headers["X-Correlation-Id"][0]
-			err := fmt.Errorf("[ERROR] Error getting the Floating IP: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+			xCorrelationId := ""
+			if len(response.Headers["X-Correlation-Id"]) != 0 {
+				xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+			}
+			err := fmt.Errorf("[ERROR] Error getting the Floating IP: %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 			state.Put("error", err)
 			ui.Error(err.Error())
 			// log.Fatalf(err.Error())
@@ -425,8 +443,11 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 
 			if err != nil {
 				xRequestId := result.Headers["X-Request-Id"][0]
-				xCorrelationId := result.Headers["X-Correlation-Id"][0]
-				err := fmt.Errorf("[ERROR] Error releasing the Floating IP. Please release it manually: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+				xCorrelationId := ""
+				if len(result.Headers["X-Correlation-Id"]) != 0 {
+					xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", result.Headers["X-Correlation-Id"][0])
+				}
+				err := fmt.Errorf("[ERROR] Error releasing the Floating IP. Please release it manually: %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 				state.Put("error", err)
 				ui.Error(err.Error())
 				// log.Fatalf(err.Error())
@@ -450,8 +471,11 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 
 	if err != nil {
 		xRequestId := response.Headers["X-Request-Id"][0]
-		xCorrelationId := response.Headers["X-Correlation-Id"][0]
-		err := fmt.Errorf("[ERROR] Error deleting the instance. Please delete it manually: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+		xCorrelationId := ""
+		if len(response.Headers["X-Correlation-Id"]) != 0 {
+			xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+		}
+		err := fmt.Errorf("[ERROR] Error deleting the instance. Please delete it manually: %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		// log.Fatalf(err.Error())
@@ -464,13 +488,16 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 		instance, response, err := vpcService.GetInstance(options)
 		if err != nil {
 			xRequestId := response.Headers["X-Request-Id"][0]
-			xCorrelationId := response.Headers["X-Correlation-Id"][0]
+			xCorrelationId := ""
+			if len(response.Headers["X-Correlation-Id"]) != 0 {
+				xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+			}
 			if response != nil && response.StatusCode == 404 {
 				ui.Say("Instance deleted Succesfully")
 				instanceDeleted = true
 				break
 			}
-			err := fmt.Errorf("[ERROR] Error getting the instance to check delete status. %s \n X-Request-Id : %s \n X-Correlation-Id : %s", err, xRequestId, xCorrelationId)
+			err := fmt.Errorf("[ERROR] Error getting the instance to check delete status. %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 			state.Put("error", err)
 			ui.Error(err.Error())
 		} else if instance != nil {
@@ -490,8 +517,11 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 
 	if sgRuleErr != nil {
 		xRequestId := sgRuleResponse.Headers["X-Request-Id"][0]
-		xCorrelationId := sgRuleResponse.Headers["X-Correlation-Id"][0]
-		sgRuleErr := fmt.Errorf("[ERROR] Error deleting Security Group's rule %s. Please delete it manually: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", ruleID, sgRuleErr, xRequestId, xCorrelationId)
+		xCorrelationId := ""
+		if len(sgRuleResponse.Headers["X-Correlation-Id"]) != 0 {
+			xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", sgRuleResponse.Headers["X-Correlation-Id"][0])
+		}
+		sgRuleErr := fmt.Errorf("[ERROR] Error deleting Security Group's rule %s. Please delete it manually: %s \n X-Request-Id : %s  %s", ruleID, sgRuleErr, xRequestId, xCorrelationId)
 		state.Put("error", sgRuleErr)
 		ui.Error(err.Error())
 		// log.Fatalf(err.Error())
@@ -515,8 +545,11 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 		sgResponse, err := vpcService.DeleteSecurityGroup(sgOptions)
 		if err != nil {
 			xRequestId := sgResponse.Headers["X-Request-Id"][0]
-			xCorrelationId := sgResponse.Headers["X-Correlation-Id"][0]
-			err := fmt.Errorf("[ERROR] Error deleting Security Group %s. Please delete it manually: %s \n X-Request-Id : %s \n X-Correlation-Id : %s", securityGroupName, err, xRequestId, xCorrelationId)
+			xCorrelationId := ""
+			if len(sgResponse.Headers["X-Correlation-Id"]) != 0 {
+				xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", sgResponse.Headers["X-Correlation-Id"][0])
+			}
+			err := fmt.Errorf("[ERROR] Error deleting Security Group %s. Please delete it manually: %s \n X-Request-Id : %s  %s", securityGroupName, err, xRequestId, xCorrelationId)
 			state.Put("error", err)
 			ui.Error(err.Error())
 			// log.Fatalf(err.Error())
