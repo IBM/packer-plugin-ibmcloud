@@ -24,10 +24,15 @@ func (s *stepGetSubnetInfo) Run(_ context.Context, state multistep.StateBag) mul
 
 	options := &vpcv1.GetSubnetOptions{}
 	options.SetID(config.SubnetID)
-	subnetData, _, err := vpcService.GetSubnet(options)
+	subnetData, response, err := vpcService.GetSubnet(options)
 
 	if err != nil {
-		err := fmt.Errorf("[ERROR] Error fetching subnet %s", err)
+		xRequestId := response.Headers["X-Request-Id"][0]
+		xCorrelationId := ""
+		if len(response.Headers["X-Correlation-Id"]) != 0 {
+			xCorrelationId = fmt.Sprintf("\n X-Correlation-Id : %s", response.Headers["X-Correlation-Id"][0])
+		}
+		err := fmt.Errorf("[ERROR] Error fetching subnet %s \n X-Request-Id : %s  %s", err, xRequestId, xCorrelationId)
 		state.Put("error", err)
 		ui.Error(err.Error())
 		return multistep.ActionHalt
@@ -38,7 +43,7 @@ func (s *stepGetSubnetInfo) Run(_ context.Context, state multistep.StateBag) mul
 		secGrpVPC := state.Get("user_sec_grp_vpc")
 		ui.Say("Verifying the security group and subnet belongs to same VPC..")
 		if vpcId != secGrpVPC {
-			err := fmt.Errorf("The security group and subnet provided are not connected to the same VPC id: %s", vpcId)
+			err := fmt.Errorf("[ERROR] The security group and subnet provided are not connected to the same VPC id: %s", vpcId)
 			state.Put("error", err)
 			ui.Error(err.Error())
 			return multistep.ActionHalt

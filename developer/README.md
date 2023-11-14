@@ -48,6 +48,7 @@ There is a `Makefile` and a `Dockerfile` that automate everything for you.
    rc_endpoint_url | string | Optional | Configure URL for resource controller test environments.
    iam_url | string | Optional | Configure URL for IAM test environments.
    ghost_endpoint_url | string | Optional | Configure URL for Global Search and Tagging test environments. Optional.
+   vpc_log | string | Optional | to turn debug log on, pass "debug" as value. Optional.
 
 - Customize your Packer Template: see [Configuration](#configuration) to find a detail description of each field on the Template. Likewise, there are some Packer Template examples on `examples` folder.
 - Create container with Packer Plugin Binary within it:

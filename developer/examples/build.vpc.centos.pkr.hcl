@@ -46,7 +46,7 @@ source "ibmcloud-vpc" "centos" {
   security_group_id = var.SECURITY_GROUP_ID
 
   vsi_base_image_name = "ibm-centos-7-9-minimal-amd64-5"
-
+  vpc_log="debug"
   vsi_profile        = "bx2-2x8"
   vsi_interface      = "public"
   vsi_user_data_file = ""
