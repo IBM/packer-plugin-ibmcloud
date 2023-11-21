@@ -144,30 +144,33 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		ui.Say(fmt.Sprintf("Instance's Name: %s", *instanceData.Name))
 		ui.Say(fmt.Sprintf("Instance's ID: %s", *instanceData.ID))
 
-	} else if vsiBaseImageName != "" {
-		// Get Image ID
+	} else if vsiBaseImageName != "" || vsiBaseImageID != "" {
 
-		ui.Say("Fetching ImageID...")
-
-		options := &vpcv1.ListImagesOptions{}
-		options.SetName(vsiBaseImageName)
-		image, _, err := vpcService.ListImages(options)
-
-		if err != nil {
-			err := fmt.Errorf("[ERROR] Error getting image with name: %s", err)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			return multistep.ActionHalt
+		if vsiBaseImageID != "" {
+			// Get Image ID
+	
+			ui.Say("Fetching ImageID...")
+	
+			options := &vpcv1.ListImagesOptions{}
+			options.SetName(vsiBaseImageName)
+			image, _, err := vpcService.ListImages(options)
+	
+			if err != nil {
+				err := fmt.Errorf("[ERROR] Error getting image with name: %s", err)
+				state.Put("error", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			}
+			if image != nil && len(image.Images) == 0 {
+				err := fmt.Errorf("[ERROR] Image %s not found", vsiBaseImageName)
+				state.Put("error", err)
+				ui.Error(err.Error())
+				return multistep.ActionHalt
+			}
+			vsiBaseImageID = *image.Images[0].ID
+			ui.Say(fmt.Sprintf("ImageID fetched: %s", string(vsiBaseImageName)))
 		}
-		if image != nil && len(image.Images) == 0 {
-			err := fmt.Errorf("[ERROR] Image %s not found", vsiBaseImageName)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			return multistep.ActionHalt
-		}
-		vsiBaseImageID = *image.Images[0].ID
-		ui.Say(fmt.Sprintf("ImageID fetched: %s", string(vsiBaseImageName)))
-
+		
 		imageIdentityModel := &vpcv1.ImageIdentityByID{
 			ID: &[]string{vsiBaseImageID}[0],
 		}
