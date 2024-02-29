@@ -9,6 +9,7 @@
 
 variable "IBM_API_KEY" {
   type = string
+  default = "${env("IC_API_KEY")}"
 }
 
 variable "SUBNET_ID" {

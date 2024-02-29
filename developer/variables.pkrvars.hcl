@@ -1,5 +1,4 @@
-SUBNET_ID="<subnet_id>"
-REGION="<region>"
+SUBNET_ID="0717-276ff00f-ea24-4e4a-b013-80d0d2e96540"
+REGION="us-south"
 SECURITY_GROUP_ID=""
-IBM_API_KEY="<ibm_api_key>"
 RESOURCE_GROUP_ID=""
