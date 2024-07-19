@@ -16,7 +16,6 @@ IBM Packer Plugin adds on two **Packer Builders**: one for *Classic Infrastructu
 - Install [Go](https://golang.org/doc/install) >= 1.17, if you want to use `Manual Installation`. Environment variables for golang setup.
   ```shell
   export GOPATH=$HOME/go
-  export GOROOT=/usr/local/go
   export PATH=$PATH:$GOPATH/bin:$GOROOT/bin
   export PACKERPATH=/usr/local/packer
   export PATH=$PATH:$PACKERPATH
