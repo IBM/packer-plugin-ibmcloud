@@ -45,6 +45,8 @@ type Config struct {
 	VSIUserDataFile           string `mapstructure:"vsi_user_data_file"`
 	VSIUserDataString         string `mapstructure:"vsi_user_data"`
 
+	WinRMLoginPassword string `mapstructure:"winrm_login_password"`
+
 	ImageName string   `mapstructure:"image_name"`
 	ImageTags []string `mapstructure:"tags"`
 

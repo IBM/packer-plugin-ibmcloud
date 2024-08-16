@@ -27,7 +27,9 @@ func winRMConfig(state multistep.StateBag) (*communicator.WinRMConfig, error) {
 		return nil, nil
 	}
 	ui.Say(fmt.Sprintf("Successfully grabbed credentials for instance (ID: %s, IP: %s)", instanceID, config.Comm.WinRMHost))
-
+	if config.WinRMLoginPassword != "" {
+		password = config.WinRMLoginPassword
+	}
 	// Configuring WinRM
 	comm := communicator.WinRMConfig{
 		Username: username,

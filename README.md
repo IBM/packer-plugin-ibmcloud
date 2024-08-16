@@ -226,6 +226,7 @@ ssh_port | int | Optional | The port that SSH will be available on. Defaults to 
 ssh_timeout | string | Optional | The time to wait for SSH to become available before timing out. The format of this value is a duration such as "5s" or "5m".
 ***Windows Communicator Variables*** |
 winrm_username | string | Optional | The username to use to connect to WinRM.
+winrm_login_password | string | Optional | The password to use to connect to WinRM. (For custom windows images)
 winrm_port | int | Optional | The port that WinRM will be available on. Defaults to port 5986.
 winrm_timeout | string | Optional | The time to wait for WinRM to become available before timing out.
 winrm_insecure | bool | Optional | If true, do not check server certificate chain and host name.
