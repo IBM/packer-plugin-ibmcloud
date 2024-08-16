@@ -44,6 +44,8 @@ func (step *stepGetBaseImageID) Run(_ context.Context, state multistep.StateBag)
 
 		state.Put("baseImageID", imageId)
 		ui.Say(fmt.Sprintf("Base Image ID fetched: %s", imageId))
+	} else {
+		state.Put("baseImageID", config.VSIBaseImageID)
 	}
 
 	return multistep.ActionContinue
