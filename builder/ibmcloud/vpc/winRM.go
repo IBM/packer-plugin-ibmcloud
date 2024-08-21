@@ -16,20 +16,28 @@ func winRMConfig(state multistep.StateBag) (*communicator.WinRMConfig, error) {
 
 	instanceData := state.Get("instance_data").(*vpcv1.Instance)
 	instanceID := *instanceData.ID
+	var username, password string
+	var err error
 
-	// Grabbing credentials for the instance
-	username, password, err := client.GrabCredentials(instanceID, state)
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Error grabbing credentials: %s", err)
-		state.Put("error", err)
-		ui.Error(err.Error())
-		// log.Fatalf(err.Error())
-		return nil, nil
+	if config.Comm.WinRMPassword != "" {
+		username = config.Comm.WinRMUser
+		password = config.Comm.WinRMPassword
+		ui.Say(fmt.Sprintf("Setting provided winrm username and password (ID: %s, IP: %s)", instanceID, config.Comm.WinRMHost))
+
+	} else {
+		// Grabbing credentials for the instance
+		username, password, err = client.GrabCredentials(instanceID, state)
+		if err != nil {
+			err := fmt.Errorf("[ERROR] Error grabbing credentials: %s", err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			// log.Fatalf(err.Error())
+			return nil, nil
+		}
+		ui.Say(fmt.Sprintf("Successfully grabbed credentials for instance (ID: %s, IP: %s)", instanceID, config.Comm.WinRMHost))
+
 	}
-	ui.Say(fmt.Sprintf("Successfully grabbed credentials for instance (ID: %s, IP: %s)", instanceID, config.Comm.WinRMHost))
-	if config.WinRMLoginPassword != "" {
-		password = config.WinRMLoginPassword
-	}
+
 	// Configuring WinRM
 	comm := communicator.WinRMConfig{
 		Username: username,
