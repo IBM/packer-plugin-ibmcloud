@@ -81,7 +81,7 @@ func (s *stepCreateSshKeyPair) Run(_ context.Context, state multistep.StateBag) 
 		publicfilepath = keysDirectory + "id_rsa.pub"
 
 		// Creating new RSA Private key
-		rsaKey, err := rsa.GenerateKey(rand.Reader, 2014)
+		rsaKey, err := rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
 			err := fmt.Errorf("[ERROR] Error, unable to generate ED25519 keypair: %s", err)
 			state.Put("error", err)

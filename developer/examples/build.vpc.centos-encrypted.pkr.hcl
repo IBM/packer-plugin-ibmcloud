@@ -43,7 +43,7 @@ source "ibmcloud-vpc" "centos-encrypted-image" {
   security_group_id = var.SECURITY_GROUP_ID
   encryption_key_crn = var.ENCRYPTION_KEY_CRN
 
-  vsi_base_image_name = "ibm-centos-7-9-minimal-amd64-5"
+  vsi_base_image_name = "ibm-centos-stream-10-amd64-2"
 
   vsi_profile        = "bx2-2x8"
   vsi_interface      = "public"

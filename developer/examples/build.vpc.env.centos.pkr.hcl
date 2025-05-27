@@ -49,7 +49,7 @@ source "ibmcloud-vpc" "centos" {
   resource_group_id = var.RESOURCE_GROUP_ID
   security_group_id = var.SECURITY_GROUP_ID
 
-  vsi_base_image_name = "ibm-centos-7-9-minimal-amd64-5"
+  vsi_base_image_name = "ibm-centos-stream-10-amd64-2"
 
   vsi_profile        = "bx2-2x8"
   vsi_interface      = "public"
