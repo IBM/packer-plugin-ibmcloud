@@ -64,7 +64,7 @@ jobs:
     - name: Run `packer validate`
       id: validate
       run: |
-        packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
+        packer validate examples/build.vpc.centos.pkr.hcl
 
     # - name: Validate and Build Packer Template
     #   env:
