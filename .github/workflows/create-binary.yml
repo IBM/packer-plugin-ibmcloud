@@ -59,7 +59,7 @@ jobs:
     - name: Run `packer init`
       id: init
       run: |
-        packer init -upgrade developer/examples/build.vpc.centos.pkr.hcl
+        packer init -upgrade examples/build.vpc.centos.pkr.hcl
 
     - name: Run `packer validate`
       id: validate
