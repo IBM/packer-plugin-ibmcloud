@@ -64,9 +64,8 @@ jobs:
     - name: Run `packer validate`
       id: validate
       run: |
-        packer validate examples/build.vpc.centos.pkr.hcl
-      env:
-        IBM_API_KEY: ${{ secrets.IBM_API_KEY }}
+        packer validate -var-file="examples/variables.pkrvars.hcl" examples/build.vpc.centos.pkr.hcl
+
 
     # - name: Validate and Build Packer Template
     #   env:

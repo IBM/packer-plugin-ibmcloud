@@ -9,7 +9,7 @@ packer {
 
 variable "ibm_api_key" {
   type    = string
-  default = "${env("IBM_API_KEY")}"
+  default = ""
 }
 
 locals {
