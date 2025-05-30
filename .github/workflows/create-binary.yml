@@ -11,7 +11,7 @@ jobs:
 # In case OWASP ZAP Full Scan is required
 #   zap_scan:
 #     runs-on: ubuntu-latest
-#     steps:        
+#     steps:
 #       - name: ZAP Scan
 #         uses: zaproxy/action-full-scan@v0.3.0
 #         with:
@@ -23,63 +23,45 @@ jobs:
 #     strategy:
 #       matrix:
 #         os: [ubuntu-latest, windows-latests, macOS-latest]
-    
+
     # Runs Only on Ubuntu OS
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    
+    - uses: actions/checkout@v4.0.0
+
     - name: Unshallow
       run: git fetch --prune --unshallow
 
     - name: Set up Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v5
       with:
-        go-version: 1.17
-    
-    - name: Set up Packer
-      uses: hashicorp-contrib/setup-packer@v1
+        go-version: 1.23
+
+    - name: Setup Packer
+      uses: hashicorp/setup-packer@main
+      id: setup
+      with:
+        version: "latest"
 
     - name: Install packer-sdc
       run: go install github.com/hashicorp/packer-plugin-sdk/cmd/packer-sdc@latest
-    
+
     - name: Set Up Dependencies
-      run: | 
+      run: |
         go mod tidy
         go mod vendor
         go generate ./builder/ibmcloud/...
         go mod vendor
-    
+
     - name: Build IBM Cloud Packer Plugin binary
       run: go build .
-    
-    - name: Validate and Build Packer Template
-      env:
-        IBM_API_KEY: ${{ secrets.IBM_API_KEY }}
-        SL_USERNAME: ${{ secrets.SL_USERNAME }}
-        SL_API_KEY: ${{ secrets.SL_API_KEY }}
-      run: |
-        packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
-        echo "packer build -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl"
 
-  docker:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: true
-          tags: ibmcloudvpc/packer-plugin-ibmcloud:latest
+    - name: Run `packer init`
+      id: init
+      run: |
+        packer init -upgrade examples/build.vpc.centos.pkr.hcl
+
+    - name: Run `packer validate`
+      id: validate
+      run: |
+        packer validate -var-file="examples/variables.pkrvars.hcl" examples/build.vpc.centos.pkr.hcl
