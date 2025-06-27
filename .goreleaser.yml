@@ -70,6 +70,7 @@ signs:
       - "--detach-sign"
       - "${artifact}"
 release:
+  disable: false
   # If you want to manually examine the release before its live, uncomment this line:
   # draft: true
   # As part of the release doc files are included as a separate deliverable for consumption by Packer.io.
