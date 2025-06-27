@@ -78,4 +78,4 @@ release:
   #- glob: ./docs.zip
 
 changelog:
-  skip: true
+  disable: true
