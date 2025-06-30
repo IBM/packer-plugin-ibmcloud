@@ -59,6 +59,7 @@ type Config struct {
 
 	ImageID            string `mapstructure:"image_id"`
 	ImageExportJobName string `mapstructure:"image_export_job_name"`
+	ExportTimeout      string `mapstructure:"export_timeout"`
 	//The Cloud Object Storage bucket to export the image to. The bucket must exist and an IAM service authorization must grant Image Service for VPC of VPC Infrastructure Services writer access to the bucket.
 	StorageBucketName string `mapstructure:"storage_bucket_name"`
 	StorageBucketCRN  string `mapstructure:"storage_bucket_crn"`
