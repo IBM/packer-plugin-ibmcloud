@@ -96,6 +96,7 @@ type FlatConfig struct {
 	RawStateTimeout           *string           `mapstructure:"timeout" cty:"timeout" hcl:"timeout"`
 	ImageID                   *string           `mapstructure:"image_id" cty:"image_id" hcl:"image_id"`
 	ImageExportJobName        *string           `mapstructure:"image_export_job_name" cty:"image_export_job_name" hcl:"image_export_job_name"`
+	ExportTimeout             *string           `mapstructure:"export_timeout" cty:"export_timeout" hcl:"export_timeout"`
 	StorageBucketName         *string           `mapstructure:"storage_bucket_name" cty:"storage_bucket_name" hcl:"storage_bucket_name"`
 	StorageBucketCRN          *string           `mapstructure:"storage_bucket_crn" cty:"storage_bucket_crn" hcl:"storage_bucket_crn"`
 	Format                    *string           `mapstructure:"format" cty:"format" hcl:"format"`
@@ -200,6 +201,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"timeout":                      &hcldec.AttrSpec{Name: "timeout", Type: cty.String, Required: false},
 		"image_id":                     &hcldec.AttrSpec{Name: "image_id", Type: cty.String, Required: false},
 		"image_export_job_name":        &hcldec.AttrSpec{Name: "image_export_job_name", Type: cty.String, Required: false},
+		"export_timeout":               &hcldec.AttrSpec{Name: "export_timeout", Type: cty.String, Required: false},
 		"storage_bucket_name":          &hcldec.AttrSpec{Name: "storage_bucket_name", Type: cty.String, Required: false},
 		"storage_bucket_crn":           &hcldec.AttrSpec{Name: "storage_bucket_crn", Type: cty.String, Required: false},
 		"format":                       &hcldec.AttrSpec{Name: "format", Type: cty.String, Required: false},
