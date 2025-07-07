@@ -45,7 +45,7 @@ source "ibmcloud-vpc" "windows" {
   resource_group_id = var.RESOURCE_GROUP_ID
   security_group_id = var.SECURITY_GROUP_ID
 
-  vsi_base_image_name = "ibm-windows-server-2019-full-standard-amd64-8"
+  vsi_base_image_name = "ibm-windows-server-2022-full-standard-amd64-16"
   vsi_profile         = "bx2-2x8"
   vsi_interface       = "public"
   vsi_user_data_file  = "scripts/winrm_setup.ps1"

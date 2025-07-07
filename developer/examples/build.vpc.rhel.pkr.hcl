@@ -40,7 +40,7 @@ source "ibmcloud-vpc" "rhel" {
   resource_group_id = var.RESOURCE_GROUP_ID
   security_group_id = var.SECURITY_GROUP_ID
 
-  vsi_base_image_name = "ibm-redhat-8-4-minimal-amd64-3"
+  vsi_base_image_name = "ibm-redhat-8-10-minimal-amd64-5"
   vsi_profile         = "bx2-4x16"
   vsi_interface       = "public"
   vsi_user_data_file  = ""

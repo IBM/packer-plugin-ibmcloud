@@ -39,7 +39,7 @@ source "ibmcloud-vpc" "zprofile" {
   resource_group_id = var.RESOURCE_GROUP_ID
   security_group_id = var.SECURITY_GROUP_ID
 
-  vsi_base_image_name = "ibm-zos-2-4-s390x-dev-test-wazi-1"
+  vsi_base_image_name = "ibm-zos-2-5-s390x-dev-test-wazi-7"
   vsi_profile        = "bz2-2x8"
   vsi_interface      = "public"
   vsi_user_data_file = ""
