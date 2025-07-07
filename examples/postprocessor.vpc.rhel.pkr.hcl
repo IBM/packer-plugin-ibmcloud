@@ -72,6 +72,7 @@ build {
       image_export_job_name   = "image-export-job-testing-packer-3"
       storage_bucket_name     = "cli-bucket-1"
       format                  = "qcow2"
+      export_timeout          = "12m"
     }
     post-processor "ibmcloud-export-image" {
       image_id              = "r006-47ce771b-2de5-4f63-9606-c9b7421d6888"
@@ -80,6 +81,7 @@ build {
       region                = var.REGION
       storage_bucket_name   = "cli-bucket-1"
       format                = "qcow2"
+      export_timeout = "12m"
     }
   }
 }

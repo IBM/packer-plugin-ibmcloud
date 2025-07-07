@@ -73,6 +73,7 @@ Variable | Type |Description
 **post-processor export image variables** |
 | |
 api_key | string | The IBM Cloud platform API key. Required only if image_id is provided.
+export_timeout | string | The time to wait for export job to succeed. The format of this value is a duration such as "5s" or "5m".
 region | string | IBM Cloud region where VPC is deployed. Required only if image_id is provided.
 vpc_endpoint_url | string | Configure URL for VPC test environments. Optional.
 iam_url | string | Configure URL for IAM test environments. Optional.

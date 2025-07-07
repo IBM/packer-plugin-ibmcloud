@@ -79,6 +79,7 @@ build {
       region                = var.REGION
       storage_bucket_name   = "cli-bucket-1"
       format                = "qcow2"
+      export_timeout          = "12m"
     }
   }
 }

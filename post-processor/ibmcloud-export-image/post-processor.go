@@ -28,6 +28,7 @@ type Config struct {
 	IAMEndpoint         string `mapstructure:"iam_url"`
 	ImageID             string `mapstructure:"image_id"`
 	ImageExportJobName  string `mapstructure:"image_export_job_name"`
+	ExportTimeout       string `mapstructure:"export_timeout"`
 
 	//The Cloud Object Storage bucket to export the image to. The bucket must exist and an IAM service authorization must grant Image Service for VPC of VPC Infrastructure Services writer access to the bucket.
 	StorageBucketName string `mapstructure:"storage_bucket_name"`
@@ -129,6 +130,7 @@ func (p *PostProcessor) PostProcess(ctx context.Context, ui packersdk.Ui, source
 		IAMEndpoint:        p.config.IAMEndpoint,
 		ImageID:            p.config.ImageID,
 		ImageExportJobName: p.config.ImageExportJobName,
+		ExportTimeout:      p.config.ExportTimeout,
 		StorageBucketName:  p.config.StorageBucketName,
 		StorageBucketCRN:   p.config.StorageBucketCRN,
 		Format:             p.config.Format,
