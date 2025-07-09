@@ -480,10 +480,10 @@ func (s SoftlayerClient) findNonSwapBlockDeviceIds(blockDevices []interface{}) [
 	for _, val := range blockDevices {
 		blockDevice := val.(map[string]interface{})
 		diskImage := blockDevice["diskImage"].(map[string]interface{})
-		name := diskImage["name"].(string)
+		name := strings.ToUpper(strings.TrimSpace(diskImage["name"].(string)))
 		id := int64(blockDevice["id"].(float64))
 
-		if !strings.Contains(name, "SWAP") && !strings.Contains(name, "METADATA") {
+                if !strings.HasSuffix(name, "SWAP") && !strings.HasSuffix(name, "METADATA") {
 			blockDeviceIds[deviceCount] = id
 			deviceCount++
 		}
