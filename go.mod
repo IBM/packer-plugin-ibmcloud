@@ -12,7 +12,6 @@ require (
 	github.com/hashicorp/packer-plugin-sdk v0.2.9
 	github.com/zclconf/go-cty v1.9.1
 	golang.org/x/crypto v0.36.0
-
 )
 
 require (
@@ -89,7 +88,7 @@ require (
 	go.mongodb.org/mongo-driver v1.17.2 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/net v0.37.0 // indirect
-	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f // indirect
+	golang.org/x/oauth2 v0.27.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/term v0.30.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
