@@ -378,7 +378,7 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 
 			options := vpcService.NewGetFloatingIPOptions(floatingIPID)
 			floatingIPresponse, _, err := vpcService.GetFloatingIP(options)
-			if err != nil {
+			if err != nil && response.StatusCode != 404 {
 				err := fmt.Errorf("[ERROR] Error getting the Floating IP: %s", err)
 				state.Put("error", err)
 				ui.Error(err.Error())
