@@ -25,7 +25,7 @@ func sshConfig(state multistep.StateBag) (*ssh.ClientConfig, error) {
 		err := fmt.Errorf("[ERROR] Error loading SSH Private Key: %s", err)
 		state.Put("error", err)
 		ui.Error(err.Error())
-		log.Fatalf(err.Error())
+		log.Fatalf("error loading ssh private key: %v", err)
 		return nil, err
 	}
 
@@ -36,7 +36,7 @@ func sshConfig(state multistep.StateBag) (*ssh.ClientConfig, error) {
 		err := fmt.Errorf("[ERROR] Error setting up SSH config: %s", err)
 		state.Put("error", err)
 		ui.Error(err.Error())
-		log.Fatalf(err.Error())
+		log.Fatalf("error setting up ssh config: %v", err)
 		return nil, err
 	}
 
