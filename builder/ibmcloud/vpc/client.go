@@ -97,12 +97,12 @@ func (client IBMCloudClient) isResourceReady(resourceID string, resourceType str
 		instance, _, err := vpcService.GetInstance(options)
 		if err != nil {
 			err := fmt.Errorf("[ERROR] Error occurred while getting instance information. Error: %s", err)
-			return false, fmt.Errorf(err.Error())
+			return false, err
 		}
 		status := *instance.Status
 		if status == "failed" {
 			err := fmt.Errorf("[ERROR] Instance return with failed status. Status Reason - %s: %s", status, *instance.StatusReasons[0].Message)
-			return false, fmt.Errorf(err.Error())
+			return false, err
 		}
 		ready = status == "running"
 		return ready, err
@@ -111,7 +111,7 @@ func (client IBMCloudClient) isResourceReady(resourceID string, resourceType str
 		floatingIP, _, err := vpcService.GetFloatingIP(options)
 		if err != nil {
 			err := fmt.Errorf("[ERROR] Error occurred while getting floating ip information. Error: %s", err)
-			return false, fmt.Errorf(err.Error())
+			return false, err
 		}
 		status := *floatingIP.Status
 		ready = status == "available"
@@ -121,7 +121,7 @@ func (client IBMCloudClient) isResourceReady(resourceID string, resourceType str
 		subnet, _, err := vpcService.GetSubnet(options)
 		if err != nil {
 			err := fmt.Errorf("[ERROR] Error occurred while getting subnet information. Error: %s", err)
-			return false, fmt.Errorf(err.Error())
+			return false, err
 		}
 		status := *subnet.Status
 		ready = status == "available"
@@ -131,7 +131,7 @@ func (client IBMCloudClient) isResourceReady(resourceID string, resourceType str
 		image, _, err := vpcService.GetImage(options)
 		if err != nil {
 			err := fmt.Errorf("[ERROR] Error occurred while getting image information. Error: %s", err)
-			return false, fmt.Errorf(err.Error())
+			return false, err
 		}
 		status := *image.Status
 		ready = status == "available"
