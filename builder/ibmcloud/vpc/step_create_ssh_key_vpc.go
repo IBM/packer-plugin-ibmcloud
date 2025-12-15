@@ -41,7 +41,15 @@ func (s *stepCreateSshKeyVPC) Run(_ context.Context, state multistep.StateBag) m
 func (s *stepCreateSshKeyVPC) Cleanup(state multistep.StateBag) {
 	ui := state.Get("ui").(packer.Ui)
 
-	ui.Say(fmt.Sprintf("Deleting SSH key for VPC %s ...", state.Get("vpc_ssh_key_name").(string)))
+	// Check if VPC SSH key exists in state before attempting deletion
+	if state.Get("vpc_ssh_key_name") == nil || state.Get("vpc_ssh_key_id") == nil {
+		return
+	}
+
+	vpcSSHKeyName := state.Get("vpc_ssh_key_name").(string)
+	vpcSSHKeyID := state.Get("vpc_ssh_key_id").(string)
+
+	ui.Say(fmt.Sprintf("Deleting SSH key for VPC %s ...", vpcSSHKeyName))
 	// Wait half minute before deleting SSH key - otherwise wouldn't be deleted.
 	time.Sleep(30 * time.Second)
 	var vpcService *vpcv1.VpcV1
@@ -49,17 +57,21 @@ func (s *stepCreateSshKeyVPC) Cleanup(state multistep.StateBag) {
 		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
 	}
 	deleteKeyOptions := &vpcv1.DeleteKeyOptions{}
-	deleteKeyOptions.SetID(state.Get("vpc_ssh_key_id").(string))
+	deleteKeyOptions.SetID(vpcSSHKeyID)
 	response, err := vpcService.DeleteKey(deleteKeyOptions)
 
 	if err != nil {
-		err := fmt.Errorf("[ERROR] Error deleting SSH key for VPC %s. Please delete it manually: %s", state.Get("vpc_ssh_key_name").(string), err)
-		state.Put("error", err)
-		ui.Error(err.Error())
-		// log.Fatalf(err.Error())
-		return
-	}
-	if response.StatusCode == 204 {
+		// Check if it's a 404 (resource already deleted)
+		if response != nil && response.StatusCode == 404 {
+			ui.Say("The SSH key was already deleted or does not exist.")
+		} else {
+			err := fmt.Errorf("[ERROR] Error deleting SSH key for VPC %s. Please delete it manually: %s", vpcSSHKeyName, err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			// log.Fatalf(err.Error())
+			return
+		}
+	} else if response.StatusCode == 204 {
 		ui.Say("The Key was successfully deleted!")
 	} else {
 		ui.Say("The key could not be deleted. Please delete it manually!")

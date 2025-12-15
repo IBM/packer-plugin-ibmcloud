@@ -3,7 +3,6 @@ package vpc
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -78,7 +77,7 @@ func (step *stepGetIP) Run(_ context.Context, state multistep.StateBag) multiste
 	}
 
 	ipAddressBytes := []byte(fmt.Sprintf("%s\n", ipAddress))
-	err := ioutil.WriteFile(hostsFilePath, ipAddressBytes, 0644)
+	err := os.WriteFile(hostsFilePath, ipAddressBytes, 0644)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Failed to write IP address to file: %s", err)
 		state.Put("error", err)

@@ -8,7 +8,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	mathrand "math/rand"
 	"os"
 	"strconv"
@@ -58,14 +57,14 @@ func (s *stepCreateSshKeyPair) Run(_ context.Context, state multistep.StateBag) 
 		privatefilepath = keysDirectory + "id_ed25519"
 		publicfilepath = keysDirectory + "id_ed25519.pub"
 
-		err := ioutil.WriteFile(privatefilepath, privateKey, 0600)
+		err := os.WriteFile(privatefilepath, privateKey, 0600)
 		if err != nil {
 			err := fmt.Errorf("[ERROR] Failed to edit ed25519 private SSH Key's permission: %s", err)
 			state.Put("error", err)
 			ui.Error(err.Error())
 			return multistep.ActionHalt
 		}
-		err = ioutil.WriteFile(publicfilepath, authorizedKey, 0644)
+		err = os.WriteFile(publicfilepath, authorizedKey, 0644)
 		if err != nil {
 			err := fmt.Errorf("[ERROR] Failed to write ed25519 public SSH Key to file: %s", err)
 			state.Put("error", err)
@@ -100,7 +99,7 @@ func (s *stepCreateSshKeyPair) Run(_ context.Context, state multistep.StateBag) 
 			ui.Say(fmt.Sprintf("Writing Private SSH Key to a file %s", privatefilepath))
 			privatekey := string(pem.EncodeToMemory(&privBlk))
 			privateKey := []byte(fmt.Sprintf("%s\n", privatekey))
-			err = ioutil.WriteFile(privatefilepath, privateKey, 0600)
+			err = os.WriteFile(privatefilepath, privateKey, 0600)
 			if err != nil {
 				err := fmt.Errorf("[ERROR] Failed to write Private SSH Key to file: %s", err)
 				state.Put("error", err)
@@ -131,7 +130,7 @@ func (s *stepCreateSshKeyPair) Run(_ context.Context, state multistep.StateBag) 
 			ui.Say(fmt.Sprintf("Writing Public SSH Key to a file %s", publicfilepath))
 			pubkey := string(publicKey)
 			pubKey := []byte(fmt.Sprintf("%s\n", pubkey))
-			err = ioutil.WriteFile(publicfilepath, pubKey, 0600)
+			err = os.WriteFile(publicfilepath, pubKey, 0600)
 			if err != nil {
 				err := fmt.Errorf("[ERROR] Failed to write Public SSH Key to file: %s", err)
 				state.Put("error", err)

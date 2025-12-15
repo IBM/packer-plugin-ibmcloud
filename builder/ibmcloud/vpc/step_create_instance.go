@@ -3,7 +3,7 @@ package vpc
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -99,7 +99,7 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		userDataFilePath := config.VSIUserDataFile
 		userDataString := config.VSIUserDataString
 		if userDataFilePath != "" {
-			content, err := ioutil.ReadFile(userDataFilePath)
+			content, err := os.ReadFile(userDataFilePath)
 			if err != nil {
 				err := fmt.Errorf("[ERROR] Error reading user data file. Error: %s", err)
 				state.Put("error", err)
@@ -177,7 +177,7 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		userDataFilePath := config.VSIUserDataFile
 		userDataString := config.VSIUserDataString
 		if userDataFilePath != "" {
-			content, err := ioutil.ReadFile(userDataFilePath)
+			content, err := os.ReadFile(userDataFilePath)
 			if err != nil {
 				err := fmt.Errorf("[ERROR] Error reading user data file. Error: %s", err)
 				state.Put("error", err)
@@ -244,7 +244,7 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		userDataFilePath := config.VSIUserDataFile
 		userDataString := config.VSIUserDataString
 		if userDataFilePath != "" {
-			content, err := ioutil.ReadFile(userDataFilePath)
+			content, err := os.ReadFile(userDataFilePath)
 			if err != nil {
 				err := fmt.Errorf("[ERROR] Error reading user data file. Error: %s", err)
 				state.Put("error", err)
@@ -318,7 +318,7 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		userDataFilePath := config.VSIUserDataFile
 		userDataString := config.VSIUserDataString
 		if userDataFilePath != "" {
-			content, err := ioutil.ReadFile(userDataFilePath)
+			content, err := os.ReadFile(userDataFilePath)
 			if err != nil {
 				err := fmt.Errorf("[ERROR] Error reading user data file. Error: %s", err)
 				state.Put("error", err)
@@ -370,7 +370,7 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 
 	// Delete Floating IP if it was created (VSI Interface was set as public)
 	if config.VSIInterface == "public" {
-		if state.Get("floating_ip") != nil {
+		if state.Get("floating_ip") != nil && state.Get("floating_ip_id") != nil {
 			floatingIP := state.Get("floating_ip").(string)
 			ui.Say(fmt.Sprintf("Releasing the Floating IP: %s ...", floatingIP))
 
@@ -385,80 +385,93 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 				// log.Fatalf(err.Error())
 				return
 			}
-			status := floatingIPresponse.Status
-			if *status == "available" {
-				options := vpcService.NewDeleteFloatingIPOptions(floatingIPID)
-				result, err := vpcService.DeleteFloatingIP(options)
+			// Only proceed if the Floating IP still exists (not 404)
+			if response.StatusCode != 404 && floatingIPresponse.Status != nil {
+				status := floatingIPresponse.Status
+				if *status == "available" {
+					options := vpcService.NewDeleteFloatingIPOptions(floatingIPID)
+					result, err := vpcService.DeleteFloatingIP(options)
 
-				if err != nil {
-					err := fmt.Errorf("[ERROR] Error releasing the Floating IP. Please release it manually: %s", err)
-					state.Put("error", err)
-					ui.Error(err.Error())
-					// log.Fatalf(err.Error())
-					return
+					if err != nil {
+						err := fmt.Errorf("[ERROR] Error releasing the Floating IP. Please release it manually: %s", err)
+						state.Put("error", err)
+						ui.Error(err.Error())
+						// log.Fatalf(err.Error())
+						return
+					}
+					if result.StatusCode == 204 {
+						ui.Say("The Floating IP was successfully released!")
+					}
 				}
-				if result.StatusCode == 204 {
-					ui.Say("The Floating IP was successfully released!")
-				}
+			} else if response.StatusCode == 404 {
+				ui.Say("The Floating IP was already deleted or does not exist.")
 			}
 		}
 	}
 
 	// Wait a couple of seconds before attempting to delete the instance.
 	time.Sleep(2 * time.Second)
-	instanceData := state.Get("instance_data").(*vpcv1.Instance)
-	instanceID := *instanceData.ID
-	ui.Say(fmt.Sprintf("Deleting Instance ID: %s ...", instanceID))
 
-	options := &vpcv1.DeleteInstanceOptions{}
-	options.SetID(instanceID)
-	_, err := vpcService.DeleteInstance(options)
+	// Check if instance_data exists in state before attempting deletion
+	if state.Get("instance_data") != nil {
+		instanceData := state.Get("instance_data").(*vpcv1.Instance)
+		instanceID := *instanceData.ID
+		ui.Say(fmt.Sprintf("Deleting Instance ID: %s ...", instanceID))
 
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Error deleting the instance. Please delete it manually: %s", err)
-		state.Put("error", err)
-		ui.Error(err.Error())
-		// log.Fatalf(err.Error())
-		return
-	}
-	instanceDeleted := false
-	for !instanceDeleted {
-		options := &vpcv1.GetInstanceOptions{}
+		options := &vpcv1.DeleteInstanceOptions{}
 		options.SetID(instanceID)
-		instance, response, err := vpcService.GetInstance(options)
+		_, err := vpcService.DeleteInstance(options)
+
 		if err != nil {
-			if response != nil && response.StatusCode == 404 {
-				ui.Say("Instance deleted Succesfully")
-				instanceDeleted = true
-				break
-			}
-			err := fmt.Errorf("[ERROR] Error getting the instance to check delete status. %s", err)
+			err := fmt.Errorf("[ERROR] Error deleting the instance. Please delete it manually: %s", err)
 			state.Put("error", err)
-			ui.Error(err.Error())
-		} else if instance != nil {
-			ui.Say(fmt.Sprintf("Instance status :-  %s", *instance.Status))
-		}
-		time.Sleep(10 * time.Second)
-	}
-
-	// Deleting Security Group's rule
-	if state.Get("security_group_rule_id") != nil {
-		ruleID := state.Get("security_group_rule_id").(string)
-		ui.Say(fmt.Sprintf("Deleting Security Group's rule %s ...", ruleID))
-		sgRuleOptions := &vpcv1.DeleteSecurityGroupRuleOptions{}
-		sgRuleOptions.SetSecurityGroupID(state.Get("security_group_id").(string))
-		sgRuleOptions.SetID(ruleID)
-		sgRuleResponse, sgRuleErr := vpcService.DeleteSecurityGroupRule(sgRuleOptions)
-
-		if sgRuleErr != nil {
-			sgRuleErr := fmt.Errorf("[ERROR] Error deleting Security Group's rule %s. Please delete it manually: %s", ruleID, sgRuleErr)
-			state.Put("error", sgRuleErr)
 			ui.Error(err.Error())
 			// log.Fatalf(err.Error())
 			return
 		}
+		instanceDeleted := false
+		for !instanceDeleted {
+			options := &vpcv1.GetInstanceOptions{}
+			options.SetID(instanceID)
+			instance, response, err := vpcService.GetInstance(options)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					ui.Say("Instance deleted Successfully")
+					instanceDeleted = true
+					break
+				}
+				err := fmt.Errorf("[ERROR] Error getting the instance to check delete status. %s", err)
+				state.Put("error", err)
+				ui.Error(err.Error())
+			} else if instance != nil {
+				ui.Say(fmt.Sprintf("Instance status :-  %s", *instance.Status))
+			}
+			time.Sleep(10 * time.Second)
+		}
+	}
 
-		if sgRuleResponse.StatusCode == 204 {
+	// Deleting Security Group's rule
+	if state.Get("security_group_rule_id") != nil && state.Get("security_group_id") != nil {
+		ruleID := state.Get("security_group_rule_id").(string)
+		securityGroupID := state.Get("security_group_id").(string)
+		ui.Say(fmt.Sprintf("Deleting Security Group's rule %s ...", ruleID))
+		sgRuleOptions := &vpcv1.DeleteSecurityGroupRuleOptions{}
+		sgRuleOptions.SetSecurityGroupID(securityGroupID)
+		sgRuleOptions.SetID(ruleID)
+		sgRuleResponse, sgRuleErr := vpcService.DeleteSecurityGroupRule(sgRuleOptions)
+
+		if sgRuleErr != nil {
+			// Check if it's a 404 (resource already deleted)
+			if sgRuleResponse != nil && sgRuleResponse.StatusCode == 404 {
+				ui.Say("The Security Group's rule was already deleted or does not exist.")
+			} else {
+				sgRuleErr := fmt.Errorf("[ERROR] Error deleting Security Group's rule %s. Please delete it manually: %s", ruleID, sgRuleErr)
+				state.Put("error", sgRuleErr)
+				ui.Error(sgRuleErr.Error())
+				// log.Fatalf(err.Error())
+				return
+			}
+		} else if sgRuleResponse.StatusCode == 204 {
 			ui.Say("The Security Group's rule was successfully deleted!")
 		}
 	}
@@ -466,24 +479,27 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 	// Wait a couple of seconds before attempting to delete the security group.
 	time.Sleep(10 * time.Second)
 
-	// Deleting Security Group
+	// Deleting Security Group (only if we created it, not if user provided one)
 	if config.SecurityGroupID == "" {
-		if state.Get("security_group_name") != nil {
+		if state.Get("security_group_name") != nil && state.Get("security_group_id") != nil {
 			securityGroupName := state.Get("security_group_name").(string)
-			ui.Say(fmt.Sprintf("Deleting Security Group %s ...", securityGroupName))
 			securityGroupID := state.Get("security_group_id").(string)
+			ui.Say(fmt.Sprintf("Deleting Security Group %s ...", securityGroupName))
 			sgOptions := &vpcv1.DeleteSecurityGroupOptions{}
 			sgOptions.SetID(securityGroupID)
 			sgResponse, err := vpcService.DeleteSecurityGroup(sgOptions)
 			if err != nil {
-				err := fmt.Errorf("[ERROR] Error deleting Security Group %s. Please delete it manually: %s", securityGroupName, err)
-				state.Put("error", err)
-				ui.Error(err.Error())
-				// log.Fatalf(err.Error())
-				return
-			}
-
-			if sgResponse.StatusCode == 204 {
+				// Check if it's a 404 (resource already deleted)
+				if sgResponse != nil && sgResponse.StatusCode == 404 {
+					ui.Say("The Security Group was already deleted or does not exist.")
+				} else {
+					err := fmt.Errorf("[ERROR] Error deleting Security Group %s. Please delete it manually: %s", securityGroupName, err)
+					state.Put("error", err)
+					ui.Error(err.Error())
+					// log.Fatalf(err.Error())
+					return
+				}
+			} else if sgResponse.StatusCode == 204 {
 				ui.Say("The Security Group was successfully deleted!")
 			}
 		}
