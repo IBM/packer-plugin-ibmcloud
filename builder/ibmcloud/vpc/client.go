@@ -2,7 +2,6 @@ package vpc
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -371,7 +370,7 @@ func (client IBMCloudClient) createSSHKeyVPC(state multistep.StateBag) (*vpcv1.K
 	config := state.Get("config").(Config)
 
 	file := state.Get("PUBLIC_KEY").(string)
-	content, err := ioutil.ReadFile(file)
+	content, err := os.ReadFile(file)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error reading SSH Public Key. Error: %s", err)
 		ui.Error(err.Error())
