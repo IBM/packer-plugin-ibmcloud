@@ -54,7 +54,7 @@ source "ibmcloud-vpc" "centos" {
   image_name = "packer-${local.timestamp}"
 
   communicator = "ssh"
-  ssh_username = "root"
+  ssh_username = "vpcuser"
   ssh_port     = 22
   ssh_timeout  = "15m"
 
@@ -67,7 +67,7 @@ build {
   ]
 
   provisioner "shell" {
-    execute_command = "{{.Vars}} bash '{{.Path}}'"
+    execute_command = "{{.Vars}} sudo -E bash '{{.Path}}'"
     inline = [
       "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure'",
       "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure' >> /hello.txt"
