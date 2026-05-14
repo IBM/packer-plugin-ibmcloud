@@ -51,7 +51,7 @@ source "ibmcloud-vpc" "boot-snapshot" {
   image_name = "packer-${local.timestamp}"
 
   communicator = "ssh"
-  ssh_username = "root"
+  ssh_username = "vpcuser"
   ssh_port     = 22
   ssh_timeout  = "15m"
 

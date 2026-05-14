@@ -54,7 +54,7 @@ source "ibmcloud-vpc" "centos" {
   image_name = "packer-${local.timestamp}-1"
 
   communicator = "ssh"
-  ssh_username = "root"
+  ssh_username = "vpcuser"
   ssh_port     = 22
   ssh_timeout  = "15m"
 
@@ -77,7 +77,7 @@ source "ibmcloud-vpc" "centos-other" {
   image_name = "packer-${local.timestamp}-2"
 
   communicator = "ssh"
-  ssh_username = "root"
+  ssh_username = "vpcuser"
   ssh_port     = 22
   ssh_timeout  = "15m"
 
