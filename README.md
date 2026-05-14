@@ -232,6 +232,7 @@ winrm_insecure | bool | Optional | If true, do not check server certificate chai
 winrm_use_ssl | bool | Optional | If true, use HTTPS for WinRM.
 | |
 timeout | string | Optional | The amount of time to wait before considering that the provisioner failed. Optional.
+logging | string | Optional | to turn debug log on, pass "debug" as value. Optional.
 
 ***********
 
