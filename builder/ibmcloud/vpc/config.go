@@ -66,6 +66,7 @@ type Config struct {
 	//The format to use for the exported image. If the image is encrypted, only qcow2 is supported.
 	Format     string `mapstructure:"format"`
 	SkipReboot bool   `mapstructure:"skip_reboot"`
+	VPCLog     string `mapstructure:"logging"`
 }
 
 // Prepare processes the build configuration parameters.
