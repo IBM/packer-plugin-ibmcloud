@@ -48,6 +48,12 @@ type Config struct {
 	ImageName string   `mapstructure:"image_name"`
 	ImageTags []string `mapstructure:"tags"`
 
+	// Security Group Rule Configuration
+	SkipCreateDefaultSecurityGroupRule bool     `mapstructure:"skip_create_default_security_group_rule"`
+	SecurityGroupRuleRemoteCIDR        []string `mapstructure:"security_group_rule_remote_cidr"`
+	SecurityGroupRuleRemoteAddress     []string `mapstructure:"security_group_rule_remote_address"`
+	SecurityGroupRuleRemoteID          []string `mapstructure:"security_group_rule_remote_id"`
+
 	VSIName           string `mapstructure-to-hcl2:",skip"`
 	VpcSshKeyName     string `mapstructure-to-hcl2:",skip"`
 	SecurityGroupName string `mapstructure-to-hcl2:",skip"`
