@@ -205,8 +205,9 @@ vsi_boot_volume_id | string | Required | The ID of an existing boot volume.
 vsi_boot_snapshot_id | string | Required | The ID of an existing boot snapshot.
 | |
 security_group_id | string | Optional | The security group identifier to use. If not specified, IBM packer plugin creates a new temporary security group to allow SSH and WinRM access.
-skip_create_default_security_group_rule | boolean | Optional | IBM packer pluginc creates default security group rule to allow SSH and WinRM access. If you want to skip this, set this variable to true.
 | |
+skip_create_default_security_group_rule | boolean | Optional | By default, the IBM Packer plugin creates security group rules to allow SSH and WinRM access. Set this to `true` if the security group already has the required access rules configured and you want to skip automatic rule creation.
+| OR |
 security_group_rule_remote_cidr | array of string | Optional | The remote CIDR block from which this rule will allow traffic.
 | OR |
 security_group_rule_remote_address | array of string | Optional | The remote ip address from which this rule will allow traffic.
