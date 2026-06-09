@@ -38,6 +38,8 @@ type Config struct {
 	VSIBaseImageName          string `mapstructure:"vsi_base_image_name"`
 	VSIBootCapacity           int    `mapstructure:"vsi_boot_vol_capacity"`
 	VSIBootProfile            string `mapstructure:"vsi_boot_vol_profile"`
+	VSIBootIops               int    `mapstructure:"vsi_boot_vol_iops"`
+	VSIBootBandwidth          int    `mapstructure:"vsi_boot_vol_bandwidth"`
 	VSIBootVolumeID           string `mapstructure:"vsi_boot_volume_id"`
 	VSIBootSnapshotID         string `mapstructure:"vsi_boot_snapshot_id"`
 	VSIProfile                string `mapstructure:"vsi_profile"`
@@ -116,8 +118,13 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	if c.VSIBootCapacity != 0 && (c.VSIBootCapacity < 100 || c.VSIBootCapacity > 250) {
 		errs = packer.MultiErrorAppend(errs, errors.New("boot capacity out of bound: provide a valid capacity between 100 to 250"))
 	}
-	if c.VSIBootProfile != "" && (c.VSIBootProfile != "5iops-tier" && c.VSIBootProfile != "10iops-tier" && c.VSIBootProfile != "general-purpose") {
-		errs = packer.MultiErrorAppend(errs, errors.New("profile must be from:  5iops-tier, 10iops-tier, general-purpose"))
+	if c.VSIBootProfile != "" && c.VSIBootProfile != "5iops-tier" && c.VSIBootProfile != "10iops-tier" && c.VSIBootProfile != "general-purpose" && c.VSIBootProfile != "sdp" && c.VSIBootProfile != "custom" {
+		errs = packer.MultiErrorAppend(errs, errors.New("profile must be one of: general-purpose, 5iops-tier, 10iops-tier, sdp, custom"))
+	}
+	// iops/bandwidth are only honored by the custom and sdp profiles; the tiered
+	// profiles derive them from capacity, so reject the combination up front.
+	if (c.VSIBootIops != 0 || c.VSIBootBandwidth != 0) && c.VSIBootProfile != "custom" && c.VSIBootProfile != "sdp" {
+		errs = packer.MultiErrorAppend(errs, errors.New("vsi_boot_vol_iops and vsi_boot_vol_bandwidth require vsi_boot_vol_profile to be 'custom' or 'sdp'"))
 	}
 
 	var oneOfInput int // validation for mutually exclusive fields.

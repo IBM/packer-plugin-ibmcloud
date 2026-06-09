@@ -30,7 +30,6 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 	vsiBootSnapshotId := config.VSIBootSnapshotID
 
 	vsiCapacity := config.VSIBootCapacity
-	VSIBootProfile := config.VSIBootProfile
 
 	keyIdentityModel := &vpcv1.KeyIdentityByID{
 		ID: &[]string{state.Get("vpc_ssh_key_id").(string)}[0],
@@ -80,18 +79,8 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 			Zone:                    zoneIdentityModel,
 		}
 		if int64(vsiCapacity) != 0 {
-			capacity := int64(vsiCapacity)
-			profile := "general-purpose"
-			if VSIBootProfile != "" {
-				profile = VSIBootProfile
-			}
 			instancePrototypeModel.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
-				Volume: &vpcv1.VolumePrototypeInstanceByImageContext{
-					Capacity: &capacity,
-					Profile: &vpcv1.VolumeProfileIdentity{
-						Name: &profile,
-					},
-				},
+				Volume: bootVolumePrototype(config),
 			}
 		}
 		instancePrototypeModel.CatalogOffering = catalogOfferingPrototype
@@ -159,18 +148,8 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 			Zone:                    zoneIdentityModel,
 		}
 		if int64(vsiCapacity) != 0 {
-			capacity := int64(vsiCapacity)
-			profile := "general-purpose"
-			if VSIBootProfile != "" {
-				profile = VSIBootProfile
-			}
 			instancePrototypeModel.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
-				Volume: &vpcv1.VolumePrototypeInstanceByImageContext{
-					Capacity: &capacity,
-					Profile: &vpcv1.VolumeProfileIdentity{
-						Name: &profile,
-					},
-				},
+				Volume: bootVolumePrototype(config),
 			}
 		}
 
@@ -505,4 +484,27 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 		}
 	}
 
+}
+
+func bootVolumePrototype(config Config) *vpcv1.VolumePrototypeInstanceByImageContext {
+	capacity := int64(config.VSIBootCapacity)
+	profile := "general-purpose"
+	if config.VSIBootProfile != "" {
+		profile = config.VSIBootProfile
+	}
+	vol := &vpcv1.VolumePrototypeInstanceByImageContext{
+		Capacity: &capacity,
+		Profile:  &vpcv1.VolumeProfileIdentity{Name: &profile},
+	}
+	// IBM honors iops/bandwidth only on the custom and sdp profiles; the tiered
+	// profiles derive them from capacity.
+	if config.VSIBootIops != 0 {
+		iops := int64(config.VSIBootIops)
+		vol.Iops = &iops
+	}
+	if config.VSIBootBandwidth != 0 {
+		bandwidth := int64(config.VSIBootBandwidth)
+		vol.Bandwidth = &bandwidth
+	}
+	return vol
 }

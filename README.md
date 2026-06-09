@@ -222,7 +222,9 @@ vsi_user_data_file | string | Optional | User data to be made available when set
 vsi_user_data | string | Optional | User data to be made available when setting up the virtual server instance. Optional. This is the string input variable.
 | |
 vsi_boot_vol_capacity | string | Optional | The capacity to use for the volume (in gigabytes). Must be at least the image's minimum_provisioned_size. The maximum value may increase in the future.
-vsi_boot_vol_profile | string | Optional | User can provide the available profile for volume attachments. Supported profiles: `5iops-tier`, `10iops-tier`, `general-purpose`. Refer https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles&interface=ui for profile info.
+vsi_boot_vol_profile | string | Optional | User can provide the available profile for the boot volume. Supported profiles: `general-purpose`, `5iops-tier`, `10iops-tier`, `sdp`, `custom`. Refer https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles&interface=ui for profile info.
+vsi_boot_vol_iops | number | Optional | The maximum I/O operations per second (IOPS) for the boot volume. Only honored when `vsi_boot_vol_profile` is `custom` or `sdp`; the tiered profiles derive IOPS from capacity. Must be within the chosen profile's range for the volume size (enforced by IBM Cloud).
+vsi_boot_vol_bandwidth | number | Optional | The maximum bandwidth (in megabits per second) for the boot volume. Only honored when `vsi_boot_vol_profile` is `custom` or `sdp`. If unset, it is derived from `vsi_boot_vol_iops`/capacity.
 image_name | string | Optional | The name of the resulting custom image that will appear in your account. Required.
 encryption_key_crn | string | Optional | The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
 communicator | string | Required | Communicators are the mechanism Packer uses to upload files, execute scripts, etc. with the machine being created. Choose between "ssh" (for Linux) and "winrm" (for Windows). Required.
