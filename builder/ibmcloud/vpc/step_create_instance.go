@@ -80,7 +80,7 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		}
 		if int64(vsiCapacity) != 0 {
 			instancePrototypeModel.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
-				Volume: bootVolumePrototype(config),
+				Volume: bootVolumePrototype(&config),
 			}
 		}
 		instancePrototypeModel.CatalogOffering = catalogOfferingPrototype
@@ -149,7 +149,7 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		}
 		if int64(vsiCapacity) != 0 {
 			instancePrototypeModel.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
-				Volume: bootVolumePrototype(config),
+				Volume: bootVolumePrototype(&config),
 			}
 		}
 
@@ -486,7 +486,7 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 
 }
 
-func bootVolumePrototype(config Config) *vpcv1.VolumePrototypeInstanceByImageContext {
+func bootVolumePrototype(config *Config) *vpcv1.VolumePrototypeInstanceByImageContext {
 	capacity := int64(config.VSIBootCapacity)
 	profile := "general-purpose"
 	if config.VSIBootProfile != "" {

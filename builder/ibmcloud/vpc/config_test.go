@@ -3,6 +3,8 @@ package vpc
 import (
 	"strings"
 	"testing"
+
+	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
 // otherwise-valid config so Prepare surfaces only the boot-volume checks.
@@ -80,4 +82,40 @@ func TestPrepareBootVolumeIopsBandwidth(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestBootVolumePrototype(t *testing.T) {
+	t.Run("default profile, no iops or bandwidth", func(t *testing.T) {
+		vol := bootVolumePrototype(&Config{VSIBootCapacity: 100})
+		if got := *vol.Profile.(*vpcv1.VolumeProfileIdentity).Name; got != "general-purpose" {
+			t.Errorf("profile = %q, want general-purpose", got)
+		}
+		if got := *vol.Capacity; got != 100 {
+			t.Errorf("capacity = %d, want 100", got)
+		}
+		if vol.Iops != nil {
+			t.Errorf("Iops = %d, want nil (unset)", *vol.Iops)
+		}
+		if vol.Bandwidth != nil {
+			t.Errorf("Bandwidth = %d, want nil (unset)", *vol.Bandwidth)
+		}
+	})
+
+	t.Run("sdp profile with iops and bandwidth", func(t *testing.T) {
+		vol := bootVolumePrototype(&Config{
+			VSIBootCapacity:  50,
+			VSIBootProfile:   "sdp",
+			VSIBootIops:      10000,
+			VSIBootBandwidth: 4000,
+		})
+		if got := *vol.Profile.(*vpcv1.VolumeProfileIdentity).Name; got != "sdp" {
+			t.Errorf("profile = %q, want sdp", got)
+		}
+		if vol.Iops == nil || *vol.Iops != 10000 {
+			t.Errorf("Iops = %v, want 10000", vol.Iops)
+		}
+		if vol.Bandwidth == nil || *vol.Bandwidth != 4000 {
+			t.Errorf("Bandwidth = %v, want 4000", vol.Bandwidth)
+		}
+	})
 }
