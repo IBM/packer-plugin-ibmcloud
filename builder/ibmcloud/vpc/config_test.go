@@ -16,6 +16,7 @@ func validVPCConfig() *Config {
 	c.SubnetID = "0717-test-subnet"
 	c.VSIBaseImageID = "r014-test-image"
 	c.VSIProfile = "bz2-4x16"
+	c.VSIBootCapacity = 100
 	return c
 }
 
@@ -79,6 +80,71 @@ func TestPrepareBootVolumeIopsBandwidth(t *testing.T) {
 			if rejected != tc.wantReject {
 				t.Errorf("profile=%q iops=%d bandwidth=%d rejected=%v, want %v (err=%v)",
 					tc.profile, tc.iops, tc.bandwidth, rejected, tc.wantReject, err)
+			}
+		})
+	}
+}
+
+func TestPrepareBootVolumeRequiresCapacity(t *testing.T) {
+	const wantMsg = "require vsi_boot_vol_capacity to be set"
+
+	cases := []struct {
+		name       string
+		profile    string
+		iops       int
+		bandwidth  int
+		capacity   int
+		wantReject bool
+	}{
+		{"profile without capacity", "sdp", 0, 0, 0, true},
+		{"iops without capacity", "sdp", 10000, 0, 0, true},
+		{"bandwidth without capacity", "sdp", 0, 4000, 0, true},
+		{"profile with capacity", "sdp", 0, 0, 100, false},
+		{"nothing set, no capacity", "", 0, 0, 0, false},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := validVPCConfig()
+			c.VSIBootCapacity = tc.capacity
+			c.VSIBootProfile = tc.profile
+			c.VSIBootIops = tc.iops
+			c.VSIBootBandwidth = tc.bandwidth
+			_, err := c.Prepare()
+			rejected := err != nil && strings.Contains(err.Error(), wantMsg)
+			if rejected != tc.wantReject {
+				t.Errorf("profile=%q iops=%d bandwidth=%d capacity=%d rejected=%v, want %v (err=%v)",
+					tc.profile, tc.iops, tc.bandwidth, tc.capacity, rejected, tc.wantReject, err)
+			}
+		})
+	}
+}
+
+func TestPrepareBootVolumeNegative(t *testing.T) {
+	const wantMsg = "must not be negative"
+
+	cases := []struct {
+		name       string
+		iops       int
+		bandwidth  int
+		wantReject bool
+	}{
+		{"negative iops", -1, 0, true},
+		{"negative bandwidth", 0, -1, true},
+		{"positive values", 10000, 4000, false},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := validVPCConfig()
+			c.VSIBootProfile = "sdp"
+			c.VSIBootIops = tc.iops
+			c.VSIBootBandwidth = tc.bandwidth
+			_, err := c.Prepare()
+			rejected := err != nil && strings.Contains(err.Error(), wantMsg)
+			if rejected != tc.wantReject {
+				t.Errorf("iops=%d bandwidth=%d rejected=%v, want %v (err=%v)",
+					tc.iops, tc.bandwidth, rejected, tc.wantReject, err)
 			}
 		})
 	}

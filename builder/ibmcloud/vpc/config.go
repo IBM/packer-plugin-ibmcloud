@@ -129,6 +129,14 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	if (c.VSIBootIops != 0 || c.VSIBootBandwidth != 0) && !customOrSdp {
 		errs = packer.MultiErrorAppend(errs, errors.New("vsi_boot_vol_iops/vsi_boot_vol_bandwidth require vsi_boot_vol_profile to be 'custom' or 'sdp'"))
 	}
+	// The builder only attaches a boot volume (and thus only honors the profile,
+	// iops, and bandwidth) when a capacity is given; without it these are dropped.
+	if (c.VSIBootProfile != "" || c.VSIBootIops != 0 || c.VSIBootBandwidth != 0) && c.VSIBootCapacity == 0 {
+		errs = packer.MultiErrorAppend(errs, errors.New("vsi_boot_vol_profile/vsi_boot_vol_iops/vsi_boot_vol_bandwidth require vsi_boot_vol_capacity to be set"))
+	}
+	if c.VSIBootIops < 0 || c.VSIBootBandwidth < 0 {
+		errs = packer.MultiErrorAppend(errs, errors.New("vsi_boot_vol_iops and vsi_boot_vol_bandwidth must not be negative"))
+	}
 
 	var oneOfInput int // validation for mutually exclusive fields.
 
