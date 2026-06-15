@@ -141,9 +141,15 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 
 		_, resp, err := serviceClientOptions.AttachTag(AttachTagOptions)
 		if err != nil {
-			errUserTags := fmt.Errorf("[ERROR] Error attaching tags %v : %s\n%s", config.ImageTags, err, resp)
-			state.Put("error", errUserTags)
-			ui.Say(errUserTags.Error())
+			// Tags were explicitly requested, so applying them is part of the build
+			// contract: fail loudly rather than emitting an untagged image. Halt here
+			// (consistent with the tagging-client failure above) instead of recording
+			// the error and continuing, which would leave the image and fail the build
+			// with a buried message after a pointless wait-for-AVAILABLE.
+			err := fmt.Errorf("[ERROR] Error attaching tags %v : %s\n%s", config.ImageTags, err, resp)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
 		}
 	}
 
