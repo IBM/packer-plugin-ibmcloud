@@ -25,8 +25,14 @@ const BuilderId = "ibmcloud.vpc.builder"
 // reported as a failure rather than letting Run return (nil, nil) — which Packer
 // treats as success, exiting 0 with no artifact.
 func buildResultError(state multistep.StateBag) error {
-	if err, ok := state.GetOk("error"); ok {
-		return err.(error)
+	// GetOk reports key presence, not a non-nil value, and a step could in
+	// principle store a non-error under "error". Only return it when it is a
+	// non-nil error; otherwise fall through to the image_id check so a malformed
+	// "error" entry can't panic or silently let the build pass.
+	if raw, ok := state.GetOk("error"); ok {
+		if err, isErr := raw.(error); isErr && err != nil {
+			return err
+		}
 	}
 	if _, ok := state.GetOk("image_id"); !ok {
 		return fmt.Errorf("[ERROR] build halted before an image was created (no image_id in state)")
@@ -128,9 +134,8 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 	b.runner = &multistep.BasicRunner{Steps: steps}
 	b.runner.Run(ctx, state)
 
-	// Fail the build if a step recorded an error, or if it halted before an image
-	// was produced (see buildResultError). Returning (nil, nil) here would make
-	// Packer treat a failed build as a success and exit 0 with no artifact.
+	// Fail the build if a step recorded an error or halted before producing an
+	// image (see buildResultError for why returning (nil, nil) here is wrong).
 	if err := buildResultError(state); err != nil {
 		return nil, err
 	}

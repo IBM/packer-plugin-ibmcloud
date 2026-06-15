@@ -39,4 +39,17 @@ func TestBuildResultError(t *testing.T) {
 			t.Fatalf("expected success when image_id is present, got %v", err)
 		}
 	})
+
+	t.Run("nil error under the error key does not pass a failed build", func(t *testing.T) {
+		// GetOk reports presence, so a step that stored a nil error must not be
+		// treated as a recorded failure; with no image_id the build still fails
+		// (rather than panicking on the type assertion or returning nil).
+		state := new(multistep.BasicStateBag)
+		var nilErr error
+		state.Put("error", nilErr)
+
+		if err := buildResultError(state); err == nil {
+			t.Fatal("expected a failure when error key holds nil and no image_id exists, got nil")
+		}
+	})
 }
