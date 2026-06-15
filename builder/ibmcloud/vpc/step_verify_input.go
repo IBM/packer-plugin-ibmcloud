@@ -213,7 +213,7 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 
 	// crn validation
 
-	if config.CatalogOfferingCRN != "" || config.CatalogOfferingVersionCRN != "" || config.EncryptionKeyCRN != "" {
+	if config.CatalogOfferingCRN != "" || config.CatalogOfferingVersionCRN != "" {
 		// validate crn
 
 		searchURL := "https://api.global-search-tagging.cloud.ibm.com"
@@ -260,23 +260,19 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 				return multistep.ActionHalt
 			}
 		}
-		// validate encryption key crn
-		if config.EncryptionKeyCRN != "" {
-			crnToCheck := fmt.Sprintf("%s%s", strings.Split(config.EncryptionKeyCRN, ":key")[0], "::")
-			query := fmt.Sprintf("crn:\"%s\"", crnToCheck)
-			searchOptions := &searchv2.SearchOptions{
-				Query: &query,
-			}
-			res, _, _ := globalSearchAPIV2.Search(searchOptions)
-			if len(res.Items) != 0 {
-				ui.Say(fmt.Sprintf("%s Encryption information successfully retrieved ...", res.Items[0].GetProperty("name")))
-			} else {
-				err := fmt.Errorf("[ERROR] Encryption crn (%s) information could not be retrieved", config.EncryptionKeyCRN)
-				state.Put("Encryption information could not be retrieved", err)
-				ui.Error(err.Error())
-				return multistep.ActionHalt
-			}
+	}
+
+	// validate encryption key crn via the KMS API. Global Search does not index Key Protect or
+	// Hyper Protect Crypto Services instances, so the encryption key cannot be verified that way;
+	// read it from the KMS GET key endpoint (derived from the CRN's service) instead.
+	if config.EncryptionKeyCRN != "" {
+		if err := verifyEncryptionKeyCRN(config.EncryptionKeyCRN, newKMSKeyVerifier(client.IBMApiKey, config.IAMEndpoint)); err != nil {
+			err := fmt.Errorf("[ERROR] Encryption crn (%s) information could not be retrieved: %s", config.EncryptionKeyCRN, err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
 		}
+		ui.Say("Encryption information successfully retrieved ...")
 	}
 	return multistep.ActionContinue
 }
