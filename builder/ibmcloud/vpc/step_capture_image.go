@@ -92,16 +92,13 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error sending the HTTP request that creates the image. Error: %s", err)
-		ui.Error(err.Error())
-		log.Println(err.Error())
-		return multistep.ActionHalt
-	}
-
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Error creating the Image: %s", err)
+		// Record the error under the "error" state-bag key (the convention every
+		// halting step follows) so the builder's Run surfaces this specific
+		// CreateImage failure via buildResultError, instead of the generic
+		// "no image_id" fallback.
 		state.Put("error", err)
 		ui.Error(err.Error())
-		// log.Fatalf(err.Error())
+		log.Println(err.Error())
 		return multistep.ActionHalt
 	}
 
