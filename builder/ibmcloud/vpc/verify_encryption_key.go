@@ -1,6 +1,7 @@
 package vpc
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -43,7 +44,7 @@ func parseEncryptionKeyCRN(crn string) (endpoint, instanceID, keyID string, err 
 	return endpoint, instanceID, keyID, nil
 }
 
-// kmsKeyVerifier reads a key through the Key Protect-compatible KMS API (GET /api/v2/keys/{id}).
+// kmsKeyVerifier checks for a key through the Key Protect-compatible KMS API.
 type kmsKeyVerifier struct {
 	authenticator core.Authenticator
 	client        *http.Client
@@ -59,46 +60,57 @@ func newKMSKeyVerifier(apiKey, iamURL string) kmsKeyVerifier {
 	}
 }
 
-// keyExists reports whether the key is readable. 200 -> exists; 404 -> absent (or not visible to
-// this identity). Any other status is returned as an error so the build halts rather than
-// misreporting an auth/transport failure as a missing key; 401/403 are called out specifically
-// since they almost always mean the build's API key lacks reader access to the KMS instance.
+// keyExists reports whether a key with keyID is present in the KMS instance. It LISTs the
+// instance's keys (GET /api/v2/keys) and matches by id rather than GET /api/v2/keys/{id}: reading
+// a specific key requires a higher privilege than listing, and the build identity only needs to
+// confirm the key exists — the boot-volume encryption itself is performed by the VPC service via a
+// Key Protect service-to-service authorization, not by this identity.
 func (v kmsKeyVerifier) keyExists(endpoint, instanceID, keyID string) (bool, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/keys/%s", endpoint, keyID), nil)
+	req, err := http.NewRequest(http.MethodGet, endpoint+"/api/v2/keys", nil)
 	if err != nil {
-		return false, fmt.Errorf("building KMS request for key %s: %w", keyID, err)
+		return false, fmt.Errorf("building KMS list-keys request: %w", err)
 	}
-	req.Header.Set("Accept", "application/vnd.ibm.kms.key+json")
 	req.Header.Set("Bluemix-Instance", instanceID)
 	if err := v.authenticator.Authenticate(req); err != nil {
-		return false, fmt.Errorf("authenticating KMS request for key %s: %w", keyID, err)
+		return false, fmt.Errorf("authenticating KMS request: %w", err)
 	}
 	resp, err := v.client.Do(req)
 	if err != nil {
-		return false, fmt.Errorf("contacting KMS at %s to verify key %s: %w", endpoint, keyID, err)
+		return false, fmt.Errorf("contacting KMS at %s to list keys: %w", endpoint, err)
 	}
 	defer resp.Body.Close()
+	body, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	switch resp.StatusCode {
 	case http.StatusOK:
-		return true, nil
-	case http.StatusNotFound:
-		return false, nil
+		// parsed below
 	case http.StatusUnauthorized, http.StatusForbidden:
-		return false, fmt.Errorf("KMS denied access to key %s at %s (HTTP %d) — the build's API key likely lacks reader access to this Key Protect / Hyper Protect Crypto Services instance: %s",
-			keyID, endpoint, resp.StatusCode, kmsBodySnippet(resp))
+		return false, fmt.Errorf("KMS denied listing keys at %s (HTTP %d) — the build's API key likely lacks reader access to this Key Protect / Hyper Protect Crypto Services instance: %s",
+			endpoint, resp.StatusCode, oneLineSnippet(body))
 	default:
-		return false, fmt.Errorf("KMS GET key %s at %s returned HTTP %d: %s", keyID, endpoint, resp.StatusCode, kmsBodySnippet(resp))
+		return false, fmt.Errorf("KMS list keys at %s returned HTTP %d: %s", endpoint, resp.StatusCode, oneLineSnippet(body))
 	}
+	var out struct {
+		Resources []struct {
+			ID string `json:"id"`
+		} `json:"resources"`
+	}
+	if err := json.Unmarshal(body, &out); err != nil {
+		return false, fmt.Errorf("parsing KMS list-keys response from %s: %w", endpoint, err)
+	}
+	for _, r := range out.Resources {
+		if r.ID == keyID {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
-// kmsBodySnippet returns a bounded, single-line snippet of the response body so KMS's own error
-// message (e.g. resources[].errorMsg) shows up in the build log.
-func kmsBodySnippet(resp *http.Response) string {
-	b, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
+// oneLineSnippet collapses a (response body) byte slice to a single-line string for error messages.
+func oneLineSnippet(b []byte) string {
 	return strings.Join(strings.Fields(string(b)), " ")
 }
 
-// verifyEncryptionKeyCRN validates an encryption_key_crn by reading the key through the KMS API.
+// verifyEncryptionKeyCRN validates an encryption_key_crn by confirming the key exists via the KMS API.
 func verifyEncryptionKeyCRN(crn string, v keyVerifier) error {
 	endpoint, instanceID, keyID, err := parseEncryptionKeyCRN(crn)
 	if err != nil {
@@ -109,7 +121,7 @@ func verifyEncryptionKeyCRN(crn string, v keyVerifier) error {
 		return err
 	}
 	if !exists {
-		return fmt.Errorf("key %s not found or not accessible at %s", keyID, endpoint)
+		return fmt.Errorf("key %s not found in the KMS instance at %s", keyID, endpoint)
 	}
 	return nil
 }

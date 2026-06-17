@@ -110,18 +110,18 @@ func TestKMSKeyVerifierKeyExists(t *testing.T) {
 		wantExists bool
 		wantErr    bool
 	}{
-		{name: "200 means the key exists", status: http.StatusOK, body: `{"resources":[{"id":"key-1"}]}`, wantExists: true},
-		{name: "404 means absent without an error", status: http.StatusNotFound, body: `{}`},
-		{name: "403 is an error, not absent", status: http.StatusForbidden, body: `{"resources":[{"errorMsg":"denied"}]}`, wantErr: true},
-		{name: "401 is an error, not absent", status: http.StatusUnauthorized, body: `{}`, wantErr: true},
+		{name: "key present in the list", status: http.StatusOK, body: `{"resources":[{"id":"other"},{"id":"key-1"}]}`, wantExists: true},
+		{name: "key absent from the list", status: http.StatusOK, body: `{"resources":[{"id":"other"}]}`, wantExists: false},
+		{name: "empty list", status: http.StatusOK, body: `{"resources":[]}`, wantExists: false},
+		{name: "403 is an error", status: http.StatusForbidden, body: `{"resources":[{"errorMsg":"denied"}]}`, wantErr: true},
+		{name: "401 is an error", status: http.StatusUnauthorized, body: `{}`, wantErr: true},
 		{name: "500 is an error", status: http.StatusInternalServerError, body: "boom", wantErr: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var gotPath, gotAccept, gotInstance string
+			var gotPath, gotInstance string
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				gotPath = r.URL.Path
-				gotAccept = r.Header.Get("Accept")
 				gotInstance = r.Header.Get("Bluemix-Instance")
 				w.WriteHeader(tt.status)
 				_, _ = w.Write([]byte(tt.body))
@@ -137,14 +137,11 @@ func TestKMSKeyVerifierKeyExists(t *testing.T) {
 			if exists != tt.wantExists {
 				t.Fatalf("keyExists = %v, want %v", exists, tt.wantExists)
 			}
-			if gotPath != "/api/v2/keys/key-1" {
-				t.Errorf("request path = %q, want /api/v2/keys/key-1", gotPath)
+			if gotPath != "/api/v2/keys" {
+				t.Errorf("request path = %q, want /api/v2/keys", gotPath)
 			}
 			if gotInstance != "inst-9" {
 				t.Errorf("Bluemix-Instance header = %q, want inst-9", gotInstance)
-			}
-			if gotAccept != "application/vnd.ibm.kms.key+json" {
-				t.Errorf("Accept header = %q, want application/vnd.ibm.kms.key+json", gotAccept)
 			}
 		})
 	}
