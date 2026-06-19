@@ -274,15 +274,8 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		sourceSnapshot := &vpcv1.SnapshotIdentity{
 			ID: &vsiBootSnapshotId,
 		}
-		volumeProfileIdentityModel := &vpcv1.VolumeProfileIdentity{
-			Name: &[]string{"general-purpose"}[0], // TODO: should update the profile field from the boot capcity PR changes ones meged
-		}
-		sourceSnapVolumeIdentity := &vpcv1.VolumePrototypeInstanceBySourceSnapshotContext{
-			Profile:        volumeProfileIdentityModel,
-			SourceSnapshot: sourceSnapshot,
-		}
 		bootVolumeAttachment := &vpcv1.VolumeAttachmentPrototypeInstanceBySourceSnapshotContext{
-			Volume: sourceSnapVolumeIdentity,
+			Volume: snapshotBootVolumePrototype(&config, sourceSnapshot),
 		}
 		instancePrototypeModel := &vpcv1.InstancePrototypeInstanceBySourceSnapshot{
 			Keys:                    []vpcv1.KeyIdentityIntf{keyIdentityModel},
@@ -495,6 +488,38 @@ func bootVolumePrototype(config *Config) *vpcv1.VolumePrototypeInstanceByImageCo
 	vol := &vpcv1.VolumePrototypeInstanceByImageContext{
 		Capacity: &capacity,
 		Profile:  &vpcv1.VolumeProfileIdentity{Name: &profile},
+	}
+	// IBM honors iops/bandwidth only on the custom and sdp profiles; the tiered
+	// profiles derive them from capacity.
+	if config.VSIBootIops != 0 {
+		iops := int64(config.VSIBootIops)
+		vol.Iops = &iops
+	}
+	if config.VSIBootBandwidth != 0 {
+		bandwidth := int64(config.VSIBootBandwidth)
+		vol.Bandwidth = &bandwidth
+	}
+	return vol
+}
+
+// snapshotBootVolumePrototype builds the boot volume for the
+// create-from-snapshot path. It mirrors bootVolumePrototype but for the
+// snapshot SDK type, which is why the helper cannot be shared. Unlike the
+// by-image path, capacity is optional here: when vsi_boot_vol_capacity is unset
+// the restored volume inherits the snapshot's size, so we only set it when the
+// user asked for a specific capacity.
+func snapshotBootVolumePrototype(config *Config, sourceSnapshot vpcv1.SnapshotIdentityIntf) *vpcv1.VolumePrototypeInstanceBySourceSnapshotContext {
+	profile := "general-purpose"
+	if config.VSIBootProfile != "" {
+		profile = config.VSIBootProfile
+	}
+	vol := &vpcv1.VolumePrototypeInstanceBySourceSnapshotContext{
+		Profile:        &vpcv1.VolumeProfileIdentity{Name: &profile},
+		SourceSnapshot: sourceSnapshot,
+	}
+	if config.VSIBootCapacity != 0 {
+		capacity := int64(config.VSIBootCapacity)
+		vol.Capacity = &capacity
 	}
 	// IBM honors iops/bandwidth only on the custom and sdp profiles; the tiered
 	// profiles derive them from capacity.

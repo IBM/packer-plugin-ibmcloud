@@ -185,3 +185,48 @@ func TestBootVolumePrototype(t *testing.T) {
 		}
 	})
 }
+
+func TestSnapshotBootVolumePrototype(t *testing.T) {
+	snap := &vpcv1.SnapshotIdentity{ID: &[]string{"r006-snap"}[0]}
+
+	t.Run("defaults: profile general-purpose, capacity inherited from snapshot", func(t *testing.T) {
+		vol := snapshotBootVolumePrototype(&Config{}, snap)
+		if got := *vol.Profile.(*vpcv1.VolumeProfileIdentity).Name; got != "general-purpose" {
+			t.Errorf("profile = %q, want general-purpose", got)
+		}
+		// Capacity unset means the restored volume inherits the snapshot's size.
+		if vol.Capacity != nil {
+			t.Errorf("Capacity = %d, want nil (inherit from snapshot)", *vol.Capacity)
+		}
+		if vol.Iops != nil {
+			t.Errorf("Iops = %d, want nil (unset)", *vol.Iops)
+		}
+		if vol.Bandwidth != nil {
+			t.Errorf("Bandwidth = %d, want nil (unset)", *vol.Bandwidth)
+		}
+	})
+
+	t.Run("sdp profile with capacity, iops and bandwidth", func(t *testing.T) {
+		vol := snapshotBootVolumePrototype(&Config{
+			VSIBootCapacity:  120,
+			VSIBootProfile:   "sdp",
+			VSIBootIops:      10000,
+			VSIBootBandwidth: 4000,
+		}, snap)
+		if got := *vol.Profile.(*vpcv1.VolumeProfileIdentity).Name; got != "sdp" {
+			t.Errorf("profile = %q, want sdp", got)
+		}
+		if vol.Capacity == nil || *vol.Capacity != 120 {
+			t.Errorf("Capacity = %v, want 120", vol.Capacity)
+		}
+		if vol.Iops == nil || *vol.Iops != 10000 {
+			t.Errorf("Iops = %v, want 10000", vol.Iops)
+		}
+		if vol.Bandwidth == nil || *vol.Bandwidth != 4000 {
+			t.Errorf("Bandwidth = %v, want 4000", vol.Bandwidth)
+		}
+		if vol.SourceSnapshot != snap {
+			t.Error("SourceSnapshot was not propagated")
+		}
+	})
+}
