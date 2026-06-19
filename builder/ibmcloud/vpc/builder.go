@@ -2,7 +2,7 @@ package vpc
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/communicator"
@@ -12,6 +12,33 @@ import (
 )
 
 const BuilderId = "ibmcloud.vpc.builder"
+
+// buildResultError inspects the state bag after the step runner finishes
+// (whether it ran to completion or a step halted) and returns a non-nil error
+// when the build did not successfully produce an image.
+//
+// By convention a failing step records its error under the "error" key; this
+// function reads it so Run can return it. (Packer core decides a build failed
+// from the error returned by Builder.Run, not from the state bag directly.) A
+// step may also halt without recording an explicit error; in that case the
+// absence of "image_id" still means the build did not complete, so it must be
+// reported as a failure rather than letting Run return (nil, nil) — which Packer
+// treats as success, exiting 0 with no artifact.
+func buildResultError(state multistep.StateBag) error {
+	// GetOk reports key presence, not a non-nil value, and a step could in
+	// principle store a non-error under "error". Only return it when it is a
+	// non-nil error; otherwise fall through to the image_id check so a malformed
+	// "error" entry can't panic or silently let the build pass.
+	if raw, ok := state.GetOk("error"); ok {
+		if err, isErr := raw.(error); isErr && err != nil {
+			return err
+		}
+	}
+	if _, ok := state.GetOk("image_id"); !ok {
+		return fmt.Errorf("[ERROR] build halted before an image was created (no image_id in state)")
+	}
+	return nil
+}
 
 // Builder represents a Packer Builder.
 type Builder struct {
@@ -107,14 +134,10 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 	b.runner = &multistep.BasicRunner{Steps: steps}
 	b.runner.Run(ctx, state)
 
-	// If there was an error, return that
-	if err, ok := state.GetOk("error"); ok {
-		return nil, err.(error)
-	}
-
-	if _, ok := state.GetOk("image_id"); !ok {
-		log.Println("Failed to find image_id in state.")
-		return nil, nil
+	// Fail the build if a step recorded an error or halted before producing an
+	// image (see buildResultError for why returning (nil, nil) here is wrong).
+	if err := buildResultError(state); err != nil {
+		return nil, err
 	}
 
 	// Create an artifact and return it
