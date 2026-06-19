@@ -29,8 +29,9 @@ func TestPrepareBootVolumeCapacity(t *testing.T) {
 		{"minimum 10", 10, false},
 		{"just below minimum", 9, true},
 		{"mid range", 50, false},
-		{"maximum 250", 250, false},
-		{"just above maximum", 251, true},
+		{"sdp range above old limit", 1000, false},
+		{"maximum 32000", 32000, false},
+		{"just above maximum", 32001, true},
 	}
 
 	for _, tc := range cases {
