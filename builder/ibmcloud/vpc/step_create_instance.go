@@ -489,8 +489,8 @@ func bootVolumePrototype(config *Config) *vpcv1.VolumePrototypeInstanceByImageCo
 		Capacity: &capacity,
 		Profile:  &vpcv1.VolumeProfileIdentity{Name: &profile},
 	}
-	// IBM honors iops/bandwidth only on the custom and sdp profiles; the tiered
-	// profiles derive them from capacity.
+	// iops/bandwidth are passed through whenever set; Config.Prepare is the gate
+	// that restricts them to the custom/sdp profiles IBM honors them on.
 	if config.VSIBootIops != 0 {
 		iops := int64(config.VSIBootIops)
 		vol.Iops = &iops
@@ -521,8 +521,8 @@ func snapshotBootVolumePrototype(config *Config, sourceSnapshot vpcv1.SnapshotId
 		capacity := int64(config.VSIBootCapacity)
 		vol.Capacity = &capacity
 	}
-	// IBM honors iops/bandwidth only on the custom and sdp profiles; the tiered
-	// profiles derive them from capacity.
+	// iops/bandwidth are passed through whenever set; Config.Prepare is the gate
+	// that restricts them to the custom/sdp profiles IBM honors them on.
 	if config.VSIBootIops != 0 {
 		iops := int64(config.VSIBootIops)
 		vol.Iops = &iops

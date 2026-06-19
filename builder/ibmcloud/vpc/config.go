@@ -124,15 +124,26 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		errs = packer.MultiErrorAppend(errs, errors.New("vsi_boot_vol_profile must be one of: general-purpose, 5iops-tier, 10iops-tier, sdp, custom"))
 	}
 	// iops/bandwidth are only honored by the custom and sdp profiles; the tiered
-	// profiles derive them from capacity.
+	// profiles derive them from capacity. This validation is the single source of
+	// truth for that rule (the bootVolumePrototype helpers do not re-enforce it).
 	customOrSdp := c.VSIBootProfile == "custom" || c.VSIBootProfile == "sdp"
 	if (c.VSIBootIops != 0 || c.VSIBootBandwidth != 0) && !customOrSdp {
 		errs = packer.MultiErrorAppend(errs, errors.New("vsi_boot_vol_iops/vsi_boot_vol_bandwidth require vsi_boot_vol_profile to be 'custom' or 'sdp'"))
 	}
-	// The builder only attaches a boot volume (and thus only honors the profile,
-	// iops, and bandwidth) when a capacity is given; without it these are dropped.
-	if (c.VSIBootProfile != "" || c.VSIBootIops != 0 || c.VSIBootBandwidth != 0) && c.VSIBootCapacity == 0 {
+	bootVolumeTuned := c.VSIBootProfile != "" || c.VSIBootIops != 0 || c.VSIBootBandwidth != 0
+	// The by-image and catalog-offering paths only attach a boot volume (and thus
+	// only honor profile/iops/bandwidth) when a capacity is set; without it those
+	// settings would be silently dropped, so require capacity there. The snapshot
+	// path is exempt: snapshotBootVolumePrototype lets the restored volume inherit
+	// the snapshot's size when capacity is unset.
+	if c.VSIBootSnapshotID == "" && bootVolumeTuned && c.VSIBootCapacity == 0 {
 		errs = packer.MultiErrorAppend(errs, errors.New("vsi_boot_vol_profile/vsi_boot_vol_iops/vsi_boot_vol_bandwidth require vsi_boot_vol_capacity to be set"))
+	}
+	// Attaching an existing volume by ID uses that volume's own profile, iops,
+	// bandwidth, and capacity; specifying any of them here would be silently
+	// ignored, so reject the combination rather than mislead the user.
+	if c.VSIBootVolumeID != "" && (bootVolumeTuned || c.VSIBootCapacity != 0) {
+		errs = packer.MultiErrorAppend(errs, errors.New("vsi_boot_vol_profile/vsi_boot_vol_iops/vsi_boot_vol_bandwidth/vsi_boot_vol_capacity cannot be combined with vsi_boot_volume_id; the existing volume's properties are used"))
 	}
 	if c.VSIBootIops < 0 || c.VSIBootBandwidth < 0 {
 		errs = packer.MultiErrorAppend(errs, errors.New("vsi_boot_vol_iops and vsi_boot_vol_bandwidth must not be negative"))

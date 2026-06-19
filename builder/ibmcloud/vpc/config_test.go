@@ -21,7 +21,7 @@ func validVPCConfig() *Config {
 }
 
 func TestPrepareBootVolumeProfile(t *testing.T) {
-	const wantMsg = "profile must be one of"
+	const wantMsg = "vsi_boot_vol_profile must be one of"
 
 	cases := []struct {
 		name       string
@@ -94,18 +94,68 @@ func TestPrepareBootVolumeRequiresCapacity(t *testing.T) {
 		iops       int
 		bandwidth  int
 		capacity   int
+		snapshot   bool // use the create-from-snapshot path instead of by-image
 		wantReject bool
 	}{
-		{"profile without capacity", "sdp", 0, 0, 0, true},
-		{"iops without capacity", "sdp", 10000, 0, 0, true},
-		{"bandwidth without capacity", "sdp", 0, 4000, 0, true},
-		{"profile with capacity", "sdp", 0, 0, 100, false},
-		{"nothing set, no capacity", "", 0, 0, 0, false},
+		{"profile without capacity", "sdp", 0, 0, 0, false, true},
+		{"iops without capacity", "sdp", 10000, 0, 0, false, true},
+		{"bandwidth without capacity", "sdp", 0, 4000, 0, false, true},
+		{"profile with capacity", "sdp", 0, 0, 100, false, false},
+		{"nothing set, no capacity", "", 0, 0, 0, false, false},
+		// Snapshot path: capacity is optional (the restored volume inherits the
+		// snapshot's size), so a profile/iops/bandwidth without capacity is allowed.
+		{"snapshot profile without capacity", "sdp", 0, 0, 0, true, false},
+		{"snapshot iops without capacity", "sdp", 10000, 0, 0, true, false},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			c := validVPCConfig()
+			if tc.snapshot {
+				c.VSIBaseImageID = ""
+				c.VSIBootSnapshotID = "r006-test-snapshot"
+			}
+			c.VSIBootCapacity = tc.capacity
+			c.VSIBootProfile = tc.profile
+			c.VSIBootIops = tc.iops
+			c.VSIBootBandwidth = tc.bandwidth
+			_, err := c.Prepare()
+			rejected := err != nil && strings.Contains(err.Error(), wantMsg)
+			if rejected != tc.wantReject {
+				t.Errorf("profile=%q iops=%d bandwidth=%d capacity=%d snapshot=%v rejected=%v, want %v (err=%v)",
+					tc.profile, tc.iops, tc.bandwidth, tc.capacity, tc.snapshot, rejected, tc.wantReject, err)
+			}
+		})
+	}
+}
+
+// Attaching an existing volume by ID must reject any boot-volume tuning fields,
+// since the by-ID create path ignores them — accepting them would silently drop
+// the user's settings.
+func TestPrepareBootVolumeByIDRejectsTuning(t *testing.T) {
+	const wantMsg = "cannot be combined with vsi_boot_volume_id"
+
+	cases := []struct {
+		name       string
+		profile    string
+		iops       int
+		bandwidth  int
+		capacity   int
+		wantReject bool
+	}{
+		{"profile", "sdp", 0, 0, 0, true},
+		{"iops", "", 10000, 0, 0, true},
+		{"bandwidth", "", 0, 4000, 0, true},
+		{"capacity", "", 0, 0, 100, true},
+		{"nothing extra", "", 0, 0, 0, false},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := validVPCConfig()
+			// Switch to the by-ID path (mutually exclusive with the base image).
+			c.VSIBaseImageID = ""
+			c.VSIBootVolumeID = "r006-test-volume"
 			c.VSIBootCapacity = tc.capacity
 			c.VSIBootProfile = tc.profile
 			c.VSIBootIops = tc.iops
@@ -164,6 +214,39 @@ func TestBootVolumePrototype(t *testing.T) {
 		}
 		if vol.Bandwidth != nil {
 			t.Errorf("Bandwidth = %d, want nil (unset)", *vol.Bandwidth)
+		}
+	})
+
+	// iops and bandwidth are set from two independent blocks, so verify each is
+	// honored on its own (guards against a copy-paste bug coupling the two).
+	t.Run("custom profile with iops only", func(t *testing.T) {
+		vol := bootVolumePrototype(&Config{
+			VSIBootCapacity: 100,
+			VSIBootProfile:  "custom",
+			VSIBootIops:     5000,
+		})
+		if got := *vol.Profile.(*vpcv1.VolumeProfileIdentity).Name; got != "custom" {
+			t.Errorf("profile = %q, want custom", got)
+		}
+		if vol.Iops == nil || *vol.Iops != 5000 {
+			t.Errorf("Iops = %v, want 5000", vol.Iops)
+		}
+		if vol.Bandwidth != nil {
+			t.Errorf("Bandwidth = %d, want nil (unset)", *vol.Bandwidth)
+		}
+	})
+
+	t.Run("sdp profile with bandwidth only", func(t *testing.T) {
+		vol := bootVolumePrototype(&Config{
+			VSIBootCapacity:  100,
+			VSIBootProfile:   "sdp",
+			VSIBootBandwidth: 4000,
+		})
+		if vol.Bandwidth == nil || *vol.Bandwidth != 4000 {
+			t.Errorf("Bandwidth = %v, want 4000", vol.Bandwidth)
+		}
+		if vol.Iops != nil {
+			t.Errorf("Iops = %d, want nil (unset)", *vol.Iops)
 		}
 	})
 
