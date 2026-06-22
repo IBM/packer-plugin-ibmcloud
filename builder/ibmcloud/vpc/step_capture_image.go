@@ -92,16 +92,13 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error sending the HTTP request that creates the image. Error: %s", err)
-		ui.Error(err.Error())
-		log.Println(err.Error())
-		return multistep.ActionHalt
-	}
-
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Error creating the Image: %s", err)
+		// Record the error under the "error" state-bag key (the convention the
+		// other halting steps here follow) so the builder's Run surfaces this
+		// specific CreateImage failure via buildResultError, instead of the
+		// generic "no image_id" fallback.
 		state.Put("error", err)
 		ui.Error(err.Error())
-		// log.Fatalf(err.Error())
+		log.Println(err.Error())
 		return multistep.ActionHalt
 	}
 
@@ -144,9 +141,15 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 
 		_, resp, err := serviceClientOptions.AttachTag(AttachTagOptions)
 		if err != nil {
-			errUserTags := fmt.Errorf("[ERROR] Error attaching tags %v : %s\n%s", config.ImageTags, err, resp)
-			state.Put("error", errUserTags)
-			ui.Say(errUserTags.Error())
+			// Tags were explicitly requested, so a tagging failure is a build
+			// failure: halt (like the tagging-client failure above) rather than
+			// returning the image as a successful artifact. (The image already
+			// exists at this point and is not deleted on halt; see the orphaned-image
+			// note in Cleanup.)
+			err := fmt.Errorf("[ERROR] Error attaching tags %v : %s\n%s", config.ImageTags, err, resp)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
 		}
 	}
 
@@ -164,6 +167,9 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 }
 
 func (s *stepCaptureImage) Cleanup(state multistep.StateBag) {
+	// Note: this does not delete the captured image. If the build halts after
+	// CreateImage succeeds (e.g. tag attachment or the AVAILABLE wait fails), the
+	// image is left in the account and must be removed manually.
 	ui := state.Get("ui").(packer.Ui)
 	ui.Say("")
 	ui.Say("****************************************************************************")

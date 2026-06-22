@@ -116,8 +116,8 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		errs = packer.MultiErrorAppend(errs, errors.New("a subnet_id must be specified"))
 	}
 
-	if c.VSIBootCapacity != 0 && (c.VSIBootCapacity < 100 || c.VSIBootCapacity > 250) {
-		errs = packer.MultiErrorAppend(errs, errors.New("boot capacity out of bound: provide a valid capacity between 100 to 250"))
+	if c.VSIBootCapacity != 0 && (c.VSIBootCapacity < 10 || c.VSIBootCapacity > 32000) {
+		errs = packer.MultiErrorAppend(errs, errors.New("boot capacity out of bound: provide a valid capacity between 10 and 32000"))
 	}
 	allowedBootProfiles := []string{"general-purpose", "5iops-tier", "10iops-tier", "sdp", "custom"}
 	if c.VSIBootProfile != "" && !slices.Contains(allowedBootProfiles, c.VSIBootProfile) {
