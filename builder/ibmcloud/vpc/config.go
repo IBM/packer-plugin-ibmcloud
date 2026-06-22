@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"slices"
 	"time"
 
 	"github.com/hashicorp/packer-plugin-sdk/common"
@@ -38,6 +39,8 @@ type Config struct {
 	VSIBaseImageName          string `mapstructure:"vsi_base_image_name"`
 	VSIBootCapacity           int    `mapstructure:"vsi_boot_vol_capacity"`
 	VSIBootProfile            string `mapstructure:"vsi_boot_vol_profile"`
+	VSIBootIops               int    `mapstructure:"vsi_boot_vol_iops"`
+	VSIBootBandwidth          int    `mapstructure:"vsi_boot_vol_bandwidth"`
 	VSIBootVolumeID           string `mapstructure:"vsi_boot_volume_id"`
 	VSIBootSnapshotID         string `mapstructure:"vsi_boot_snapshot_id"`
 	VSIProfile                string `mapstructure:"vsi_profile"`
@@ -116,8 +119,34 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	if c.VSIBootCapacity != 0 && (c.VSIBootCapacity < 10 || c.VSIBootCapacity > 32000) {
 		errs = packer.MultiErrorAppend(errs, errors.New("boot capacity out of bound: provide a valid capacity between 10 and 32000"))
 	}
-	if c.VSIBootProfile != "" && (c.VSIBootProfile != "5iops-tier" && c.VSIBootProfile != "10iops-tier" && c.VSIBootProfile != "general-purpose") {
-		errs = packer.MultiErrorAppend(errs, errors.New("profile must be from:  5iops-tier, 10iops-tier, general-purpose"))
+	allowedBootProfiles := []string{"general-purpose", "5iops-tier", "10iops-tier", "sdp", "custom"}
+	if c.VSIBootProfile != "" && !slices.Contains(allowedBootProfiles, c.VSIBootProfile) {
+		errs = packer.MultiErrorAppend(errs, errors.New("vsi_boot_vol_profile must be one of: general-purpose, 5iops-tier, 10iops-tier, sdp, custom"))
+	}
+	// iops/bandwidth are only honored by the custom and sdp profiles; the tiered
+	// profiles derive them from capacity. This validation is the single source of
+	// truth for that rule (the bootVolumePrototype helpers do not re-enforce it).
+	customOrSdp := c.VSIBootProfile == "custom" || c.VSIBootProfile == "sdp"
+	if (c.VSIBootIops != 0 || c.VSIBootBandwidth != 0) && !customOrSdp {
+		errs = packer.MultiErrorAppend(errs, errors.New("vsi_boot_vol_iops/vsi_boot_vol_bandwidth require vsi_boot_vol_profile to be 'custom' or 'sdp'"))
+	}
+	bootVolumeTuned := c.VSIBootProfile != "" || c.VSIBootIops != 0 || c.VSIBootBandwidth != 0
+	// The by-image and catalog-offering paths only attach a boot volume (and thus
+	// only honor profile/iops/bandwidth) when a capacity is set; without it those
+	// settings would be silently dropped, so require capacity there. The snapshot
+	// path is exempt: snapshotBootVolumePrototype lets the restored volume inherit
+	// the snapshot's size when capacity is unset.
+	if c.VSIBootSnapshotID == "" && bootVolumeTuned && c.VSIBootCapacity == 0 {
+		errs = packer.MultiErrorAppend(errs, errors.New("vsi_boot_vol_profile/vsi_boot_vol_iops/vsi_boot_vol_bandwidth require vsi_boot_vol_capacity to be set"))
+	}
+	// Attaching an existing volume by ID uses that volume's own profile, iops,
+	// bandwidth, and capacity; specifying any of them here would be silently
+	// ignored, so reject the combination rather than mislead the user.
+	if c.VSIBootVolumeID != "" && (bootVolumeTuned || c.VSIBootCapacity != 0) {
+		errs = packer.MultiErrorAppend(errs, errors.New("vsi_boot_vol_profile/vsi_boot_vol_iops/vsi_boot_vol_bandwidth/vsi_boot_vol_capacity cannot be combined with vsi_boot_volume_id; the existing volume's properties are used"))
+	}
+	if c.VSIBootIops < 0 || c.VSIBootBandwidth < 0 {
+		errs = packer.MultiErrorAppend(errs, errors.New("vsi_boot_vol_iops and vsi_boot_vol_bandwidth must not be negative"))
 	}
 
 	var oneOfInput int // validation for mutually exclusive fields.

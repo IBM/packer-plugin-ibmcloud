@@ -85,6 +85,8 @@ type FlatConfig struct {
 	VSIBaseImageName                   *string           `mapstructure:"vsi_base_image_name" cty:"vsi_base_image_name" hcl:"vsi_base_image_name"`
 	VSIBootCapacity                    *int              `mapstructure:"vsi_boot_vol_capacity" cty:"vsi_boot_vol_capacity" hcl:"vsi_boot_vol_capacity"`
 	VSIBootProfile                     *string           `mapstructure:"vsi_boot_vol_profile" cty:"vsi_boot_vol_profile" hcl:"vsi_boot_vol_profile"`
+	VSIBootIops                        *int              `mapstructure:"vsi_boot_vol_iops" cty:"vsi_boot_vol_iops" hcl:"vsi_boot_vol_iops"`
+	VSIBootBandwidth                   *int              `mapstructure:"vsi_boot_vol_bandwidth" cty:"vsi_boot_vol_bandwidth" hcl:"vsi_boot_vol_bandwidth"`
 	VSIBootVolumeID                    *string           `mapstructure:"vsi_boot_volume_id" cty:"vsi_boot_volume_id" hcl:"vsi_boot_volume_id"`
 	VSIBootSnapshotID                  *string           `mapstructure:"vsi_boot_snapshot_id" cty:"vsi_boot_snapshot_id" hcl:"vsi_boot_snapshot_id"`
 	VSIProfile                         *string           `mapstructure:"vsi_profile" cty:"vsi_profile" hcl:"vsi_profile"`
@@ -195,6 +197,8 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"vsi_base_image_name":                     &hcldec.AttrSpec{Name: "vsi_base_image_name", Type: cty.String, Required: false},
 		"vsi_boot_vol_capacity":                   &hcldec.AttrSpec{Name: "vsi_boot_vol_capacity", Type: cty.Number, Required: false},
 		"vsi_boot_vol_profile":                    &hcldec.AttrSpec{Name: "vsi_boot_vol_profile", Type: cty.String, Required: false},
+		"vsi_boot_vol_iops":                       &hcldec.AttrSpec{Name: "vsi_boot_vol_iops", Type: cty.Number, Required: false},
+		"vsi_boot_vol_bandwidth":                  &hcldec.AttrSpec{Name: "vsi_boot_vol_bandwidth", Type: cty.Number, Required: false},
 		"vsi_boot_volume_id":                      &hcldec.AttrSpec{Name: "vsi_boot_volume_id", Type: cty.String, Required: false},
 		"vsi_boot_snapshot_id":                    &hcldec.AttrSpec{Name: "vsi_boot_snapshot_id", Type: cty.String, Required: false},
 		"vsi_profile":                             &hcldec.AttrSpec{Name: "vsi_profile", Type: cty.String, Required: false},
