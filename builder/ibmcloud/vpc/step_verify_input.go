@@ -222,43 +222,14 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 			Authenticator: vpcService.Service.Options.Authenticator,
 		}
 		globalSearchAPIV2, err := searchv2.NewGlobalSearchV2(globalSearchV2Options)
-
 		if err != nil {
-			fmt.Println("GlobalSearch Service creation failed.", err)
+			err = fmt.Errorf("[ERROR] Global Search service creation failed: %w", err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
 		}
-		// validate catalog offering crn
-		if config.CatalogOfferingCRN != "" {
-			crnToCheck := fmt.Sprintf("%s%s", strings.Split(config.CatalogOfferingCRN, ":offering")[0], "::")
-			query := fmt.Sprintf("crn:\"%s\"", crnToCheck)
-			searchOptions := &searchv2.SearchOptions{
-				Query: &query,
-			}
-			res, _, _ := globalSearchAPIV2.Search(searchOptions)
-			if len(res.Items) != 0 {
-				ui.Say(fmt.Sprintf("%s Catalog information successfully retrieved ...", res.Items[0].GetProperty("name")))
-			} else {
-				err := fmt.Errorf("[ERROR] Catalog crn (%s) information could not be retrieved", config.CatalogOfferingCRN)
-				state.Put("Catalog offering crn information could not be retrieved", err)
-				ui.Error(err.Error())
-				return multistep.ActionHalt
-			}
-		}
-		// validate catalog version crn
-		if config.CatalogOfferingVersionCRN != "" {
-			crnToCheck := fmt.Sprintf("%s%s", strings.Split(config.CatalogOfferingVersionCRN, ":version")[0], "::")
-			query := fmt.Sprintf("crn:\"%s\"", crnToCheck)
-			searchOptions := &searchv2.SearchOptions{
-				Query: &query,
-			}
-			res, _, _ := globalSearchAPIV2.Search(searchOptions)
-			if len(res.Items) != 0 {
-				ui.Say(fmt.Sprintf("%s Catalog information successfully retrieved ...", res.Items[0].GetProperty("name")))
-			} else {
-				err := fmt.Errorf("[ERROR] Catalog version crn (%s) information could not be retrieved", config.CatalogOfferingVersionCRN)
-				state.Put("Catalog version crn information could not be retrieved", err)
-				ui.Error(err.Error())
-				return multistep.ActionHalt
-			}
+		if action := verifyCRNs(globalSearchAPIV2, config, ui, state); action != multistep.ActionContinue {
+			return action
 		}
 	}
 
@@ -279,4 +250,74 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 
 func (s *stepVerifyInput) Cleanup(state multistep.StateBag) {
 
+}
+
+// crnSearcher is the subset of *globalsearchv2.GlobalSearchV2 used to validate
+// CRNs. It is declared as an interface so verifyCRNs can be exercised with a
+// fake searcher in unit tests.
+type crnSearcher interface {
+	Search(searchOptions *searchv2.SearchOptions) (result *searchv2.ScanResult, response *core.DetailedResponse, err error)
+}
+
+// Compile-time guarantee that the production client satisfies crnSearcher, so an
+// SDK signature change fails here rather than at the call site in Run.
+var _ crnSearcher = (*searchv2.GlobalSearchV2)(nil)
+
+// verifyCRNs confirms each configured catalog CRN (offering, version) resolves
+// via Global Search. Any verification failure records the error under the
+// "error" state key — which is how Packer core detects a failed build — and
+// halts. Without that key the build would stop with no artifact yet exit 0 (a
+// silent failure). The encryption key CRN is intentionally not checked here:
+// Global Search does not index Key Protect / Hyper Protect Crypto Services
+// instances, so it is verified via the KMS API in Run instead.
+func verifyCRNs(search crnSearcher, config Config, ui packer.Ui, state multistep.StateBag) multistep.StepAction {
+	checks := []struct {
+		crn       string
+		separator string
+		// noun is the resource word in the success message ("Catalog"); label is
+		// the longer phrase in the not-found message ("Catalog crn", "Catalog
+		// version crn").
+		noun  string
+		label string
+	}{
+		{config.CatalogOfferingCRN, ":offering", "Catalog", "Catalog crn"},
+		{config.CatalogOfferingVersionCRN, ":version", "Catalog", "Catalog version crn"},
+	}
+	for _, c := range checks {
+		if c.crn == "" {
+			continue
+		}
+		if action := verifyCRN(search, c.crn, c.separator, c.noun, c.label, ui, state); action != multistep.ActionContinue {
+			return action
+		}
+	}
+	return multistep.ActionContinue
+}
+
+// verifyCRN looks up a single CRN via Global Search. A Search transport/auth
+// error, a nil result, or a result with no items are all treated as a failed
+// verification: the error is stored under "error" and the step halts. A Search
+// error must not be discarded — doing so previously turned an auth/network
+// failure into either a nil-pointer panic or a misreported "not found".
+func verifyCRN(search crnSearcher, crn, separator, noun, label string, ui packer.Ui, state multistep.StateBag) multistep.StepAction {
+	crnToCheck := fmt.Sprintf("%s%s", strings.Split(crn, separator)[0], "::")
+	query := fmt.Sprintf("crn:\"%s\"", crnToCheck)
+	searchOptions := &searchv2.SearchOptions{
+		Query: &query,
+	}
+	res, _, err := search.Search(searchOptions)
+	if err != nil {
+		err = fmt.Errorf("[ERROR] %s (%s) could not be verified via Global Search: %w", label, crn, err)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return multistep.ActionHalt
+	}
+	if res == nil || len(res.Items) == 0 {
+		err := fmt.Errorf("[ERROR] %s (%s) information could not be retrieved", label, crn)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return multistep.ActionHalt
+	}
+	ui.Say(fmt.Sprintf("%s %s information successfully retrieved ...", res.Items[0].GetProperty("name"), noun))
+	return multistep.ActionContinue
 }
