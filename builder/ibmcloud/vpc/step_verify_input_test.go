@@ -79,7 +79,6 @@ func TestVerifyCRNs_UnresolvedCRNFailsBuild(t *testing.T) {
 	cases := map[string]Config{
 		"catalog offering": {CatalogOfferingCRN: "crn:v1:bluemix:public:globalcatalog::::offering:x"},
 		"catalog version":  {CatalogOfferingVersionCRN: "crn:v1:bluemix:public:globalcatalog::::version:x"},
-		"encryption key":   {EncryptionKeyCRN: "crn:v1:bluemix:public:kms:us-east:a/acct:inst:key:x"},
 	}
 	for name, config := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -96,7 +95,7 @@ func TestVerifyCRNs_UnresolvedCRNFailsBuild(t *testing.T) {
 // (the SDK returns a nil result on error) and not be misreported as "not found".
 func TestVerifyCRNs_SearchErrorFailsBuild(t *testing.T) {
 	state := new(multistep.BasicStateBag)
-	config := Config{EncryptionKeyCRN: "crn:v1:bluemix:public:kms:us-east:a/acct:inst:key:x"}
+	config := Config{CatalogOfferingCRN: "crn:v1:bluemix:public:globalcatalog::::offering:x"}
 
 	action := verifyCRNs(&fakeSearcher{err: errors.New("403 Forbidden")}, config, packer.TestUi(t), state)
 
@@ -107,7 +106,7 @@ func TestVerifyCRNs_SearchErrorFailsBuild(t *testing.T) {
 // dereferenced.
 func TestVerifyCRNs_NilResultFailsBuild(t *testing.T) {
 	state := new(multistep.BasicStateBag)
-	config := Config{EncryptionKeyCRN: "crn:v1:bluemix:public:kms:us-east:a/acct:inst:key:x"}
+	config := Config{CatalogOfferingCRN: "crn:v1:bluemix:public:globalcatalog::::offering:x"}
 
 	action := verifyCRNs(&fakeSearcher{result: nil}, config, packer.TestUi(t), state)
 
@@ -118,7 +117,6 @@ func TestVerifyCRNs_ResolvedCRNContinues(t *testing.T) {
 	cases := map[string]Config{
 		"catalog offering": {CatalogOfferingCRN: "crn:v1:bluemix:public:globalcatalog::::offering:x"},
 		"catalog version":  {CatalogOfferingVersionCRN: "crn:v1:bluemix:public:globalcatalog::::version:x"},
-		"encryption key":   {EncryptionKeyCRN: "crn:v1:bluemix:public:kms:us-east:a/acct:inst:key:x"},
 	}
 	for name, config := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -137,8 +135,8 @@ func TestVerifyCRNs_ResolvedCRNContinues(t *testing.T) {
 }
 
 // The lookup query is the CRN truncated at its type segment (":offering",
-// ":version", ":key") with "::" appended — so each CRN kind must use its own
-// separator and produce the expected prefix query.
+// ":version") with "::" appended — so each CRN kind must use its own separator
+// and produce the expected prefix query.
 func TestVerifyCRNs_BuildsPrefixQuery(t *testing.T) {
 	cases := []struct {
 		name      string
@@ -154,11 +152,6 @@ func TestVerifyCRNs_BuildsPrefixQuery(t *testing.T) {
 			"catalog version",
 			Config{CatalogOfferingVersionCRN: "crn:v1:bluemix:public:globalcatalog:global:a/acct:cat-id:version:ver-id"},
 			`crn:"crn:v1:bluemix:public:globalcatalog:global:a/acct:cat-id::"`,
-		},
-		{
-			"encryption key",
-			Config{EncryptionKeyCRN: "crn:v1:bluemix:public:kms:us-east:a/acct:inst:key:key-id"},
-			`crn:"crn:v1:bluemix:public:kms:us-east:a/acct:inst::"`,
 		},
 	}
 	for _, tc := range cases {
@@ -177,22 +170,21 @@ func TestVerifyCRNs_BuildsPrefixQuery(t *testing.T) {
 	}
 }
 
-// With all three CRNs set, an unresolved one checked last must still halt and
-// set "error" — i.e. earlier successes don't short-circuit the later checks.
+// With both catalog CRNs set, an unresolved one checked last must still halt and
+// set "error" — i.e. an earlier success doesn't short-circuit the later check.
 func TestVerifyCRNs_LaterCRNFailureHalts(t *testing.T) {
 	state := new(multistep.BasicStateBag)
 	config := Config{
 		CatalogOfferingCRN:        "crn:v1:bluemix:public:globalcatalog::::offering:x",
 		CatalogOfferingVersionCRN: "crn:v1:bluemix:public:globalcatalog::::version:x",
-		EncryptionKeyCRN:          "crn:v1:bluemix:public:kms:us-east:a/acct:inst:key:x",
 	}
-	search := &fakeSearcher{results: []*searchv2.ScanResult{resolved(), resolved(), notFound()}}
+	search := &fakeSearcher{results: []*searchv2.ScanResult{resolved(), notFound()}}
 
 	action := verifyCRNs(search, config, packer.TestUi(t), state)
 
 	assertErrorFails(t, action, state)
-	if search.calls != 3 {
-		t.Fatalf("expected all 3 CRNs checked in order, got %d Search calls", search.calls)
+	if search.calls != 2 {
+		t.Fatalf("expected both CRNs checked in order, got %d Search calls", search.calls)
 	}
 }
 

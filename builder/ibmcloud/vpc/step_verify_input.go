@@ -213,7 +213,7 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 
 	// crn validation
 
-	if config.CatalogOfferingCRN != "" || config.CatalogOfferingVersionCRN != "" || config.EncryptionKeyCRN != "" {
+	if config.CatalogOfferingCRN != "" || config.CatalogOfferingVersionCRN != "" {
 		// validate crn
 
 		searchURL := "https://api.global-search-tagging.cloud.ibm.com"
@@ -231,6 +231,19 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 		if action := verifyCRNs(globalSearchAPIV2, config, ui, state); action != multistep.ActionContinue {
 			return action
 		}
+	}
+
+	// validate encryption key crn via the KMS API. Global Search does not index Key Protect or
+	// Hyper Protect Crypto Services instances, so the encryption key cannot be verified that way;
+	// read it from the KMS GET key endpoint (derived from the CRN's service) instead.
+	if config.EncryptionKeyCRN != "" {
+		if err := verifyEncryptionKeyCRN(config.EncryptionKeyCRN, newKMSKeyVerifier(client.IBMApiKey, config.IAMEndpoint)); err != nil {
+			err := fmt.Errorf("[ERROR] Encryption crn (%s) information could not be retrieved: %s", config.EncryptionKeyCRN, err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
+		ui.Say("Encryption information successfully retrieved ...")
 	}
 	return multistep.ActionContinue
 }
@@ -250,24 +263,25 @@ type crnSearcher interface {
 // SDK signature change fails here rather than at the call site in Run.
 var _ crnSearcher = (*searchv2.GlobalSearchV2)(nil)
 
-// verifyCRNs confirms each configured CRN (catalog offering, catalog version,
-// encryption key) resolves via Global Search. Any verification failure records
-// the error under the "error" state key — which is how Packer core detects a
-// failed build — and halts. Without that key the build would stop with no
-// artifact yet exit 0 (a silent failure).
+// verifyCRNs confirms each configured catalog CRN (offering, version) resolves
+// via Global Search. Any verification failure records the error under the
+// "error" state key — which is how Packer core detects a failed build — and
+// halts. Without that key the build would stop with no artifact yet exit 0 (a
+// silent failure). The encryption key CRN is intentionally not checked here:
+// Global Search does not index Key Protect / Hyper Protect Crypto Services
+// instances, so it is verified via the KMS API in Run instead.
 func verifyCRNs(search crnSearcher, config Config, ui packer.Ui, state multistep.StateBag) multistep.StepAction {
 	checks := []struct {
 		crn       string
 		separator string
-		// noun is the resource word in the success message ("Catalog",
-		// "Encryption"); label is the longer phrase in the not-found message
-		// ("Catalog crn", "Catalog version crn", "Encryption crn").
+		// noun is the resource word in the success message ("Catalog"); label is
+		// the longer phrase in the not-found message ("Catalog crn", "Catalog
+		// version crn").
 		noun  string
 		label string
 	}{
 		{config.CatalogOfferingCRN, ":offering", "Catalog", "Catalog crn"},
 		{config.CatalogOfferingVersionCRN, ":version", "Catalog", "Catalog version crn"},
-		{config.EncryptionKeyCRN, ":key", "Encryption", "Encryption crn"},
 	}
 	for _, c := range checks {
 		if c.crn == "" {
