@@ -150,6 +150,78 @@ func TestWaitForResourceReadyGivesUpAfterTooManyTransientFailures(t *testing.T) 
 	}
 }
 
+func TestWaitForResourceReadyResetsTransientStreak(t *testing.T) {
+	// 5x502 (the full tolerated streak), then a successful-but-not-ready poll
+	// that resets the counter, then 5x502 again, then available. Ten transient
+	// errors total but never 6 in a row, so the build must NOT abort. This pins
+	// both the cap (5 consecutive tolerated) and the reset-on-success behavior.
+	var calls int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		n := atomic.AddInt32(&calls, 1)
+		switch {
+		case n <= 5: // first transient burst (5 tolerated)
+			w.WriteHeader(http.StatusBadGateway)
+			_, _ = w.Write([]byte(`{}`))
+		case n == 6: // successful poll, not ready yet -> resets the streak
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"id":"img-1","status":"pending"}`))
+		case n <= 11: // second transient burst (5 more)
+			w.WriteHeader(http.StatusBadGateway)
+			_, _ = w.Write([]byte(`{}`))
+		default:
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"id":"img-1","status":"available"}`))
+		}
+	}))
+	defer srv.Close()
+
+	state := new(multistep.BasicStateBag)
+	state.Put("ui", packer.TestUi(t))
+	state.Put("vpcService", newTestVpcService(t, srv.URL))
+	client := IBMCloudClient{pollInterval: time.Millisecond}
+
+	if err := client.waitForResourceReady("img-1", "images", 30*time.Second, state); err != nil {
+		t.Fatalf("waitForResourceReady aborted despite the transient streak resetting: %s", err)
+	}
+}
+
+func TestIsResourceReadyTransientClassificationByType(t *testing.T) {
+	for _, resourceType := range []string{"floating_ips", "subnets"} {
+		tests := []struct {
+			name          string
+			status        int
+			wantTransient bool
+		}{
+			{name: "502 is transient", status: http.StatusBadGateway, wantTransient: true},
+			{name: "404 is fatal", status: http.StatusNotFound, wantTransient: false},
+		}
+		for _, tt := range tests {
+			t.Run(resourceType+" "+tt.name, func(t *testing.T) {
+				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("Content-Type", "application/json")
+					w.WriteHeader(tt.status)
+					_, _ = w.Write([]byte(`{}`))
+				}))
+				defer srv.Close()
+
+				state := new(multistep.BasicStateBag)
+				state.Put("vpcService", newTestVpcService(t, srv.URL))
+				client := IBMCloudClient{}
+
+				_, err := client.isResourceReady("r-1", resourceType, state)
+				if err == nil {
+					t.Fatalf("expected an error for status %d", tt.status)
+				}
+				var tpe *transientPollError
+				if got := errors.As(err, &tpe); got != tt.wantTransient {
+					t.Errorf("errors.As transientPollError = %v, want %v (err: %v)", got, tt.wantTransient, err)
+				}
+			})
+		}
+	}
+}
+
 func TestIsResourceDownClassification(t *testing.T) {
 	tests := []struct {
 		name          string

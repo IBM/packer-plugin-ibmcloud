@@ -16,13 +16,14 @@ import (
 )
 
 // maxConsecutiveTransientPollFailures bounds how many consecutive transient
-// errors (5xx responses or network-level failures) waitForResourceReady will
-// tolerate while polling a resource's status before giving up. This keeps a
-// genuinely unhealthy API from spinning until the overall StateTimeout while
-// still riding out the occasional blip during a long-running bake.
+// errors (5xx/429 responses or network-level failures) a status-poll loop will
+// tolerate before giving up. This keeps a genuinely unhealthy API from spinning
+// until the overall StateTimeout while still riding out the occasional blip
+// during a long-running bake. It applies to every poll loop in this package
+// (pollUntil and the image-export poll).
 const maxConsecutiveTransientPollFailures = 5
 
-// defaultPollInterval is the wait between status polls when a client does not
+// defaultPollInterval is the wait between status polls when a caller does not
 // set one explicitly.
 const defaultPollInterval = 10 * time.Second
 
@@ -61,14 +62,26 @@ func isTransientPollError(resp *core.DetailedResponse, err error) bool {
 	return true
 }
 
-// classifyPollError returns wrapped wrapped in a *transientPollError when the
+// classifyPollError returns wrapped enclosed in a *transientPollError when the
 // underlying failure is retryable, and wrapped unchanged when it is fatal. This
-// lets waitForResourceReady distinguish "retry" from "abort the build".
+// lets the poll loops distinguish "retry" from "abort the build".
 func classifyPollError(resp *core.DetailedResponse, err error, wrapped error) error {
 	if isTransientPollError(resp, err) {
 		return &transientPollError{err: wrapped}
 	}
 	return wrapped
+}
+
+// sleepOrDone waits interval between polls and then reports whether the poll
+// goroutine should stop because its parent has already returned (done closed).
+func sleepOrDone(interval time.Duration, done <-chan struct{}) (stop bool) {
+	time.Sleep(interval)
+	select {
+	case <-done:
+		return true
+	default:
+		return false
+	}
 }
 
 type IBMCloudClient struct {
@@ -163,16 +176,8 @@ func (client IBMCloudClient) pollUntil(
 				}
 			}
 
-			// Wait in between polls.
-			time.Sleep(interval)
-
-			// Verify we shouldn't exit
-			select {
-			case <-done:
-				// We finished, so just exit the go routine
+			if sleepOrDone(interval, done) {
 				return
-			default:
-				// Keep going
 			}
 		}
 	}()
@@ -252,7 +257,6 @@ func (client IBMCloudClient) waitForResourceDown(resourceID string, resourceType
 func (client IBMCloudClient) isResourceDown(resourceID string, resourceType string, state multistep.StateBag) (bool, error) {
 	var down bool
 
-	ui := state.Get("ui").(packer.Ui)
 	var vpcService *vpcv1.VpcV1
 	if state.Get("vpcService") != nil {
 		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
@@ -262,9 +266,10 @@ func (client IBMCloudClient) isResourceDown(resourceID string, resourceType stri
 		options.SetID(resourceID)
 		instance, resp, err := vpcService.GetInstance(options)
 		if err != nil {
+			// Return the classified error and let pollUntil decide whether to
+			// retry (transient) or surface it; don't ui.Error/log here, since a
+			// retried transient blip shouldn't print a scary [ERROR] line.
 			wrapped := fmt.Errorf("[ERROR] Failed retrieving resource information. Error: %s", err)
-			ui.Error(wrapped.Error())
-			log.Println(wrapped.Error())
 			return false, classifyPollError(resp, err, wrapped)
 		}
 		status := *instance.Status

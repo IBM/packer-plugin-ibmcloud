@@ -122,19 +122,16 @@ func waitForExportJobToSucceed(imageId, exportJobId string, vpcService *vpcv1.Vp
 							consecutiveTransientFailures, err)
 						return
 					}
-					ui.Say(fmt.Sprintf("Transient error polling export job status (%d/%d), retrying: %v",
+					ui.Say(fmt.Sprintf("Transient error polling export job status (%d/%d), retrying: %s",
 						consecutiveTransientFailures, maxConsecutiveTransientPollFailures, err))
-					log.Printf("transient error polling export job status (attempt %d, consecutive %d/%d): %v",
+					log.Printf("transient error polling export job status (attempt %d, consecutive %d/%d): %s",
 						attempts, consecutiveTransientFailures, maxConsecutiveTransientPollFailures, err)
-					time.Sleep(interval)
-					select {
-					case <-done:
+					if sleepOrDone(interval, done) {
 						return
-					default:
 					}
 					continue
 				}
-				ui.Say(fmt.Sprintf("Error fetching image export job: %v", err))
+				ui.Say(fmt.Sprintf("Error fetching image export job: %s", err))
 				result <- err
 				return
 			}
@@ -160,13 +157,8 @@ func waitForExportJobToSucceed(imageId, exportJobId string, vpcService *vpcv1.Vp
 				return
 			}
 
-			time.Sleep(interval)
-
-			select {
-			case <-done:
+			if sleepOrDone(interval, done) {
 				return
-			default:
-				// Keep going
 			}
 		}
 	}()
