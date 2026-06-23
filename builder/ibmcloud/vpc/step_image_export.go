@@ -59,7 +59,7 @@ func (step *StepImageExport) Run(_ context.Context, state multistep.StateBag) mu
 	}
 	jobId := *imageExportJob.ID
 	ui.Say("Waiting for the Export image to SUCCEED...")
-	err3 := waitForExportJobToSucceed(config.ImageID, jobId, vpcService, exportTimeout, state)
+	err3 := waitForExportJobToSucceed(config.ImageID, jobId, vpcService, exportTimeout, 0, state)
 	if err3 != nil {
 		err := fmt.Errorf("[ERROR] Error waiting for the Image export job to succeed: %s", err3)
 		state.Put("error", err)
@@ -75,7 +75,7 @@ func (step *StepImageExport) Run(_ context.Context, state multistep.StateBag) mu
 	return multistep.ActionContinue
 }
 
-func waitForExportJobToSucceed(imageId, exportJobId string, vpcService *vpcv1.VpcV1, timeout time.Duration, state multistep.StateBag) error {
+func waitForExportJobToSucceed(imageId, exportJobId string, vpcService *vpcv1.VpcV1, timeout time.Duration, pollInterval time.Duration, state multistep.StateBag) error {
 	ui := state.Get("ui").(packer.Ui)
 	done := make(chan struct{})
 	defer close(done)
@@ -88,6 +88,11 @@ func waitForExportJobToSucceed(imageId, exportJobId string, vpcService *vpcv1.Vp
 		ui.Say(fmt.Sprintf("Using %v timeout for image export", timeout))
 	}
 
+	interval := pollInterval
+	if interval <= 0 {
+		interval = defaultPollInterval
+	}
+
 	options := vpcv1.GetImageExportJobOptions{
 		ImageID: &imageId,
 		ID:      &exportJobId,
@@ -95,6 +100,7 @@ func waitForExportJobToSucceed(imageId, exportJobId string, vpcService *vpcv1.Vp
 
 	go func() {
 		attempts := 0
+		consecutiveTransientFailures := 0
 		for {
 			attempts += 1
 			if attempts%6 == 0 {
@@ -104,13 +110,37 @@ func waitForExportJobToSucceed(imageId, exportJobId string, vpcService *vpcv1.Vp
 			}
 
 			log.Printf("Checking export job status ... (attempt: %d)", attempts)
-			expJob, _, err := vpcService.GetImageExportJob(&options)
+			expJob, resp, err := vpcService.GetImageExportJob(&options)
 
 			if err != nil {
+				// Export jobs run for many minutes, so ride out a transient
+				// 5xx/429 or network blip rather than failing the whole export.
+				if isTransientPollError(resp, err) {
+					consecutiveTransientFailures++
+					if consecutiveTransientFailures > maxConsecutiveTransientPollFailures {
+						result <- fmt.Errorf("giving up after %d consecutive transient errors polling export job status: %w",
+							consecutiveTransientFailures, err)
+						return
+					}
+					ui.Say(fmt.Sprintf("Transient error polling export job status (%d/%d), retrying: %v",
+						consecutiveTransientFailures, maxConsecutiveTransientPollFailures, err))
+					log.Printf("transient error polling export job status (attempt %d, consecutive %d/%d): %v",
+						attempts, consecutiveTransientFailures, maxConsecutiveTransientPollFailures, err)
+					time.Sleep(interval)
+					select {
+					case <-done:
+						return
+					default:
+					}
+					continue
+				}
 				ui.Say(fmt.Sprintf("Error fetching image export job: %v", err))
 				result <- err
 				return
 			}
+
+			// A successful poll clears the transient-failure streak.
+			consecutiveTransientFailures = 0
 
 			if expJob.Status != nil {
 				log.Printf("Export job status: %s", *expJob.Status)
@@ -130,7 +160,7 @@ func waitForExportJobToSucceed(imageId, exportJobId string, vpcService *vpcv1.Vp
 				return
 			}
 
-			time.Sleep(10 * time.Second)
+			time.Sleep(interval)
 
 			select {
 			case <-done:
