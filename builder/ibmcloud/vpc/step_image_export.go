@@ -100,7 +100,6 @@ func waitForExportJobToSucceed(imageId, exportJobId string, vpcService *vpcv1.Vp
 
 	go func() {
 		attempts := 0
-		consecutiveTransientFailures := 0
 		for {
 			attempts += 1
 			if attempts%6 == 0 {
@@ -110,34 +109,14 @@ func waitForExportJobToSucceed(imageId, exportJobId string, vpcService *vpcv1.Vp
 			}
 
 			log.Printf("Checking export job status ... (attempt: %d)", attempts)
-			expJob, resp, err := vpcService.GetImageExportJob(&options)
-
+			expJob, _, err := vpcService.GetImageExportJob(&options)
 			if err != nil {
-				// Export jobs run for many minutes, so ride out a transient
-				// 5xx/429 or network blip rather than failing the whole export.
-				if isTransientPollError(resp, err) {
-					consecutiveTransientFailures++
-					if consecutiveTransientFailures > maxConsecutiveTransientPollFailures {
-						result <- fmt.Errorf("giving up after %d consecutive transient errors polling export job status: %w",
-							consecutiveTransientFailures, err)
-						return
-					}
-					ui.Say(fmt.Sprintf("Transient error polling export job status (%d/%d), retrying: %s",
-						consecutiveTransientFailures, maxConsecutiveTransientPollFailures, err))
-					log.Printf("transient error polling export job status (attempt %d, consecutive %d/%d): %s",
-						attempts, consecutiveTransientFailures, maxConsecutiveTransientPollFailures, err)
-					if sleepOrDone(interval, done) {
-						return
-					}
-					continue
-				}
+				// Transient 5xx/429/network blips are absorbed by the SDK's
+				// request retries; an error here is genuine, so stop waiting.
 				ui.Say(fmt.Sprintf("Error fetching image export job: %s", err))
 				result <- err
 				return
 			}
-
-			// A successful poll clears the transient-failure streak.
-			consecutiveTransientFailures = 0
 
 			if expJob.Status != nil {
 				log.Printf("Export job status: %s", *expJob.Status)
