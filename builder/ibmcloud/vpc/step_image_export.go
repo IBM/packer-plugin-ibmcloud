@@ -75,6 +75,9 @@ func (step *StepImageExport) Run(_ context.Context, state multistep.StateBag) mu
 	return multistep.ActionContinue
 }
 
+// pollInterval is the cadence between status checks; production passes 0 to use
+// defaultPollInterval. It exists as a parameter (unlike pollUntil, which hardcodes
+// the constant) so tests can drive the multi-poll loop without a real 10s wait.
 func waitForExportJobToSucceed(imageId, exportJobId string, vpcService *vpcv1.VpcV1, timeout time.Duration, pollInterval time.Duration, state multistep.StateBag) error {
 	ui := state.Get("ui").(packer.Ui)
 	done := make(chan struct{})
