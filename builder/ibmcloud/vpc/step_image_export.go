@@ -85,7 +85,7 @@ func waitForExportJobToSucceed(imageId, exportJobId string, vpcService *vpcv1.Vp
 	result := make(chan error, 1)
 
 	if timeout < 1*time.Minute {
-		timeout = 5 * time.Minute // Default to 45 minutes for image exports
+		timeout = 5 * time.Minute // Default when no (or sub-minute) export timeout is configured
 		ui.Say(fmt.Sprintf("Using default %v timeout for image export", timeout))
 	} else {
 		ui.Say(fmt.Sprintf("Using %v timeout for image export", timeout))

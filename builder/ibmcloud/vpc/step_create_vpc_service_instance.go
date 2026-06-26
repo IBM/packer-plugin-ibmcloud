@@ -14,10 +14,11 @@ import (
 
 // vpcRetryMaxAttempts and vpcRetryMaxInterval configure the IBM Cloud SDK's
 // built-in request retries (go-sdk-core EnableRetries). The SDK retries 429 and
-// 5xx (except 501) responses and network-level failures, honors the Retry-After
-// header, and backs off exponentially up to vpcRetryMaxInterval. This rides out
-// transient API blips on every VPC call — both one-shot creates and status
-// polls — so a single 502 no longer aborts an otherwise-healthy bake.
+// 5xx (except 501) responses and network-level failures. It honors a server-sent
+// Retry-After header (as given); otherwise it backs off exponentially, with
+// vpcRetryMaxInterval capping that exponential wait. This rides out transient API
+// blips on every VPC call — both one-shot creates and status polls — so a single
+// 502 no longer aborts an otherwise-healthy bake.
 const (
 	vpcRetryMaxAttempts = 5
 	vpcRetryMaxInterval = 30 * time.Second
