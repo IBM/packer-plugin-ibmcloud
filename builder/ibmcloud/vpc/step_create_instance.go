@@ -83,6 +83,7 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 				Volume: bootVolumePrototype(&config),
 			}
 		}
+		instancePrototypeModel.VolumeAttachments = dataVolumeAttachments(&config)
 		instancePrototypeModel.CatalogOffering = catalogOfferingPrototype
 
 		userDataFilePath := config.VSIUserDataFile
@@ -152,6 +153,7 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 				Volume: bootVolumePrototype(&config),
 			}
 		}
+		instancePrototypeModel.VolumeAttachments = dataVolumeAttachments(&config)
 
 		userDataFilePath := config.VSIUserDataFile
 		userDataString := config.VSIUserDataString
@@ -219,6 +221,7 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 			PrimaryNetworkInterface: networkInterfacePrototypeModel,
 			Zone:                    zoneIdentityModel,
 		}
+		instancePrototypeModel.VolumeAttachments = dataVolumeAttachments(&config)
 
 		userDataFilePath := config.VSIUserDataFile
 		userDataString := config.VSIUserDataString
@@ -286,6 +289,7 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 			PrimaryNetworkInterface: networkInterfacePrototypeModel,
 			Zone:                    zoneIdentityModel,
 		}
+		instancePrototypeModel.VolumeAttachments = dataVolumeAttachments(&config)
 
 		userDataFilePath := config.VSIUserDataFile
 		userDataString := config.VSIUserDataString
@@ -500,6 +504,45 @@ func bootVolumePrototype(config *Config) *vpcv1.VolumePrototypeInstanceByImageCo
 		vol.Bandwidth = &bandwidth
 	}
 	return vol
+}
+
+// dataVolumeAttachments builds the data-volume attachments for the builder VSI,
+// or nil when no data volume is configured. The volume is created with the
+// instance and DeleteVolumeOnInstanceDelete=true, so it is deleted together with
+// the builder VSI when the instance is torn down. It is never part of the
+// captured image (capture is taken from the boot volume only), so a build can
+// keep large transient writes — build caches, downloads, from-source build
+// trees — off the boot volume and out of the exported image. Call this from
+// every create path so the data volume is attached regardless of how the builder
+// VSI is sourced.
+func dataVolumeAttachments(config *Config) []vpcv1.VolumeAttachmentPrototype {
+	if config.VSIDataCapacity == 0 {
+		return nil
+	}
+	capacity := int64(config.VSIDataCapacity)
+	profile := "general-purpose"
+	if config.VSIDataProfile != "" {
+		profile = config.VSIDataProfile
+	}
+	vol := &vpcv1.VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContext{
+		Capacity: &capacity,
+		Profile:  &vpcv1.VolumeProfileIdentity{Name: &profile},
+	}
+	// iops/bandwidth are passed through whenever set; Config.Prepare is the gate
+	// that restricts them to the custom/sdp profiles IBM honors them on.
+	if config.VSIDataIops != 0 {
+		iops := int64(config.VSIDataIops)
+		vol.Iops = &iops
+	}
+	if config.VSIDataBandwidth != 0 {
+		bandwidth := int64(config.VSIDataBandwidth)
+		vol.Bandwidth = &bandwidth
+	}
+	deleteWithInstance := true
+	return []vpcv1.VolumeAttachmentPrototype{{
+		DeleteVolumeOnInstanceDelete: &deleteWithInstance,
+		Volume:                       vol,
+	}}
 }
 
 // snapshotBootVolumePrototype builds the boot volume for the
