@@ -9,6 +9,7 @@ import (
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
+	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
 
 // newTestVpcService builds a vpcv1.VpcV1 pointed at an httptest server with a
@@ -112,6 +113,47 @@ func TestVPCServiceGivesUpAfterRetries(t *testing.T) {
 	// One initial attempt plus vpcRetryMaxAttempts retries.
 	if want := int32(vpcRetryMaxAttempts + 1); atomic.LoadInt32(&calls) != want {
 		t.Errorf("expected %d requests, got %d", want, atomic.LoadInt32(&calls))
+	}
+}
+
+// TestWaitForResourceReadyAbortsOnAPIError exercises the production poll loop
+// end to end: with no SDK retries on this test client, an API error surfaces
+// from the check immediately and pollUntil aborts the wait (in production the
+// SDK would have retried transient errors before this point). This locks the
+// post-rework semantics — pollUntil no longer rides out errors itself.
+func TestWaitForResourceReadyAbortsOnAPIError(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadGateway)
+		_, _ = w.Write([]byte(`{}`))
+	}))
+	defer srv.Close()
+
+	state := new(multistep.BasicStateBag)
+	state.Put("ui", packer.TestUi(t))
+	state.Put("vpcService", newTestVpcService(t, srv.URL))
+	client := IBMCloudClient{}
+
+	if err := client.waitForResourceReady("i-1", "instances", 30*time.Second, state); err == nil {
+		t.Fatal("expected pollUntil to abort the wait when the API errors")
+	}
+}
+
+func TestWaitForResourceReadyReturnsWhenReady(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"id":"i-1","status":"running"}`))
+	}))
+	defer srv.Close()
+
+	state := new(multistep.BasicStateBag)
+	state.Put("ui", packer.TestUi(t))
+	state.Put("vpcService", newTestVpcService(t, srv.URL))
+	client := IBMCloudClient{}
+
+	if err := client.waitForResourceReady("i-1", "instances", 30*time.Second, state); err != nil {
+		t.Fatalf("waitForResourceReady returned error when the resource was ready: %s", err)
 	}
 }
 

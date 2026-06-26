@@ -56,10 +56,11 @@ func (client IBMCloudClient) waitForResourceReady(resourceID string, resourceTyp
 
 // pollUntil repeatedly invokes check until it reports the resource has reached
 // its goal state, the timeout elapses, or check returns an error. Transient API
-// errors (5xx/429/network blips) are absorbed beneath check by the SDK's request
-// retries (see vpcRetryMaxAttempts), so an error surfacing here is genuine and
-// aborts the wait. goal is used only in log/timeout messages (e.g. "ready",
-// "stopped").
+// errors (5xx/429/network blips) are retried beneath check by the SDK's
+// per-request retries (up to vpcRetryMaxAttempts each, see EnableRetries); an
+// error surfacing here therefore means those retries were exhausted or the error
+// is fatal, so the wait aborts rather than re-checking. goal is used only in
+// log/timeout messages (e.g. "ready", "stopped").
 func (client IBMCloudClient) pollUntil(
 	resourceID string,
 	resourceType string,
