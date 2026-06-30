@@ -581,16 +581,16 @@ func TestDataVolumeAttachments(t *testing.T) {
 		}
 	})
 
-	t.Run("custom profile with iops and bandwidth", func(t *testing.T) {
+	t.Run("sdp profile with iops and bandwidth", func(t *testing.T) {
 		att := dataVolumeAttachments(&Config{
 			VSIDataCapacity:  60,
-			VSIDataProfile:   "custom",
+			VSIDataProfile:   "sdp",
 			VSIDataIops:      10000,
 			VSIDataBandwidth: 2000,
 		})
 		vol := att[0].Volume.(*vpcv1.VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContext)
-		if got := *vol.Profile.(*vpcv1.VolumeProfileIdentity).Name; got != "custom" {
-			t.Errorf("profile = %q, want custom", got)
+		if got := *vol.Profile.(*vpcv1.VolumeProfileIdentity).Name; got != "sdp" {
+			t.Errorf("profile = %q, want sdp", got)
 		}
 		if vol.Iops == nil || *vol.Iops != 10000 {
 			t.Errorf("Iops = %v, want 10000", vol.Iops)

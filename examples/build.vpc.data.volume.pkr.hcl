@@ -37,9 +37,8 @@ source "ibmcloud-vpc" "data-volume" {
   image_name            = "packer-${local.timestamp}"
 
   # Scratch data volume for build caches. Deleted with the builder instance;
-  # never captured into the image. sdp lets you pin IOPS independently of size;
-  # bandwidth is system-derived on sdp, so it is not set here (use the custom
-  # profile if you need to pin bandwidth too).
+  # never captured into the image. sdp lets you pin IOPS independently of size,
+  # and is the only profile that also honors a set bandwidth (left default here).
   vsi_data_vol_capacity = 60
   vsi_data_vol_profile  = "sdp"
   vsi_data_vol_iops     = 10000
