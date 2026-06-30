@@ -84,22 +84,25 @@ func TestPrepareBootVolumeProfile(t *testing.T) {
 }
 
 func TestPrepareBootVolumeIopsBandwidth(t *testing.T) {
-	const wantMsg = "require vsi_boot_vol_profile to be 'custom' or 'sdp'"
+	// iops is honored by custom and sdp; bandwidth only by sdp.
+	const iopsMsg = "vsi_boot_vol_iops requires vsi_boot_vol_profile to be 'custom' or 'sdp'"
+	const bandwidthMsg = "vsi_boot_vol_bandwidth requires vsi_boot_vol_profile to be 'sdp'"
 
 	cases := []struct {
-		name       string
-		profile    string
-		iops       int
-		bandwidth  int
-		wantReject bool
+		name      string
+		profile   string
+		iops      int
+		bandwidth int
+		wantMsg   string // empty => must be accepted
 	}{
-		{"iops with sdp", "sdp", 10000, 0, false},
-		{"bandwidth with sdp", "sdp", 0, 4000, false},
-		{"iops with custom", "custom", 5000, 0, false},
-		{"none set", "general-purpose", 0, 0, false},
-		{"iops without a profile", "", 5000, 0, true},
-		{"iops with a tiered profile", "general-purpose", 5000, 0, true},
-		{"bandwidth with a tiered profile", "10iops-tier", 0, 2000, true},
+		{"iops with sdp", "sdp", 10000, 0, ""},
+		{"bandwidth with sdp", "sdp", 0, 4000, ""},
+		{"iops with custom", "custom", 5000, 0, ""},
+		{"bandwidth with custom", "custom", 0, 4000, bandwidthMsg},
+		{"none set", "general-purpose", 0, 0, ""},
+		{"iops without a profile", "", 5000, 0, iopsMsg},
+		{"iops with a tiered profile", "general-purpose", 5000, 0, iopsMsg},
+		{"bandwidth with a tiered profile", "10iops-tier", 0, 2000, bandwidthMsg},
 	}
 
 	for _, tc := range cases {
@@ -109,10 +112,10 @@ func TestPrepareBootVolumeIopsBandwidth(t *testing.T) {
 			c.VSIBootIops = tc.iops
 			c.VSIBootBandwidth = tc.bandwidth
 			_, err := c.Prepare()
-			rejected := err != nil && strings.Contains(err.Error(), wantMsg)
-			if rejected != tc.wantReject {
-				t.Errorf("profile=%q iops=%d bandwidth=%d rejected=%v, want %v (err=%v)",
-					tc.profile, tc.iops, tc.bandwidth, rejected, tc.wantReject, err)
+			rejected := err != nil && tc.wantMsg != "" && strings.Contains(err.Error(), tc.wantMsg)
+			if rejected != (tc.wantMsg != "") {
+				t.Errorf("profile=%q iops=%d bandwidth=%d rejected=%v, want %q (err=%v)",
+					tc.profile, tc.iops, tc.bandwidth, rejected, tc.wantMsg, err)
 			}
 		})
 	}
@@ -343,6 +346,257 @@ func TestSnapshotBootVolumePrototype(t *testing.T) {
 		}
 		if vol.SourceSnapshot != snap {
 			t.Error("SourceSnapshot was not propagated")
+		}
+	})
+}
+
+func TestPrepareDataVolumeCapacity(t *testing.T) {
+	const wantMsg = "data capacity out of bound"
+
+	cases := []struct {
+		name       string
+		capacity   int
+		wantReject bool
+	}{
+		{"zero means no data volume", 0, false},
+		{"minimum 10", 10, false},
+		{"just below minimum", 9, true},
+		{"mid range", 60, false},
+		{"maximum 32000", 32000, false},
+		{"just above maximum", 32001, true},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := validVPCConfig()
+			c.VSIDataCapacity = tc.capacity
+			_, err := c.Prepare()
+			rejected := err != nil && strings.Contains(err.Error(), wantMsg)
+			if rejected != tc.wantReject {
+				t.Errorf("VSIDataCapacity=%d rejected=%v, want %v (err=%v)",
+					tc.capacity, rejected, tc.wantReject, err)
+			}
+		})
+	}
+}
+
+func TestPrepareDataVolumeProfile(t *testing.T) {
+	const wantMsg = "vsi_data_vol_profile must be one of"
+
+	cases := []struct {
+		name       string
+		profile    string
+		wantReject bool
+	}{
+		{"empty uses default", "", false},
+		{"general-purpose", "general-purpose", false},
+		{"5iops-tier", "5iops-tier", false},
+		{"10iops-tier", "10iops-tier", false},
+		{"sdp", "sdp", false},
+		{"custom", "custom", false},
+		{"unknown profile", "platinum-tier", true},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := validVPCConfig()
+			c.VSIDataCapacity = 60
+			c.VSIDataProfile = tc.profile
+			_, err := c.Prepare()
+			rejected := err != nil && strings.Contains(err.Error(), wantMsg)
+			if rejected != tc.wantReject {
+				t.Errorf("profile=%q rejected=%v, want %v (err=%v)", tc.profile, rejected, tc.wantReject, err)
+			}
+		})
+	}
+}
+
+func TestPrepareDataVolumeIopsBandwidth(t *testing.T) {
+	// iops is honored by custom and sdp; bandwidth only by sdp.
+	const iopsMsg = "vsi_data_vol_iops requires vsi_data_vol_profile to be 'custom' or 'sdp'"
+	const bandwidthMsg = "vsi_data_vol_bandwidth requires vsi_data_vol_profile to be 'sdp'"
+
+	cases := []struct {
+		name      string
+		profile   string
+		iops      int
+		bandwidth int
+		wantMsg   string // empty => must be accepted
+	}{
+		{"iops with sdp", "sdp", 10000, 0, ""},
+		{"bandwidth with sdp", "sdp", 0, 2000, ""},
+		{"iops with custom", "custom", 5000, 0, ""},
+		{"bandwidth with custom", "custom", 0, 2000, bandwidthMsg},
+		{"none set", "general-purpose", 0, 0, ""},
+		{"iops without a profile", "", 5000, 0, iopsMsg},
+		{"iops with a tiered profile", "general-purpose", 5000, 0, iopsMsg},
+		{"bandwidth with a tiered profile", "10iops-tier", 0, 2000, bandwidthMsg},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := validVPCConfig()
+			c.VSIDataCapacity = 60
+			c.VSIDataProfile = tc.profile
+			c.VSIDataIops = tc.iops
+			c.VSIDataBandwidth = tc.bandwidth
+			_, err := c.Prepare()
+			rejected := err != nil && tc.wantMsg != "" && strings.Contains(err.Error(), tc.wantMsg)
+			if rejected != (tc.wantMsg != "") {
+				t.Errorf("profile=%q iops=%d bandwidth=%d rejected=%v, want %q (err=%v)",
+					tc.profile, tc.iops, tc.bandwidth, rejected, tc.wantMsg, err)
+			}
+		})
+	}
+}
+
+func TestPrepareDataVolumeRequiresCapacity(t *testing.T) {
+	const wantMsg = "require vsi_data_vol_capacity to be set"
+
+	cases := []struct {
+		name       string
+		profile    string
+		iops       int
+		bandwidth  int
+		capacity   int
+		wantReject bool
+	}{
+		{"profile without capacity", "sdp", 0, 0, 0, true},
+		{"iops without capacity", "sdp", 10000, 0, 0, true},
+		{"bandwidth without capacity", "sdp", 0, 2000, 0, true},
+		{"profile with capacity", "sdp", 0, 0, 60, false},
+		{"nothing set, no capacity", "", 0, 0, 0, false},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := validVPCConfig()
+			c.VSIDataCapacity = tc.capacity
+			c.VSIDataProfile = tc.profile
+			c.VSIDataIops = tc.iops
+			c.VSIDataBandwidth = tc.bandwidth
+			_, err := c.Prepare()
+			rejected := err != nil && strings.Contains(err.Error(), wantMsg)
+			if rejected != tc.wantReject {
+				t.Errorf("profile=%q iops=%d bandwidth=%d capacity=%d rejected=%v, want %v (err=%v)",
+					tc.profile, tc.iops, tc.bandwidth, tc.capacity, rejected, tc.wantReject, err)
+			}
+		})
+	}
+}
+
+func TestPrepareDataVolumeNegative(t *testing.T) {
+	const wantMsg = "vsi_data_vol_iops and vsi_data_vol_bandwidth must not be negative"
+
+	cases := []struct {
+		name       string
+		iops       int
+		bandwidth  int
+		wantReject bool
+	}{
+		{"negative iops", -1, 0, true},
+		{"negative bandwidth", 0, -1, true},
+		{"positive values", 10000, 2000, false},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := validVPCConfig()
+			c.VSIDataCapacity = 60
+			c.VSIDataProfile = "sdp"
+			c.VSIDataIops = tc.iops
+			c.VSIDataBandwidth = tc.bandwidth
+			_, err := c.Prepare()
+			rejected := err != nil && strings.Contains(err.Error(), wantMsg)
+			if rejected != tc.wantReject {
+				t.Errorf("iops=%d bandwidth=%d rejected=%v, want %v (err=%v)",
+					tc.iops, tc.bandwidth, rejected, tc.wantReject, err)
+			}
+		})
+	}
+}
+
+func TestDataVolumeAttachments(t *testing.T) {
+	t.Run("no capacity attaches nothing", func(t *testing.T) {
+		if att := dataVolumeAttachments(&Config{}); att != nil {
+			t.Errorf("attachments = %v, want nil when no data volume is configured", att)
+		}
+	})
+
+	t.Run("default profile, deleted with instance, no iops or bandwidth", func(t *testing.T) {
+		att := dataVolumeAttachments(&Config{VSIDataCapacity: 60})
+		if len(att) != 1 {
+			t.Fatalf("len(attachments) = %d, want 1", len(att))
+		}
+		if att[0].DeleteVolumeOnInstanceDelete == nil || !*att[0].DeleteVolumeOnInstanceDelete {
+			t.Error("DeleteVolumeOnInstanceDelete should be true so the scratch volume is torn down with the VSI")
+		}
+		vol := att[0].Volume.(*vpcv1.VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContext)
+		if got := *vol.Profile.(*vpcv1.VolumeProfileIdentity).Name; got != "general-purpose" {
+			t.Errorf("profile = %q, want general-purpose", got)
+		}
+		if got := *vol.Capacity; got != 60 {
+			t.Errorf("capacity = %d, want 60", got)
+		}
+		if vol.Iops != nil {
+			t.Errorf("Iops = %d, want nil (unset)", *vol.Iops)
+		}
+		if vol.Bandwidth != nil {
+			t.Errorf("Bandwidth = %d, want nil (unset)", *vol.Bandwidth)
+		}
+	})
+
+	// iops and bandwidth are set from two independent blocks, so verify each is
+	// honored on its own (guards against a copy-paste bug coupling the two).
+	t.Run("custom profile with iops only", func(t *testing.T) {
+		att := dataVolumeAttachments(&Config{
+			VSIDataCapacity: 60,
+			VSIDataProfile:  "custom",
+			VSIDataIops:     5000,
+		})
+		vol := att[0].Volume.(*vpcv1.VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContext)
+		if got := *vol.Profile.(*vpcv1.VolumeProfileIdentity).Name; got != "custom" {
+			t.Errorf("profile = %q, want custom", got)
+		}
+		if vol.Iops == nil || *vol.Iops != 5000 {
+			t.Errorf("Iops = %v, want 5000", vol.Iops)
+		}
+		if vol.Bandwidth != nil {
+			t.Errorf("Bandwidth = %d, want nil (unset)", *vol.Bandwidth)
+		}
+	})
+
+	t.Run("sdp profile with bandwidth only", func(t *testing.T) {
+		att := dataVolumeAttachments(&Config{
+			VSIDataCapacity:  60,
+			VSIDataProfile:   "sdp",
+			VSIDataBandwidth: 2000,
+		})
+		vol := att[0].Volume.(*vpcv1.VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContext)
+		if vol.Bandwidth == nil || *vol.Bandwidth != 2000 {
+			t.Errorf("Bandwidth = %v, want 2000", vol.Bandwidth)
+		}
+		if vol.Iops != nil {
+			t.Errorf("Iops = %d, want nil (unset)", *vol.Iops)
+		}
+	})
+
+	t.Run("sdp profile with iops and bandwidth", func(t *testing.T) {
+		att := dataVolumeAttachments(&Config{
+			VSIDataCapacity:  60,
+			VSIDataProfile:   "sdp",
+			VSIDataIops:      10000,
+			VSIDataBandwidth: 2000,
+		})
+		vol := att[0].Volume.(*vpcv1.VolumeAttachmentPrototypeVolumeVolumePrototypeInstanceContext)
+		if got := *vol.Profile.(*vpcv1.VolumeProfileIdentity).Name; got != "sdp" {
+			t.Errorf("profile = %q, want sdp", got)
+		}
+		if vol.Iops == nil || *vol.Iops != 10000 {
+			t.Errorf("Iops = %v, want 10000", vol.Iops)
+		}
+		if vol.Bandwidth == nil || *vol.Bandwidth != 2000 {
+			t.Errorf("Bandwidth = %v, want 2000", vol.Bandwidth)
 		}
 	})
 }

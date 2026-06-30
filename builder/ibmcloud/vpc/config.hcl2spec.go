@@ -89,6 +89,10 @@ type FlatConfig struct {
 	VSIBootBandwidth                   *int              `mapstructure:"vsi_boot_vol_bandwidth" cty:"vsi_boot_vol_bandwidth" hcl:"vsi_boot_vol_bandwidth"`
 	VSIBootVolumeID                    *string           `mapstructure:"vsi_boot_volume_id" cty:"vsi_boot_volume_id" hcl:"vsi_boot_volume_id"`
 	VSIBootSnapshotID                  *string           `mapstructure:"vsi_boot_snapshot_id" cty:"vsi_boot_snapshot_id" hcl:"vsi_boot_snapshot_id"`
+	VSIDataCapacity                    *int              `mapstructure:"vsi_data_vol_capacity" cty:"vsi_data_vol_capacity" hcl:"vsi_data_vol_capacity"`
+	VSIDataProfile                     *string           `mapstructure:"vsi_data_vol_profile" cty:"vsi_data_vol_profile" hcl:"vsi_data_vol_profile"`
+	VSIDataIops                        *int              `mapstructure:"vsi_data_vol_iops" cty:"vsi_data_vol_iops" hcl:"vsi_data_vol_iops"`
+	VSIDataBandwidth                   *int              `mapstructure:"vsi_data_vol_bandwidth" cty:"vsi_data_vol_bandwidth" hcl:"vsi_data_vol_bandwidth"`
 	VSIProfile                         *string           `mapstructure:"vsi_profile" cty:"vsi_profile" hcl:"vsi_profile"`
 	VSIInterface                       *string           `mapstructure:"vsi_interface" cty:"vsi_interface" hcl:"vsi_interface"`
 	VSIUserDataFile                    *string           `mapstructure:"vsi_user_data_file" cty:"vsi_user_data_file" hcl:"vsi_user_data_file"`
@@ -201,6 +205,10 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"vsi_boot_vol_bandwidth":                  &hcldec.AttrSpec{Name: "vsi_boot_vol_bandwidth", Type: cty.Number, Required: false},
 		"vsi_boot_volume_id":                      &hcldec.AttrSpec{Name: "vsi_boot_volume_id", Type: cty.String, Required: false},
 		"vsi_boot_snapshot_id":                    &hcldec.AttrSpec{Name: "vsi_boot_snapshot_id", Type: cty.String, Required: false},
+		"vsi_data_vol_capacity":                   &hcldec.AttrSpec{Name: "vsi_data_vol_capacity", Type: cty.Number, Required: false},
+		"vsi_data_vol_profile":                    &hcldec.AttrSpec{Name: "vsi_data_vol_profile", Type: cty.String, Required: false},
+		"vsi_data_vol_iops":                       &hcldec.AttrSpec{Name: "vsi_data_vol_iops", Type: cty.Number, Required: false},
+		"vsi_data_vol_bandwidth":                  &hcldec.AttrSpec{Name: "vsi_data_vol_bandwidth", Type: cty.Number, Required: false},
 		"vsi_profile":                             &hcldec.AttrSpec{Name: "vsi_profile", Type: cty.String, Required: false},
 		"vsi_interface":                           &hcldec.AttrSpec{Name: "vsi_interface", Type: cty.String, Required: false},
 		"vsi_user_data_file":                      &hcldec.AttrSpec{Name: "vsi_user_data_file", Type: cty.String, Required: false},
