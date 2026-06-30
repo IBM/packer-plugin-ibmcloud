@@ -127,12 +127,14 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	if c.VSIBootProfile != "" && !slices.Contains(allowedBootProfiles, c.VSIBootProfile) {
 		errs = packer.MultiErrorAppend(errs, errors.New("vsi_boot_vol_profile must be one of: general-purpose, 5iops-tier, 10iops-tier, sdp, custom"))
 	}
-	// iops/bandwidth are only honored by the custom and sdp profiles; the tiered
-	// profiles derive them from capacity. This validation is the single source of
-	// truth for that rule (the bootVolumePrototype helpers do not re-enforce it).
-	customOrSdp := c.VSIBootProfile == "custom" || c.VSIBootProfile == "sdp"
-	if (c.VSIBootIops != 0 || c.VSIBootBandwidth != 0) && !customOrSdp {
-		errs = packer.MultiErrorAppend(errs, errors.New("vsi_boot_vol_iops/vsi_boot_vol_bandwidth require vsi_boot_vol_profile to be 'custom' or 'sdp'"))
+	// iops is honored by the custom and sdp profiles; bandwidth only by sdp; the
+	// tiered profiles derive both from capacity. This validation is the single
+	// source of truth for that rule (the bootVolumePrototype helpers do not re-enforce it).
+	if c.VSIBootIops != 0 && c.VSIBootProfile != "custom" && c.VSIBootProfile != "sdp" {
+		errs = packer.MultiErrorAppend(errs, errors.New("vsi_boot_vol_iops requires vsi_boot_vol_profile to be 'custom' or 'sdp'"))
+	}
+	if c.VSIBootBandwidth != 0 && c.VSIBootProfile != "sdp" {
+		errs = packer.MultiErrorAppend(errs, errors.New("vsi_boot_vol_bandwidth requires vsi_boot_vol_profile to be 'sdp'"))
 	}
 	bootVolumeTuned := c.VSIBootProfile != "" || c.VSIBootIops != 0 || c.VSIBootBandwidth != 0
 	// The by-image and catalog-offering paths only attach a boot volume (and thus
@@ -166,11 +168,13 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	if c.VSIDataProfile != "" && !slices.Contains(allowedDataProfiles, c.VSIDataProfile) {
 		errs = packer.MultiErrorAppend(errs, errors.New("vsi_data_vol_profile must be one of: general-purpose, 5iops-tier, 10iops-tier, sdp, custom"))
 	}
-	// iops/bandwidth are honored only by the custom and sdp profiles (the tiered
-	// profiles derive them from capacity), same rule as the boot volume above.
-	dataCustomOrSdp := c.VSIDataProfile == "custom" || c.VSIDataProfile == "sdp"
-	if (c.VSIDataIops != 0 || c.VSIDataBandwidth != 0) && !dataCustomOrSdp {
-		errs = packer.MultiErrorAppend(errs, errors.New("vsi_data_vol_iops/vsi_data_vol_bandwidth require vsi_data_vol_profile to be 'custom' or 'sdp'"))
+	// iops is honored by the custom and sdp profiles; bandwidth only by sdp. The
+	// tiered profiles derive both from capacity, same rule as the boot volume above.
+	if c.VSIDataIops != 0 && c.VSIDataProfile != "custom" && c.VSIDataProfile != "sdp" {
+		errs = packer.MultiErrorAppend(errs, errors.New("vsi_data_vol_iops requires vsi_data_vol_profile to be 'custom' or 'sdp'"))
+	}
+	if c.VSIDataBandwidth != 0 && c.VSIDataProfile != "sdp" {
+		errs = packer.MultiErrorAppend(errs, errors.New("vsi_data_vol_bandwidth requires vsi_data_vol_profile to be 'sdp'"))
 	}
 	// The data volume is attached only when a capacity is set; without it the
 	// profile/iops/bandwidth would be silently dropped, so require capacity.

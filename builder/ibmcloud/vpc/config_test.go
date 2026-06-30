@@ -84,22 +84,25 @@ func TestPrepareBootVolumeProfile(t *testing.T) {
 }
 
 func TestPrepareBootVolumeIopsBandwidth(t *testing.T) {
-	const wantMsg = "require vsi_boot_vol_profile to be 'custom' or 'sdp'"
+	// iops is honored by custom and sdp; bandwidth only by sdp.
+	const iopsMsg = "vsi_boot_vol_iops requires vsi_boot_vol_profile to be 'custom' or 'sdp'"
+	const bandwidthMsg = "vsi_boot_vol_bandwidth requires vsi_boot_vol_profile to be 'sdp'"
 
 	cases := []struct {
-		name       string
-		profile    string
-		iops       int
-		bandwidth  int
-		wantReject bool
+		name      string
+		profile   string
+		iops      int
+		bandwidth int
+		wantMsg   string // empty => must be accepted
 	}{
-		{"iops with sdp", "sdp", 10000, 0, false},
-		{"bandwidth with sdp", "sdp", 0, 4000, false},
-		{"iops with custom", "custom", 5000, 0, false},
-		{"none set", "general-purpose", 0, 0, false},
-		{"iops without a profile", "", 5000, 0, true},
-		{"iops with a tiered profile", "general-purpose", 5000, 0, true},
-		{"bandwidth with a tiered profile", "10iops-tier", 0, 2000, true},
+		{"iops with sdp", "sdp", 10000, 0, ""},
+		{"bandwidth with sdp", "sdp", 0, 4000, ""},
+		{"iops with custom", "custom", 5000, 0, ""},
+		{"bandwidth with custom", "custom", 0, 4000, bandwidthMsg},
+		{"none set", "general-purpose", 0, 0, ""},
+		{"iops without a profile", "", 5000, 0, iopsMsg},
+		{"iops with a tiered profile", "general-purpose", 5000, 0, iopsMsg},
+		{"bandwidth with a tiered profile", "10iops-tier", 0, 2000, bandwidthMsg},
 	}
 
 	for _, tc := range cases {
@@ -109,10 +112,10 @@ func TestPrepareBootVolumeIopsBandwidth(t *testing.T) {
 			c.VSIBootIops = tc.iops
 			c.VSIBootBandwidth = tc.bandwidth
 			_, err := c.Prepare()
-			rejected := err != nil && strings.Contains(err.Error(), wantMsg)
-			if rejected != tc.wantReject {
-				t.Errorf("profile=%q iops=%d bandwidth=%d rejected=%v, want %v (err=%v)",
-					tc.profile, tc.iops, tc.bandwidth, rejected, tc.wantReject, err)
+			rejected := err != nil && tc.wantMsg != "" && strings.Contains(err.Error(), tc.wantMsg)
+			if rejected != (tc.wantMsg != "") {
+				t.Errorf("profile=%q iops=%d bandwidth=%d rejected=%v, want %q (err=%v)",
+					tc.profile, tc.iops, tc.bandwidth, rejected, tc.wantMsg, err)
 			}
 		})
 	}
@@ -409,22 +412,25 @@ func TestPrepareDataVolumeProfile(t *testing.T) {
 }
 
 func TestPrepareDataVolumeIopsBandwidth(t *testing.T) {
-	const wantMsg = "require vsi_data_vol_profile to be 'custom' or 'sdp'"
+	// iops is honored by custom and sdp; bandwidth only by sdp.
+	const iopsMsg = "vsi_data_vol_iops requires vsi_data_vol_profile to be 'custom' or 'sdp'"
+	const bandwidthMsg = "vsi_data_vol_bandwidth requires vsi_data_vol_profile to be 'sdp'"
 
 	cases := []struct {
-		name       string
-		profile    string
-		iops       int
-		bandwidth  int
-		wantReject bool
+		name      string
+		profile   string
+		iops      int
+		bandwidth int
+		wantMsg   string // empty => must be accepted
 	}{
-		{"iops with sdp", "sdp", 10000, 0, false},
-		{"bandwidth with sdp", "sdp", 0, 2000, false},
-		{"iops with custom", "custom", 5000, 0, false},
-		{"none set", "general-purpose", 0, 0, false},
-		{"iops without a profile", "", 5000, 0, true},
-		{"iops with a tiered profile", "general-purpose", 5000, 0, true},
-		{"bandwidth with a tiered profile", "10iops-tier", 0, 2000, true},
+		{"iops with sdp", "sdp", 10000, 0, ""},
+		{"bandwidth with sdp", "sdp", 0, 2000, ""},
+		{"iops with custom", "custom", 5000, 0, ""},
+		{"bandwidth with custom", "custom", 0, 2000, bandwidthMsg},
+		{"none set", "general-purpose", 0, 0, ""},
+		{"iops without a profile", "", 5000, 0, iopsMsg},
+		{"iops with a tiered profile", "general-purpose", 5000, 0, iopsMsg},
+		{"bandwidth with a tiered profile", "10iops-tier", 0, 2000, bandwidthMsg},
 	}
 
 	for _, tc := range cases {
@@ -435,10 +441,10 @@ func TestPrepareDataVolumeIopsBandwidth(t *testing.T) {
 			c.VSIDataIops = tc.iops
 			c.VSIDataBandwidth = tc.bandwidth
 			_, err := c.Prepare()
-			rejected := err != nil && strings.Contains(err.Error(), wantMsg)
-			if rejected != tc.wantReject {
-				t.Errorf("profile=%q iops=%d bandwidth=%d rejected=%v, want %v (err=%v)",
-					tc.profile, tc.iops, tc.bandwidth, rejected, tc.wantReject, err)
+			rejected := err != nil && tc.wantMsg != "" && strings.Contains(err.Error(), tc.wantMsg)
+			if rejected != (tc.wantMsg != "") {
+				t.Errorf("profile=%q iops=%d bandwidth=%d rejected=%v, want %q (err=%v)",
+					tc.profile, tc.iops, tc.bandwidth, rejected, tc.wantMsg, err)
 			}
 		})
 	}
