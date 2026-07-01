@@ -59,7 +59,7 @@ func (step *StepImageExport) Run(_ context.Context, state multistep.StateBag) mu
 	}
 	jobId := *imageExportJob.ID
 	ui.Say("Waiting for the Export image to SUCCEED...")
-	err3 := waitForExportJobToSucceed(config.ImageID, jobId, vpcService, exportTimeout, state)
+	err3 := waitForExportJobToSucceed(config.ImageID, jobId, vpcService, exportTimeout, 0, state)
 	if err3 != nil {
 		err := fmt.Errorf("[ERROR] Error waiting for the Image export job to succeed: %s", err3)
 		state.Put("error", err)
@@ -75,17 +75,25 @@ func (step *StepImageExport) Run(_ context.Context, state multistep.StateBag) mu
 	return multistep.ActionContinue
 }
 
-func waitForExportJobToSucceed(imageId, exportJobId string, vpcService *vpcv1.VpcV1, timeout time.Duration, state multistep.StateBag) error {
+// pollInterval is the cadence between status checks; production passes 0 to use
+// defaultPollInterval. It exists as a parameter (unlike pollUntil, which hardcodes
+// the constant) so tests can drive the multi-poll loop without a real 10s wait.
+func waitForExportJobToSucceed(imageId, exportJobId string, vpcService *vpcv1.VpcV1, timeout time.Duration, pollInterval time.Duration, state multistep.StateBag) error {
 	ui := state.Get("ui").(packer.Ui)
 	done := make(chan struct{})
 	defer close(done)
 	result := make(chan error, 1)
 
 	if timeout < 1*time.Minute {
-		timeout = 5 * time.Minute // Default to 45 minutes for image exports
+		timeout = 5 * time.Minute // Default when no (or sub-minute) export timeout is configured
 		ui.Say(fmt.Sprintf("Using default %v timeout for image export", timeout))
 	} else {
 		ui.Say(fmt.Sprintf("Using %v timeout for image export", timeout))
+	}
+
+	interval := pollInterval
+	if interval <= 0 {
+		interval = defaultPollInterval
 	}
 
 	options := vpcv1.GetImageExportJobOptions{
@@ -105,9 +113,10 @@ func waitForExportJobToSucceed(imageId, exportJobId string, vpcService *vpcv1.Vp
 
 			log.Printf("Checking export job status ... (attempt: %d)", attempts)
 			expJob, _, err := vpcService.GetImageExportJob(&options)
-
 			if err != nil {
-				ui.Say(fmt.Sprintf("Error fetching image export job: %v", err))
+				// Transient 5xx/429/network blips are absorbed by the SDK's
+				// request retries; an error here is genuine, so stop waiting.
+				ui.Say(fmt.Sprintf("Error fetching image export job: %s", err))
 				result <- err
 				return
 			}
@@ -130,13 +139,8 @@ func waitForExportJobToSucceed(imageId, exportJobId string, vpcService *vpcv1.Vp
 				return
 			}
 
-			time.Sleep(10 * time.Second)
-
-			select {
-			case <-done:
+			if sleepOrDone(interval, done) {
 				return
-			default:
-				// Keep going
 			}
 		}
 	}()

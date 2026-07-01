@@ -13,6 +13,24 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
 
+// defaultPollInterval is the wait between status polls when a caller does not
+// set one explicitly. Transient API errors are handled by the SDK's request
+// retries (see vpcRetryMaxAttempts); this interval is purely the cadence at
+// which we re-check a resource's status while waiting for it to reach its goal.
+const defaultPollInterval = 10 * time.Second
+
+// sleepOrDone waits interval between polls and then reports whether the poll
+// goroutine should stop because its parent has already returned (done closed).
+func sleepOrDone(interval time.Duration, done <-chan struct{}) (stop bool) {
+	time.Sleep(interval)
+	select {
+	case <-done:
+		return true
+	default:
+		return false
+	}
+}
+
 type IBMCloudClient struct {
 	// // The http client for communicating
 	http *http.Client
@@ -33,6 +51,24 @@ func (client IBMCloudClient) New(IBMApiKey string) *IBMCloudClient {
 }
 
 func (client IBMCloudClient) waitForResourceReady(resourceID string, resourceType string, timeout time.Duration, state multistep.StateBag) error {
+	return client.pollUntil(resourceID, resourceType, "ready", timeout, state, client.isResourceReady)
+}
+
+// pollUntil repeatedly invokes check until it reports the resource has reached
+// its goal state, the timeout elapses, or check returns an error. Transient API
+// errors (5xx/429/network blips) are retried beneath check by the SDK's
+// per-request retries (up to vpcRetryMaxAttempts each, see EnableRetries); an
+// error surfacing here therefore means those retries were exhausted or the error
+// is fatal, so the wait aborts rather than re-checking. goal is used only in
+// log/timeout messages (e.g. "ready", "stopped").
+func (client IBMCloudClient) pollUntil(
+	resourceID string,
+	resourceType string,
+	goal string,
+	timeout time.Duration,
+	state multistep.StateBag,
+	check func(resourceID string, resourceType string, state multistep.StateBag) (bool, error),
+) error {
 	ui := state.Get("ui").(packer.Ui)
 	done := make(chan struct{})
 	defer close(done)
@@ -49,38 +85,28 @@ func (client IBMCloudClient) waitForResourceReady(resourceID string, resourceTyp
 			}
 
 			log.Printf("Checking resource state... (attempt: %d)", attempts)
-			isReady, err := client.isResourceReady(resourceID, resourceType, state)
-
+			reached, err := check(resourceID, resourceType, state)
 			if err != nil {
 				result <- err
 				return
 			}
-
-			if isReady {
+			if reached {
 				result <- nil
 				return
 			}
 
-			// Wait 10 seconds in between
-			time.Sleep(10 * time.Second)
-
-			// Verify we shouldn't exit
-			select {
-			case <-done:
-				// We finished, so just exit the go routine
+			if sleepOrDone(defaultPollInterval, done) {
 				return
-			default:
-				// Keep going
 			}
 		}
 	}()
 
-	log.Printf("Waiting for up to %d seconds for resource to become ready", timeout/time.Second)
+	log.Printf("Waiting for up to %d seconds for resource to become %s", timeout/time.Second, goal)
 	select {
 	case err := <-result:
 		return err
 	case <-time.After(timeout):
-		err := fmt.Errorf("timeout while waiting to for the resource to become ready")
+		err := fmt.Errorf("timeout while waiting for the resource to become %s", goal)
 		return err
 	}
 }
@@ -144,62 +170,12 @@ func (client IBMCloudClient) isResourceReady(resourceID string, resourceType str
 }
 
 func (client IBMCloudClient) waitForResourceDown(resourceID string, resourceType string, timeout time.Duration, state multistep.StateBag) error {
-	ui := state.Get("ui").(packer.Ui)
-	done := make(chan struct{})
-	defer close(done)
-	result := make(chan error, 1)
-
-	go func() {
-		attempts := 0
-		for {
-			attempts += 1
-			if attempts%6 == 0 {
-				ui.Say(fmt.Sprintf("Waiting time: %d minutes", attempts/6))
-			} else {
-				ui.Say(".")
-			}
-
-			log.Printf("Checking resource state... (attempt: %d)", attempts)
-			isDown, err := client.isResourceDown(resourceID, resourceType, state)
-
-			if err != nil {
-				result <- err
-				return
-			}
-
-			if isDown {
-				result <- nil
-				return
-			}
-
-			// Wait 10 seconds in between
-			time.Sleep(10 * time.Second)
-
-			// Verify we shouldn't exit
-			select {
-			case <-done:
-				// We finished, so just exit the go routine
-				return
-			default:
-				// Keep going
-			}
-		}
-	}()
-
-	log.Printf("Waiting for up to %d seconds for resource to be stopped", timeout/time.Second)
-	select {
-	case err := <-result:
-		return err
-	case <-time.After(timeout):
-		err := fmt.Errorf("timeout while waiting to for the resource to be stopped")
-		return err
-	}
+	return client.pollUntil(resourceID, resourceType, "stopped", timeout, state, client.isResourceDown)
 }
 
 func (client IBMCloudClient) isResourceDown(resourceID string, resourceType string, state multistep.StateBag) (bool, error) {
 	var down bool
 
-	ui := state.Get("ui").(packer.Ui)
 	var vpcService *vpcv1.VpcV1
 	if state.Get("vpcService") != nil {
 		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
@@ -210,8 +186,6 @@ func (client IBMCloudClient) isResourceDown(resourceID string, resourceType stri
 		instance, _, err := vpcService.GetInstance(options)
 		if err != nil {
 			err := fmt.Errorf("[ERROR] Failed retrieving resource information. Error: %s", err)
-			ui.Error(err.Error())
-			log.Println(err.Error())
 			return false, err
 		}
 		status := *instance.Status
