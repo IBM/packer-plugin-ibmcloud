@@ -47,8 +47,7 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 
 	// Create VirtualNetworkInterface for the new PrimaryNetworkAttachment
 	virtualNetworkInterfacePrototype := &vpcv1.InstanceNetworkAttachmentPrototypeVirtualNetworkInterface{
-		Subnet:                  subnetIdentityModel,
-		EnableInfrastructureNat: &[]bool{true}[0],
+		Subnet: subnetIdentityModel,
 	}
 
 	// Create PrimaryNetworkAttachment
