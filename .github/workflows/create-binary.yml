@@ -18,14 +18,12 @@ jobs:
 #           target: 'https://www.zaproxy.org/'
 
   build:
-#     # Runs on Multiple OS
-#     runs-on: ${{ matrix.os }}
-#     strategy:
-#       matrix:
-#         os: [ubuntu-latest, windows-latests, macOS-latest]
-
-    # Runs Only on Ubuntu OS
+    name: build (go v${{ matrix.go-version }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.25', '1.26']
+
     steps:
     - uses: actions/checkout@v4.0.0
 
@@ -35,7 +33,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: 1.24.1
+        go-version: ${{ matrix.go-version }}
 
     - name: Setup Packer
       uses: hashicorp/setup-packer@main
