@@ -19,8 +19,11 @@ type Config struct {
 	common.PackerConfig `mapstructure:",squash"`
 	Comm                communicator.Config `mapstructure:",squash"`
 
-	IBMApiKey                 string `mapstructure:"api_key"`
-	Region                    string `mapstructure:"region"`
+	IBMApiKey            string `mapstructure:"api_key"`
+	IAMAccessToken       string `mapstructure:"iam_access_token"`
+	IAMDesiredIAMID      string `mapstructure:"iam_desired_iam_id"`
+	IAMTokenExchangeURL  string `mapstructure:"iam_token_exchange_url"`
+	Region               string `mapstructure:"region"`
 	Endpoint                  string `mapstructure:"vpc_endpoint_url"`
 	RCEndpoint                string `mapstructure:"rc_endpoint_url"`
 	GhostEndpoint             string `mapstructure:"ghost_endpoint_url"`
@@ -100,8 +103,19 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	var errs *packer.MultiError
 	errs = packer.MultiErrorAppend(errs, c.Comm.Prepare(&c.ctx)...)
 
-	if c.IBMApiKey == "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("an ibm_api_key must be specified"))
+	// Exactly one of api_key or iam_access_token must be provided.
+	if c.IBMApiKey != "" && c.IAMAccessToken != "" {
+		errs = packer.MultiErrorAppend(errs, errors.New("api_key and iam_access_token are mutually exclusive; specify only one"))
+	} else if c.IBMApiKey == "" && c.IAMAccessToken == "" {
+		errs = packer.MultiErrorAppend(errs, errors.New("one of api_key or iam_access_token must be specified"))
+	}
+	// iam_access_token requires iam_desired_iam_id for the token exchange POST.
+	if c.IAMAccessToken != "" && c.IAMDesiredIAMID == "" {
+		errs = packer.MultiErrorAppend(errs, errors.New("iam_desired_iam_id is required when iam_access_token is set"))
+	}
+	// iam_desired_iam_id without iam_access_token has no effect.
+	if c.IAMDesiredIAMID != "" && c.IAMAccessToken == "" {
+		errs = packer.MultiErrorAppend(errs, errors.New("iam_desired_iam_id requires iam_access_token to be set"))
 	}
 
 	if c.Region == "" {

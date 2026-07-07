@@ -180,7 +180,12 @@ Variable | Type  | Required | Description
 **builder variables** |
 type | string |  | Set it as "ibmcloud"
 | |
-api_key | string | Required | The IBM Cloud platform API key.
+api_key | string | Required (or `iam_access_token`) | The IBM Cloud platform API key. Mutually exclusive with `iam_access_token`.
+| OR |
+iam_access_token | string | Required (or `api_key`) | An existing IBM Cloud access token to exchange for a scoped token via IAM. Mutually exclusive with `api_key`. The plugin re-fetches a fresh token automatically at each VPC service initialisation point in the pipeline, so mid-build expiry is handled without any manual intervention.
+iam_desired_iam_id | string | Required with `iam_access_token` | The CRN of the service identity the exchanged token should be scoped to (e.g. `crn:v1:bluemix:public:cloud-object-storage:global:a/<account>:<instance>::`).
+iam_token_exchange_url | string | Optional | The IAM token endpoint to POST the exchange request to. Defaults to `https://iam.cloud.ibm.com/identity/token`.
+| |
 region | string | Required | IBM Cloud region where VPC is deployed.
 subnet_id | string | Required | The VPC Subnet identifier. Required.
 | |
@@ -247,6 +252,59 @@ winrm_use_ssl | bool | Optional | If true, use HTTPS for WinRM.
 | |
 timeout | string | Optional | The amount of time to wait before considering that the provisioner failed. Optional.
 logging | string | Optional | to turn debug log on, pass "debug" as value. Optional.
+
+***********
+
+## IAM Token Exchange Authentication
+
+Use this when you have an existing IBM Cloud access token — for example from a CI/CD
+pipeline, a federated login, or a service-to-service flow — and cannot supply an API key
+directly.
+
+### How it works
+
+The plugin performs the following POST on every VPC service initialisation:
+
+```shell
+curl -X POST "https://iam.cloud.ibm.com/identity/token" \
+  --header "Content-Type: application/x-www-form-urlencoded" \
+  --data 'grant_type=urn:ibm:params:oauth:grant-type:iam-authz
+          &access_token=<iam_access_token>
+          &desired_iam_id=<iam_desired_iam_id>'
+```
+
+The `access_token` field from the JSON response is used as a `Bearer` token for all
+subsequent IBM Cloud API calls. Because the plugin's step pipeline already initialises the
+VPC service **twice** — once before provisioning and once after — the token is refreshed
+automatically at the right moment, so mid-build expiry is handled without timers or manual
+intervention.
+
+### Example template
+
+```hcl
+source "ibmcloud-vpc" "centos" {
+  # No api_key — use token exchange instead
+  iam_access_token       = var.IAM_ACCESS_TOKEN
+  iam_desired_iam_id     = "crn:v1:bluemix:public:cloud-object-storage:global:a/<account_id>:<instance_id>::"
+  # iam_token_exchange_url is optional; defaults to https://iam.cloud.ibm.com/identity/token
+
+  region    = "us-south"
+  subnet_id = "..."
+  ...
+}
+```
+
+A complete working template is at
+[`developer/examples/build.vpc.access-token.centos.pkr.hcl`](developer/examples/build.vpc.access-token.centos.pkr.hcl).
+Fill in your values in
+[`developer/variables-access-token.pkrvars.hcl`](developer/variables-access-token.pkrvars.hcl)
+and run:
+
+```bash
+packer build \
+  -var-file=developer/variables-access-token.pkrvars.hcl \
+  developer/examples/build.vpc.access-token.centos.pkr.hcl
+```
 
 ***********
 
