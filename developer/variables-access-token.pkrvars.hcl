@@ -7,8 +7,7 @@
 # IAM_TOKEN_EXCHANGE_URL — optional; defaults to https://iam.cloud.ibm.com/identity/token
 
 IAM_ACCESS_TOKEN       = ""
-IAM_DESIRED_IAM_ID     = "crn:v1:bluemix:public:cloud-object-storage:global:a/<account_id>:<instance_id>::"
-IAM_TOKEN_EXCHANGE_URL = "https://iam.cloud.ibm.com/identity/token"
+IAM_DESIRED_IAM_ID     = ""
 
 SUBNET_ID         = ""
 REGION            = ""

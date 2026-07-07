@@ -79,17 +79,6 @@ build {
     ]
   }
 
-  provisioner "ansible" {
-    playbook_file  = "provisioner/windows-playbook.yml"
-    use_proxy      = false
-    inventory_file = var.ANSIBLE_INVENTORY_FILE
-    extra_arguments = [
-      "-vvvv",
-      "--extra-vars",
-      "ansible_user=Administrator ansible_password={{ .WinRMPassword }} ansible_connection=winrm ansible_winrm_server_cert_validation=ignore"
-    ]
-  }
-
   provisioner "windows-restart" {
     restart_check_command = "powershell -command \"& {Write-Output 'Machine restarted.'}\""
   }

@@ -28,11 +28,6 @@ variable "IAM_DESIRED_IAM_ID" {
   type = string
 }
 
-variable "IAM_TOKEN_EXCHANGE_URL" {
-  type    = string
-  default = "https://iam.cloud.ibm.com/identity/token"
-}
-
 variable "SUBNET_ID" {
   type = string
 }
@@ -57,9 +52,8 @@ locals {
 
 source "ibmcloud-vpc" "centos" {
   # Authentication — token exchange path (no api_key).
-  iam_access_token       = var.IAM_ACCESS_TOKEN
-  iam_desired_iam_id     = var.IAM_DESIRED_IAM_ID
-  iam_token_exchange_url = var.IAM_TOKEN_EXCHANGE_URL
+  iam_access_token   = var.IAM_ACCESS_TOKEN
+  iam_desired_iam_id = var.IAM_DESIRED_IAM_ID
 
   region = var.REGION
 
