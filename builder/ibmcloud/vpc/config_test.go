@@ -600,3 +600,73 @@ func TestDataVolumeAttachments(t *testing.T) {
 		}
 	})
 }
+
+// TestPrepareSubnetSelection covers the mutual exclusion between subnet_id and
+// subnet_ids, empty-entry rejection, and normalization of a lone subnet_id into
+// the list form the build steps read.
+func TestPrepareSubnetSelection(t *testing.T) {
+	cases := []struct {
+		name        string
+		subnetID    string
+		subnetIDs   []string
+		wantErr     string // substring expected in the error, "" means accept
+		wantSubnets []string
+	}{
+		{
+			name:        "only subnet_id normalizes to list",
+			subnetID:    "0717-subnet-a",
+			wantSubnets: []string{"0717-subnet-a"},
+		},
+		{
+			name:        "only subnet_ids is kept",
+			subnetIDs:   []string{"0717-subnet-a", "0727-subnet-b"},
+			wantSubnets: []string{"0717-subnet-a", "0727-subnet-b"},
+		},
+		{
+			name:      "both set is rejected",
+			subnetID:  "0717-subnet-a",
+			subnetIDs: []string{"0727-subnet-b"},
+			wantErr:   "only one of subnet_id or subnet_ids",
+		},
+		{
+			name:    "neither set is rejected",
+			wantErr: "a subnet_id or subnet_ids must be specified",
+		},
+		{
+			name:      "empty entry in subnet_ids is rejected",
+			subnetIDs: []string{"0717-subnet-a", ""},
+			wantErr:   "subnet_ids must not contain empty entries",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := validVPCConfig()
+			// validVPCConfig omits ssh_username; set it so a valid case yields a
+			// clean Prepare and the normalization assertion isn't masked.
+			c.Comm.SSHUsername = "root"
+			c.SubnetID = tc.subnetID
+			c.SubnetIDs = tc.subnetIDs
+
+			_, err := c.Prepare()
+
+			if tc.wantErr != "" {
+				if err == nil || !strings.Contains(err.Error(), tc.wantErr) {
+					t.Fatalf("Prepare() error = %v, want substring %q", err, tc.wantErr)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("Prepare() unexpected error: %v", err)
+			}
+			if len(c.SubnetIDs) != len(tc.wantSubnets) {
+				t.Fatalf("SubnetIDs = %v, want %v", c.SubnetIDs, tc.wantSubnets)
+			}
+			for i, want := range tc.wantSubnets {
+				if c.SubnetIDs[i] != want {
+					t.Errorf("SubnetIDs[%d] = %q, want %q", i, c.SubnetIDs[i], want)
+				}
+			}
+		})
+	}
+}

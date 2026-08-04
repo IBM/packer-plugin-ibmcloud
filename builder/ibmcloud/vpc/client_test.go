@@ -1,6 +1,7 @@
 package vpc
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
@@ -175,5 +176,51 @@ func TestVPCServiceDoesNotRetryFatalErrors(t *testing.T) {
 	}
 	if got := atomic.LoadInt32(&calls); got != 1 {
 		t.Errorf("expected exactly one request for a fatal 404, got %d", got)
+	}
+}
+
+// TestNewInstanceFailedError verifies that only capacity/host-placement status
+// reasons are classified as *capacityError (which drives subnet fallback); every
+// other failure — and an empty reason list — is a plain, fatal error.
+func TestNewInstanceFailedError(t *testing.T) {
+	reason := func(code string) vpcv1.InstanceStatusReason {
+		msg := "detail for " + code
+		return vpcv1.InstanceStatusReason{Code: &code, Message: &msg}
+	}
+	reasons := func(codes ...string) []vpcv1.InstanceStatusReason {
+		out := make([]vpcv1.InstanceStatusReason, 0, len(codes))
+		for _, c := range codes {
+			out = append(out, reason(c))
+		}
+		return out
+	}
+
+	tests := []struct {
+		name         string
+		reasons      []vpcv1.InstanceStatusReason
+		wantCapacity bool
+	}{
+		{"cannot_start_capacity", reasons(vpcv1.InstanceStatusReasonCodeCannotStartCapacityConst), true},
+		{"cannot_start_compute", reasons(vpcv1.InstanceStatusReasonCodeCannotStartComputeConst), true},
+		{"cannot_start_placement_group", reasons(vpcv1.InstanceStatusReasonCodeCannotStartPlacementGroupConst), true},
+		{"cannot_start_reservation_capacity", reasons(vpcv1.InstanceStatusReasonCodeCannotStartReservationCapacityConst), true},
+		{"encryption_key_deleted is fatal", reasons("encryption_key_deleted"), false},
+		{"generic cannot_start is fatal", reasons(vpcv1.InstanceStatusReasonCodeCannotStartConst), false},
+		{"empty reasons is fatal", nil, false},
+		{"nil code is fatal, no panic", []vpcv1.InstanceStatusReason{{Code: nil, Message: nil}}, false},
+		{"capacity in a later slot still triggers fallback", reasons("encryption_key_deleted", vpcv1.InstanceStatusReasonCodeCannotStartCapacityConst), true},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			err := newInstanceFailedError(tc.reasons)
+			if err == nil {
+				t.Fatal("newInstanceFailedError returned nil, want an error")
+			}
+			var capErr *capacityError
+			if got := errors.As(err, &capErr); got != tc.wantCapacity {
+				t.Errorf("errors.As(*capacityError) = %v, want %v (err=%v)", got, tc.wantCapacity, err)
+			}
+		})
 	}
 }

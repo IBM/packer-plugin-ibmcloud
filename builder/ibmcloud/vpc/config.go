@@ -19,38 +19,39 @@ type Config struct {
 	common.PackerConfig `mapstructure:",squash"`
 	Comm                communicator.Config `mapstructure:",squash"`
 
-	IBMApiKey                 string `mapstructure:"api_key"`
-	Region                    string `mapstructure:"region"`
-	Endpoint                  string `mapstructure:"vpc_endpoint_url"`
-	RCEndpoint                string `mapstructure:"rc_endpoint_url"`
-	GhostEndpoint             string `mapstructure:"ghost_endpoint_url"`
-	EncryptionKeyCRN          string `mapstructure:"encryption_key_crn"`
-	IAMEndpoint               string `mapstructure:"iam_url"`
-	Zone                      string `mapstructure-to-hcl2:",skip"`
-	VPCID                     string `mapstructure-to-hcl2:",skip"`
-	SubnetID                  string `mapstructure:"subnet_id"`
-	SshKeyType                string `mapstructure:"ssh_key_type"`
-	CatalogOfferingCRN        string `mapstructure:"catalog_offering_crn"`
-	CatalogOfferingVersionCRN string `mapstructure:"catalog_offering_version_crn"`
-	ResourceGroupID           string `mapstructure:"resource_group_id"`
-	ResourceGroupName         string `mapstructure:"resource_group_name"`
-	SecurityGroupID           string `mapstructure:"security_group_id"`
-	VSIBaseImageID            string `mapstructure:"vsi_base_image_id"`
-	VSIBaseImageName          string `mapstructure:"vsi_base_image_name"`
-	VSIBootCapacity           int    `mapstructure:"vsi_boot_vol_capacity"`
-	VSIBootProfile            string `mapstructure:"vsi_boot_vol_profile"`
-	VSIBootIops               int    `mapstructure:"vsi_boot_vol_iops"`
-	VSIBootBandwidth          int    `mapstructure:"vsi_boot_vol_bandwidth"`
-	VSIBootVolumeID           string `mapstructure:"vsi_boot_volume_id"`
-	VSIBootSnapshotID         string `mapstructure:"vsi_boot_snapshot_id"`
-	VSIDataCapacity           int    `mapstructure:"vsi_data_vol_capacity"`
-	VSIDataProfile            string `mapstructure:"vsi_data_vol_profile"`
-	VSIDataIops               int    `mapstructure:"vsi_data_vol_iops"`
-	VSIDataBandwidth          int    `mapstructure:"vsi_data_vol_bandwidth"`
-	VSIProfile                string `mapstructure:"vsi_profile"`
-	VSIInterface              string `mapstructure:"vsi_interface"`
-	VSIUserDataFile           string `mapstructure:"vsi_user_data_file"`
-	VSIUserDataString         string `mapstructure:"vsi_user_data"`
+	IBMApiKey                 string   `mapstructure:"api_key"`
+	Region                    string   `mapstructure:"region"`
+	Endpoint                  string   `mapstructure:"vpc_endpoint_url"`
+	RCEndpoint                string   `mapstructure:"rc_endpoint_url"`
+	GhostEndpoint             string   `mapstructure:"ghost_endpoint_url"`
+	EncryptionKeyCRN          string   `mapstructure:"encryption_key_crn"`
+	IAMEndpoint               string   `mapstructure:"iam_url"`
+	Zone                      string   `mapstructure-to-hcl2:",skip"`
+	VPCID                     string   `mapstructure-to-hcl2:",skip"`
+	SubnetID                  string   `mapstructure:"subnet_id"`
+	SubnetIDs                 []string `mapstructure:"subnet_ids"`
+	SshKeyType                string   `mapstructure:"ssh_key_type"`
+	CatalogOfferingCRN        string   `mapstructure:"catalog_offering_crn"`
+	CatalogOfferingVersionCRN string   `mapstructure:"catalog_offering_version_crn"`
+	ResourceGroupID           string   `mapstructure:"resource_group_id"`
+	ResourceGroupName         string   `mapstructure:"resource_group_name"`
+	SecurityGroupID           string   `mapstructure:"security_group_id"`
+	VSIBaseImageID            string   `mapstructure:"vsi_base_image_id"`
+	VSIBaseImageName          string   `mapstructure:"vsi_base_image_name"`
+	VSIBootCapacity           int      `mapstructure:"vsi_boot_vol_capacity"`
+	VSIBootProfile            string   `mapstructure:"vsi_boot_vol_profile"`
+	VSIBootIops               int      `mapstructure:"vsi_boot_vol_iops"`
+	VSIBootBandwidth          int      `mapstructure:"vsi_boot_vol_bandwidth"`
+	VSIBootVolumeID           string   `mapstructure:"vsi_boot_volume_id"`
+	VSIBootSnapshotID         string   `mapstructure:"vsi_boot_snapshot_id"`
+	VSIDataCapacity           int      `mapstructure:"vsi_data_vol_capacity"`
+	VSIDataProfile            string   `mapstructure:"vsi_data_vol_profile"`
+	VSIDataIops               int      `mapstructure:"vsi_data_vol_iops"`
+	VSIDataBandwidth          int      `mapstructure:"vsi_data_vol_bandwidth"`
+	VSIProfile                string   `mapstructure:"vsi_profile"`
+	VSIInterface              string   `mapstructure:"vsi_interface"`
+	VSIUserDataFile           string   `mapstructure:"vsi_user_data_file"`
+	VSIUserDataString         string   `mapstructure:"vsi_user_data"`
 
 	ImageName string   `mapstructure:"image_name"`
 	ImageTags []string `mapstructure:"tags"`
@@ -116,8 +117,26 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		c.RCEndpoint = "https://resource-controller.cloud.ibm.com"
 	}
 
-	if c.SubnetID == "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("a subnet_id must be specified"))
+	// Exactly one of subnet_id / subnet_ids. subnet_ids is the multi-zone form:
+	// the builder tries each subnet in turn, falling through to the next when a
+	// zone has no host capacity for the profile (see capacityStatusReasonCodes).
+	// subnet_id remains the single-subnet form.
+	switch {
+	case len(c.SubnetIDs) > 0 && c.SubnetID != "":
+		errs = packer.MultiErrorAppend(errs, errors.New("only one of subnet_id or subnet_ids can be specified"))
+	case len(c.SubnetIDs) == 0 && c.SubnetID == "":
+		errs = packer.MultiErrorAppend(errs, errors.New("a subnet_id or subnet_ids must be specified"))
+	}
+	for _, id := range c.SubnetIDs {
+		if id == "" {
+			errs = packer.MultiErrorAppend(errs, errors.New("subnet_ids must not contain empty entries"))
+			break
+		}
+	}
+	// Normalize to the list form: the build steps read SubnetIDs exclusively.
+	// subnet_id is left set for config round-tripping but is no longer read.
+	if len(c.SubnetIDs) == 0 && c.SubnetID != "" {
+		c.SubnetIDs = []string{c.SubnetID}
 	}
 
 	if c.VSIBootCapacity != 0 && (c.VSIBootCapacity < 10 || c.VSIBootCapacity > 32000) {

@@ -39,6 +39,58 @@ type IBMCloudClient struct {
 	IBMApiKey string
 }
 
+// capacityStatusReasonCodes are the instance status-reason codes that mean the
+// zone could not place the instance for a capacity / host-placement reason.
+// These surface at instance start (the instance is created, then goes to
+// "failed"), so a build that supplies several subnets can delete the failed
+// instance and retry in another zone. Other failure codes (e.g.
+// encryption_key_deleted) are not capacity-related and are not retried.
+var capacityStatusReasonCodes = map[string]bool{
+	vpcv1.InstanceStatusReasonCodeCannotStartCapacityConst:            true,
+	vpcv1.InstanceStatusReasonCodeCannotStartComputeConst:             true,
+	vpcv1.InstanceStatusReasonCodeCannotStartPlacementGroupConst:      true,
+	vpcv1.InstanceStatusReasonCodeCannotStartReservationCapacityConst: true,
+}
+
+// capacityError marks an instance-start failure that a different zone might
+// satisfy. stepCreateInstance uses errors.As to decide whether to fall through
+// to the next subnet.
+type capacityError struct{ msg string }
+
+func (e *capacityError) Error() string { return e.msg }
+
+// newInstanceFailedError builds the error for an instance that reached the
+// "failed" status. When the first status reason is a capacity / host-placement
+// code it returns a *capacityError (retry another zone); otherwise a plain error
+// that aborts the build.
+func newInstanceFailedError(reasons []vpcv1.InstanceStatusReason) error {
+	if len(reasons) == 0 {
+		return fmt.Errorf("[ERROR] Instance returned failed status with no status reason")
+	}
+	// Prefer a capacity reason from any slot so fallback still triggers when the
+	// capacity code isn't the primary reason; IBM usually returns one reason, but
+	// the ordering isn't guaranteed.
+	chosen, isCapacity := reasons[0], false
+	for _, r := range reasons {
+		if r.Code != nil && capacityStatusReasonCodes[*r.Code] {
+			chosen, isCapacity = r, true
+			break
+		}
+	}
+	code, message := "", ""
+	if chosen.Code != nil {
+		code = *chosen.Code
+	}
+	if chosen.Message != nil {
+		message = *chosen.Message
+	}
+	full := fmt.Sprintf("[ERROR] Instance returned failed status. Status Reason - %s: %s", code, message)
+	if isCapacity {
+		return &capacityError{msg: full}
+	}
+	return fmt.Errorf("%s", full)
+}
+
 func (client IBMCloudClient) New(IBMApiKey string) *IBMCloudClient {
 	return &IBMCloudClient{
 		http: &http.Client{
@@ -127,8 +179,7 @@ func (client IBMCloudClient) isResourceReady(resourceID string, resourceType str
 		}
 		status := *instance.Status
 		if status == "failed" {
-			err := fmt.Errorf("[ERROR] Instance return with failed status. Status Reason - %s: %s", status, *instance.StatusReasons[0].Message)
-			return false, err
+			return false, newInstanceFailedError(instance.StatusReasons)
 		}
 		ready = status == "running"
 		return ready, err
