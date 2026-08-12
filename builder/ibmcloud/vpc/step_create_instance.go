@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -16,11 +17,76 @@ type stepCreateInstance struct{}
 func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
 	config := state.Get("config").(Config)
 	ui := state.Get("ui").(packer.Ui)
+	client := state.Get("client").(*IBMCloudClient)
 
-	var vpcService *vpcv1.VpcV1
-	if state.Get("vpcService") != nil {
-		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
+	// bake_subnets is the shuffled subnet/zone list from stepGetSubnetInfo. The
+	// builder VSI's profile can intermittently have no host capacity in a given
+	// zone (a capacity status reason; see capacityStatusReasonCodes), so try each
+	// subnet in turn: create the VSI, wait for it to start, and on a capacity
+	// failure delete it and move to the next zone.
+	subnets := state.Get("bake_subnets").([]subnetZone)
+
+	for i, sn := range subnets {
+		if len(subnets) > 1 {
+			ui.Say(fmt.Sprintf("Creating Instance in subnet %s (zone %s) [attempt %d/%d]...", sn.ID, sn.Zone, i+1, len(subnets)))
+		} else {
+			ui.Say("Creating Instance...")
+		}
+
+		instanceData, err := step.createInstance(state, sn.ID, sn.Zone)
+		if err != nil {
+			// A create-time error is not the capacity case, so it is fatal rather
+			// than retried in another zone.
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
+		// Record the instance immediately so Cleanup can delete it if the wait
+		// below fails on the final attempt.
+		state.Put("instance_data", instanceData)
+		ui.Say(fmt.Sprintf("Instance created: %s (%s). Waiting for it to start...", *instanceData.Name, *instanceData.ID))
+
+		waitErr := client.waitForResourceReady(*instanceData.ID, "instances", config.StateTimeout, state)
+		if waitErr == nil {
+			ui.Say("Instance successfully started!")
+			return multistep.ActionContinue
+		}
+
+		// Only a capacity/host-placement failure is worth trying another zone; any
+		// other failure (and the last subnet) is fatal.
+		var capErr *capacityError
+		if !errors.As(waitErr, &capErr) || i == len(subnets)-1 {
+			state.Put("error", waitErr)
+			ui.Error(waitErr.Error())
+			return multistep.ActionHalt
+		}
+
+		ui.Say(fmt.Sprintf("Zone %s could not start the instance (%s). Trying the next subnet...", sn.Zone, waitErr))
+		// Delete the failed VSI before the next attempt, then clear instance_data
+		// so Cleanup does not try to delete an instance that is already gone.
+		if delErr := deleteInstanceAndWait(vpcService(state), ui, *instanceData.ID, config.StateTimeout); delErr != nil {
+			state.Put("error", delErr)
+			ui.Error(delErr.Error())
+			return multistep.ActionHalt
+		}
+		state.Put("instance_data", nil)
 	}
+
+	// Unreachable: Config.Prepare guarantees at least one subnet.
+	err := fmt.Errorf("[ERROR] no subnets were available to create the builder instance")
+	state.Put("error", err)
+	ui.Error(err.Error())
+	return multistep.ActionHalt
+}
+
+// createInstance builds the instance prototype for the configured source
+// (catalog offering, base image, boot volume, or boot snapshot) in the given
+// subnet/zone and creates it. It returns the created instance or an error; it
+// does not wait for the instance to start or mutate build state beyond recording
+// the instance definition.
+func (step *stepCreateInstance) createInstance(state multistep.StateBag, subnetID, zone string) (*vpcv1.Instance, error) {
+	config := state.Get("config").(Config)
+	svc := vpcService(state)
 
 	vsiBaseImageName := config.VSIBaseImageName
 	vsiBaseImageID := state.Get("baseImageID").(string)
@@ -41,21 +107,18 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		ID: &[]string{state.Get("vpc_id").(string)}[0],
 	}
 	subnetIdentityModel := &vpcv1.SubnetIdentityByID{
-		ID: &[]string{config.SubnetID}[0],
+		ID: &[]string{subnetID}[0],
 	}
 	networkInterfacePrototypeModel := &vpcv1.NetworkInterfacePrototype{
 		Name:   &[]string{"my-instance-modified"}[0],
 		Subnet: subnetIdentityModel,
 	}
 	zoneIdentityModel := &vpcv1.ZoneIdentityByName{
-		Name: &[]string{state.Get("zone").(string)}[0],
+		Name: &[]string{zone}[0],
 	}
-
-	ui.Say("Creating Instance...")
 
 	// For catalog images
 	if vsiCatalogOfferingCrn != "" || vsiCatalogOfferingVersionCrn != "" {
-
 		catalogOfferingPrototype := &vpcv1.InstanceCatalogOfferingPrototype{}
 
 		// offering crn
@@ -86,56 +149,16 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		instancePrototypeModel.VolumeAttachments = dataVolumeAttachments(&config)
 		instancePrototypeModel.CatalogOffering = catalogOfferingPrototype
 
-		userDataFilePath := config.VSIUserDataFile
-		userDataString := config.VSIUserDataString
-		if userDataFilePath != "" {
-			content, err := os.ReadFile(userDataFilePath)
-			if err != nil {
-				err := fmt.Errorf("[ERROR] Error reading user data file. Error: %s", err)
-				state.Put("error", err)
-				ui.Error(err.Error())
-				return multistep.ActionHalt
-			}
-			instancePrototypeModel.UserData = &[]string{string(content)}[0]
-		} else if userDataString != "" {
-			instancePrototypeModel.UserData = &[]string{string(userDataString)}[0]
+		if err := applyUserData(&config, &instancePrototypeModel.UserData); err != nil {
+			return nil, err
 		}
-
-		if config.ResourceGroupID != "" {
-			instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
-				ID: &config.ResourceGroupID,
-			}
-		} else if config.ResourceGroupName != "" {
-			derivedResourceGroupId := state.Get("derived_resource_group_id")
-			if derivedResourceGroupId != nil && derivedResourceGroupId.(string) != "" {
-				derivedResourceGroupIdStr := derivedResourceGroupId.(string)
-				instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
-					ID: &derivedResourceGroupIdStr,
-				}
-			}
-		}
+		instancePrototypeModel.ResourceGroup = resourceGroupIdentity(&config, state)
 
 		state.Put("instance_definition", *instancePrototypeModel)
+		return doCreate(svc, instancePrototypeModel)
+	}
 
-		createInstanceOptions := vpcService.NewCreateInstanceOptions(
-			instancePrototypeModel,
-		)
-		instanceData, _, err := vpcService.CreateInstance(createInstanceOptions)
-		// End
-		if err != nil {
-			err := fmt.Errorf("[ERROR] Error creating the instance: %s", err)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			// log.Fatalf(err.Error())
-			return multistep.ActionHalt
-		}
-		state.Put("instance_data", instanceData)
-		ui.Say("Instance successfully created!")
-		ui.Say(fmt.Sprintf("Instance's Name: %s", *instanceData.Name))
-		ui.Say(fmt.Sprintf("Instance's ID: %s", *instanceData.ID))
-
-	} else if vsiBaseImageName != "" || vsiBaseImageID != "" {
-
+	if vsiBaseImageName != "" || vsiBaseImageID != "" {
 		imageIdentityModel := &vpcv1.ImageIdentityByID{
 			ID: &[]string{vsiBaseImageID}[0],
 		}
@@ -155,57 +178,16 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		}
 		instancePrototypeModel.VolumeAttachments = dataVolumeAttachments(&config)
 
-		userDataFilePath := config.VSIUserDataFile
-		userDataString := config.VSIUserDataString
-		if userDataFilePath != "" {
-			content, err := os.ReadFile(userDataFilePath)
-			if err != nil {
-				err := fmt.Errorf("[ERROR] Error reading user data file. Error: %s", err)
-				state.Put("error", err)
-				ui.Error(err.Error())
-				return multistep.ActionHalt
-			}
-			instancePrototypeModel.UserData = &[]string{string(content)}[0]
-		} else if userDataString != "" {
-			instancePrototypeModel.UserData = &[]string{string(userDataString)}[0]
+		if err := applyUserData(&config, &instancePrototypeModel.UserData); err != nil {
+			return nil, err
 		}
-
-		if config.ResourceGroupID != "" {
-			instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
-				ID: &config.ResourceGroupID,
-			}
-		} else if config.ResourceGroupName != "" {
-			derivedResourceGroupId := state.Get("derived_resource_group_id")
-			if derivedResourceGroupId != nil && derivedResourceGroupId.(string) != "" {
-				derivedResourceGroupIdStr := derivedResourceGroupId.(string)
-				instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
-					ID: &derivedResourceGroupIdStr,
-				}
-			}
-		}
+		instancePrototypeModel.ResourceGroup = resourceGroupIdentity(&config, state)
 
 		state.Put("instance_definition", *instancePrototypeModel)
+		return doCreate(svc, instancePrototypeModel)
+	}
 
-		createInstanceOptions := vpcService.NewCreateInstanceOptions(
-			instancePrototypeModel,
-		)
-		instanceData, _, err := vpcService.CreateInstance(createInstanceOptions)
-		// End
-		if err != nil {
-			err := fmt.Errorf("[ERROR] Error creating the instance: %s", err)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			// log.Fatalf(err.Error())
-			return multistep.ActionHalt
-		}
-
-		state.Put("instance_data", instanceData)
-
-		ui.Say("Instance successfully created!")
-		ui.Say(fmt.Sprintf("Instance's Name: %s", *instanceData.Name))
-		ui.Say(fmt.Sprintf("Instance's ID: %s", *instanceData.ID))
-	} else if vsiBootVolumeID != "" {
-		ui.Say("Creating instance with boot volume ID")
+	if vsiBootVolumeID != "" {
 		volumeIdentity := &vpcv1.VolumeIdentity{
 			ID: &vsiBootVolumeID,
 		}
@@ -223,57 +205,16 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		}
 		instancePrototypeModel.VolumeAttachments = dataVolumeAttachments(&config)
 
-		userDataFilePath := config.VSIUserDataFile
-		userDataString := config.VSIUserDataString
-		if userDataFilePath != "" {
-			content, err := os.ReadFile(userDataFilePath)
-			if err != nil {
-				err := fmt.Errorf("[ERROR] Error reading user data file. Error: %s", err)
-				state.Put("error", err)
-				ui.Error(err.Error())
-				return multistep.ActionHalt
-			}
-			instancePrototypeModel.UserData = &[]string{string(content)}[0]
-		} else if userDataString != "" {
-			instancePrototypeModel.UserData = &[]string{string(userDataString)}[0]
+		if err := applyUserData(&config, &instancePrototypeModel.UserData); err != nil {
+			return nil, err
 		}
-
-		if config.ResourceGroupID != "" {
-			instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
-				ID: &config.ResourceGroupID,
-			}
-		} else if config.ResourceGroupName != "" {
-			derivedResourceGroupId := state.Get("derived_resource_group_id")
-			if derivedResourceGroupId != nil && derivedResourceGroupId.(string) != "" {
-				derivedResourceGroupIdStr := derivedResourceGroupId.(string)
-				instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
-					ID: &derivedResourceGroupIdStr,
-				}
-			}
-		}
+		instancePrototypeModel.ResourceGroup = resourceGroupIdentity(&config, state)
 
 		state.Put("instance_definition", *instancePrototypeModel)
+		return doCreate(svc, instancePrototypeModel)
+	}
 
-		createInstanceOptions := vpcService.NewCreateInstanceOptions(
-			instancePrototypeModel,
-		)
-		instanceData, _, err := vpcService.CreateInstance(createInstanceOptions)
-		// End
-		if err != nil {
-			err := fmt.Errorf("[ERROR] Error creating the instance: %s", err)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			// log.Fatalf(err.Error())
-			return multistep.ActionHalt
-		}
-
-		state.Put("instance_data", instanceData)
-
-		ui.Say("Instance successfully created with the provided boot volume!")
-		ui.Say(fmt.Sprintf("Instance's Name: %s", *instanceData.Name))
-		ui.Say(fmt.Sprintf("Instance's ID: %s", *instanceData.ID))
-	} else if vsiBootSnapshotId != "" {
-		ui.Say("Creating instance with boot snapshot ID")
+	if vsiBootSnapshotId != "" {
 		sourceSnapshot := &vpcv1.SnapshotIdentity{
 			ID: &vsiBootSnapshotId,
 		}
@@ -291,21 +232,11 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		}
 		instancePrototypeModel.VolumeAttachments = dataVolumeAttachments(&config)
 
-		userDataFilePath := config.VSIUserDataFile
-		userDataString := config.VSIUserDataString
-		if userDataFilePath != "" {
-			content, err := os.ReadFile(userDataFilePath)
-			if err != nil {
-				err := fmt.Errorf("[ERROR] Error reading user data file. Error: %s", err)
-				state.Put("error", err)
-				ui.Error(err.Error())
-				return multistep.ActionHalt
-			}
-			instancePrototypeModel.UserData = &[]string{string(content)}[0]
-		} else if userDataString != "" {
-			instancePrototypeModel.UserData = &[]string{string(userDataString)}[0]
+		if err := applyUserData(&config, &instancePrototypeModel.UserData); err != nil {
+			return nil, err
 		}
-
+		// The snapshot path only supports resource_group_id (no
+		// resource_group_name derivation, unlike the other source paths).
 		if config.ResourceGroupID != "" {
 			instancePrototypeModel.ResourceGroup = &vpcv1.ResourceGroupIdentityByID{
 				ID: &config.ResourceGroupID,
@@ -313,36 +244,16 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		}
 
 		state.Put("instance_definition", *instancePrototypeModel)
-
-		createInstanceOptions := vpcService.NewCreateInstanceOptions(
-			instancePrototypeModel,
-		)
-		instanceData, _, err := vpcService.CreateInstance(createInstanceOptions)
-		// End
-		if err != nil {
-			err := fmt.Errorf("[ERROR] Error creating the instance: %s", err)
-			state.Put("error", err)
-			ui.Error(err.Error())
-			// log.Fatalf(err.Error())
-			return multistep.ActionHalt
-		}
-
-		state.Put("instance_data", instanceData)
-
-		ui.Say("Instance successfully created with the provided boot snapshot!")
-		ui.Say(fmt.Sprintf("Instance's Name: %s", *instanceData.Name))
-		ui.Say(fmt.Sprintf("Instance's ID: %s", *instanceData.ID))
+		return doCreate(svc, instancePrototypeModel)
 	}
-	return multistep.ActionContinue
+
+	return nil, fmt.Errorf("[ERROR] no instance source configured")
 }
 
 func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 	config := state.Get("config").(Config)
 	ui := state.Get("ui").(packer.Ui)
-	var vpcService *vpcv1.VpcV1
-	if state.Get("vpcService") != nil {
-		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
-	}
+	svc := vpcService(state)
 
 	// Delete Floating IP if it was created (VSI Interface was set as public)
 	if config.VSIInterface == "public" {
@@ -352,8 +263,8 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 
 			floatingIPID := state.Get("floating_ip_id").(string)
 
-			options := vpcService.NewGetFloatingIPOptions(floatingIPID)
-			floatingIPresponse, response, err := vpcService.GetFloatingIP(options)
+			options := svc.NewGetFloatingIPOptions(floatingIPID)
+			floatingIPresponse, response, err := svc.GetFloatingIP(options)
 			if err != nil && response.StatusCode != 404 {
 				err := fmt.Errorf("[ERROR] Error getting the Floating IP: %s", err)
 				state.Put("error", err)
@@ -365,8 +276,8 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 			if response.StatusCode != 404 && floatingIPresponse.Status != nil {
 				status := floatingIPresponse.Status
 				if *status == "available" {
-					options := vpcService.NewDeleteFloatingIPOptions(floatingIPID)
-					result, err := vpcService.DeleteFloatingIP(options)
+					options := svc.NewDeleteFloatingIPOptions(floatingIPID)
+					result, err := svc.DeleteFloatingIP(options)
 
 					if err != nil {
 						err := fmt.Errorf("[ERROR] Error releasing the Floating IP. Please release it manually: %s", err)
@@ -388,41 +299,14 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 	// Wait a couple of seconds before attempting to delete the instance.
 	time.Sleep(2 * time.Second)
 
-	// Check if instance_data exists in state before attempting deletion
+	// A capacity-fallback attempt clears instance_data after deleting its failed
+	// VSI, so this only fires for the instance still standing at cleanup.
 	if state.Get("instance_data") != nil {
 		instanceData := state.Get("instance_data").(*vpcv1.Instance)
-		instanceID := *instanceData.ID
-		ui.Say(fmt.Sprintf("Deleting Instance ID: %s ...", instanceID))
-
-		options := &vpcv1.DeleteInstanceOptions{}
-		options.SetID(instanceID)
-		_, err := vpcService.DeleteInstance(options)
-
-		if err != nil {
-			err := fmt.Errorf("[ERROR] Error deleting the instance. Please delete it manually: %s", err)
+		if err := deleteInstanceAndWait(svc, ui, *instanceData.ID, config.StateTimeout); err != nil {
 			state.Put("error", err)
 			ui.Error(err.Error())
-			// log.Fatalf(err.Error())
 			return
-		}
-		instanceDeleted := false
-		for !instanceDeleted {
-			options := &vpcv1.GetInstanceOptions{}
-			options.SetID(instanceID)
-			instance, response, err := vpcService.GetInstance(options)
-			if err != nil {
-				if response != nil && response.StatusCode == 404 {
-					ui.Say("Instance deleted Successfully")
-					instanceDeleted = true
-					break
-				}
-				err := fmt.Errorf("[ERROR] Error getting the instance to check delete status. %s", err)
-				state.Put("error", err)
-				ui.Error(err.Error())
-			} else if instance != nil {
-				ui.Say(fmt.Sprintf("Instance status :-  %s", *instance.Status))
-			}
-			time.Sleep(10 * time.Second)
 		}
 	}
 
@@ -434,7 +318,7 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 		sgRuleOptions := &vpcv1.DeleteSecurityGroupRuleOptions{}
 		sgRuleOptions.SetSecurityGroupID(securityGroupID)
 		sgRuleOptions.SetID(ruleID)
-		sgRuleResponse, sgRuleErr := vpcService.DeleteSecurityGroupRule(sgRuleOptions)
+		sgRuleResponse, sgRuleErr := svc.DeleteSecurityGroupRule(sgRuleOptions)
 
 		if sgRuleErr != nil {
 			// Check if it's a 404 (resource already deleted)
@@ -463,7 +347,7 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 			ui.Say(fmt.Sprintf("Deleting Security Group %s ...", securityGroupName))
 			sgOptions := &vpcv1.DeleteSecurityGroupOptions{}
 			sgOptions.SetID(securityGroupID)
-			sgResponse, err := vpcService.DeleteSecurityGroup(sgOptions)
+			sgResponse, err := svc.DeleteSecurityGroup(sgOptions)
 			if err != nil {
 				// Check if it's a 404 (resource already deleted)
 				if sgResponse != nil && sgResponse.StatusCode == 404 {
@@ -481,6 +365,93 @@ func (step *stepCreateInstance) Cleanup(state multistep.StateBag) {
 		}
 	}
 
+}
+
+// vpcService returns the shared vpcv1 client from build state, or nil if it has
+// not been created yet.
+func vpcService(state multistep.StateBag) *vpcv1.VpcV1 {
+	if svc := state.Get("vpcService"); svc != nil {
+		return svc.(*vpcv1.VpcV1)
+	}
+	return nil
+}
+
+// doCreate issues the CreateInstance call for a built prototype, wrapping the
+// error consistently across the create paths.
+func doCreate(svc *vpcv1.VpcV1, prototype vpcv1.InstancePrototypeIntf) (*vpcv1.Instance, error) {
+	instanceData, _, err := svc.CreateInstance(svc.NewCreateInstanceOptions(prototype))
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error creating the instance: %s", err)
+	}
+	return instanceData, nil
+}
+
+// applyUserData sets *dst from vsi_user_data_file or vsi_user_data (mutually
+// exclusive per Config.Prepare). It is a no-op when neither is configured.
+func applyUserData(config *Config, dst **string) error {
+	if config.VSIUserDataFile != "" {
+		content, err := os.ReadFile(config.VSIUserDataFile)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error reading user data file. Error: %s", err)
+		}
+		*dst = &[]string{string(content)}[0]
+		return nil
+	}
+	if config.VSIUserDataString != "" {
+		*dst = &[]string{config.VSIUserDataString}[0]
+	}
+	return nil
+}
+
+// resourceGroupIdentity resolves the resource group for the instance from
+// resource_group_id, or from the id derived from resource_group_name in
+// stepVerifyInput. Returns nil when neither is configured (the account default
+// resource group is then used).
+func resourceGroupIdentity(config *Config, state multistep.StateBag) vpcv1.ResourceGroupIdentityIntf {
+	if config.ResourceGroupID != "" {
+		return &vpcv1.ResourceGroupIdentityByID{ID: &config.ResourceGroupID}
+	}
+	if config.ResourceGroupName != "" {
+		if derived := state.Get("derived_resource_group_id"); derived != nil && derived.(string) != "" {
+			id := derived.(string)
+			return &vpcv1.ResourceGroupIdentityByID{ID: &id}
+		}
+	}
+	return nil
+}
+
+// deleteInstanceAndWait deletes the instance and blocks until the API reports it
+// gone (404), bounded by timeout. It is used both to tear down the successful
+// builder VSI at cleanup and to remove a VSI that failed to start before the
+// capacity fallback tries the next subnet. A transient status-check failure is
+// tolerated and retried until the deadline rather than aborting the delete —
+// which, on the fallback path, would abort the whole build over one API blip.
+func deleteInstanceAndWait(svc *vpcv1.VpcV1, ui packer.Ui, instanceID string, timeout time.Duration) error {
+	ui.Say(fmt.Sprintf("Deleting Instance ID: %s ...", instanceID))
+	options := &vpcv1.DeleteInstanceOptions{}
+	options.SetID(instanceID)
+	if _, err := svc.DeleteInstance(options); err != nil {
+		return fmt.Errorf("[ERROR] Error deleting the instance. Please delete it manually: %s", err)
+	}
+	deadline := time.Now().Add(timeout)
+	for {
+		getOptions := &vpcv1.GetInstanceOptions{}
+		getOptions.SetID(instanceID)
+		instance, response, err := svc.GetInstance(getOptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				ui.Say("Instance deleted Successfully")
+				return nil
+			}
+			ui.Say(fmt.Sprintf("Instance status check failed, retrying: %s", err))
+		} else if instance != nil {
+			ui.Say(fmt.Sprintf("Instance status :-  %s", *instance.Status))
+		}
+		if time.Now().After(deadline) {
+			return fmt.Errorf("[ERROR] Timed out waiting for instance %s to delete. Please verify it was removed manually.", instanceID)
+		}
+		time.Sleep(defaultPollInterval)
+	}
 }
 
 func bootVolumePrototype(config *Config) *vpcv1.VolumePrototypeInstanceByImageContext {

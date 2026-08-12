@@ -182,7 +182,9 @@ type | string |  | Set it as "ibmcloud"
 | |
 api_key | string | Required | The IBM Cloud platform API key.
 region | string | Required | IBM Cloud region where VPC is deployed.
-subnet_id | string | Required | The VPC Subnet identifier. Required.
+subnet_id | string | Required* | The VPC Subnet identifier. Provide exactly one of `subnet_id` or `subnet_ids`.
+| OR |
+subnet_ids | list(string) | Required* | Candidate VPC Subnets. The builder tries them in a random order and falls through to the next when a zone cannot place the builder instance for a capacity reason (e.g. `cannot_start_capacity`). All subnets must belong to the same VPC. Provide exactly one of `subnet_id` or `subnet_ids`.
 | |
 resource_group_id | string | Optional | The resource group identifier to use. If not specified, IBM packer plugin uses `default` resource group.
 | OR |
