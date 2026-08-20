@@ -109,10 +109,17 @@ func (step *stepCreateInstance) createInstance(state multistep.StateBag, subnetI
 	subnetIdentityModel := &vpcv1.SubnetIdentityByID{
 		ID: &[]string{subnetID}[0],
 	}
-	networkInterfacePrototypeModel := &vpcv1.NetworkInterfacePrototype{
-		Name:   &[]string{"my-instance-modified"}[0],
+
+	// Create VirtualNetworkInterface for the new PrimaryNetworkAttachment
+	virtualNetworkInterfacePrototype := &vpcv1.InstanceNetworkAttachmentPrototypeVirtualNetworkInterface{
 		Subnet: subnetIdentityModel,
 	}
+
+	// Create PrimaryNetworkAttachment
+	primaryNetworkAttachment := &vpcv1.InstanceNetworkAttachmentPrototype{
+		VirtualNetworkInterface: virtualNetworkInterfacePrototype,
+	}
+
 	zoneIdentityModel := &vpcv1.ZoneIdentityByName{
 		Name: &[]string{zone}[0],
 	}
@@ -134,12 +141,12 @@ func (step *stepCreateInstance) createInstance(state multistep.StateBag, subnetI
 			catalogOfferingPrototype.Version = versionOffering
 		}
 		instancePrototypeModel := &vpcv1.InstancePrototypeInstanceByCatalogOffering{
-			Keys:                    []vpcv1.KeyIdentityIntf{keyIdentityModel},
-			Name:                    &[]string{config.VSIName}[0],
-			Profile:                 instanceProfileIdentityModel,
-			VPC:                     vpcIdentityModel,
-			PrimaryNetworkInterface: networkInterfacePrototypeModel,
-			Zone:                    zoneIdentityModel,
+			Keys:                     []vpcv1.KeyIdentityIntf{keyIdentityModel},
+			Name:                     &[]string{config.VSIName}[0],
+			Profile:                  instanceProfileIdentityModel,
+			VPC:                      vpcIdentityModel,
+			PrimaryNetworkAttachment: primaryNetworkAttachment,
+			Zone:                     zoneIdentityModel,
 		}
 		if int64(vsiCapacity) != 0 {
 			instancePrototypeModel.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
@@ -163,13 +170,13 @@ func (step *stepCreateInstance) createInstance(state multistep.StateBag, subnetI
 			ID: &[]string{vsiBaseImageID}[0],
 		}
 		instancePrototypeModel := &vpcv1.InstancePrototypeInstanceByImage{
-			Keys:                    []vpcv1.KeyIdentityIntf{keyIdentityModel},
-			Name:                    &[]string{config.VSIName}[0],
-			Profile:                 instanceProfileIdentityModel,
-			VPC:                     vpcIdentityModel,
-			Image:                   imageIdentityModel,
-			PrimaryNetworkInterface: networkInterfacePrototypeModel,
-			Zone:                    zoneIdentityModel,
+			Keys:                     []vpcv1.KeyIdentityIntf{keyIdentityModel},
+			Name:                     &[]string{config.VSIName}[0],
+			Profile:                  instanceProfileIdentityModel,
+			VPC:                      vpcIdentityModel,
+			Image:                    imageIdentityModel,
+			PrimaryNetworkAttachment: primaryNetworkAttachment,
+			Zone:                     zoneIdentityModel,
 		}
 		if int64(vsiCapacity) != 0 {
 			instancePrototypeModel.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
@@ -195,13 +202,13 @@ func (step *stepCreateInstance) createInstance(state multistep.StateBag, subnetI
 			Volume: volumeIdentity,
 		}
 		instancePrototypeModel := &vpcv1.InstancePrototypeInstanceByVolume{
-			Keys:                    []vpcv1.KeyIdentityIntf{keyIdentityModel},
-			Name:                    &[]string{config.VSIName}[0],
-			Profile:                 instanceProfileIdentityModel,
-			VPC:                     vpcIdentityModel,
-			BootVolumeAttachment:    bootVolumeAttachment,
-			PrimaryNetworkInterface: networkInterfacePrototypeModel,
-			Zone:                    zoneIdentityModel,
+			Keys:                     []vpcv1.KeyIdentityIntf{keyIdentityModel},
+			Name:                     &[]string{config.VSIName}[0],
+			Profile:                  instanceProfileIdentityModel,
+			VPC:                      vpcIdentityModel,
+			BootVolumeAttachment:     bootVolumeAttachment,
+			PrimaryNetworkAttachment: primaryNetworkAttachment,
+			Zone:                     zoneIdentityModel,
 		}
 		instancePrototypeModel.VolumeAttachments = dataVolumeAttachments(&config)
 
@@ -222,13 +229,13 @@ func (step *stepCreateInstance) createInstance(state multistep.StateBag, subnetI
 			Volume: snapshotBootVolumePrototype(&config, sourceSnapshot),
 		}
 		instancePrototypeModel := &vpcv1.InstancePrototypeInstanceBySourceSnapshot{
-			Keys:                    []vpcv1.KeyIdentityIntf{keyIdentityModel},
-			Name:                    &[]string{config.VSIName}[0],
-			Profile:                 instanceProfileIdentityModel,
-			VPC:                     vpcIdentityModel,
-			BootVolumeAttachment:    bootVolumeAttachment,
-			PrimaryNetworkInterface: networkInterfacePrototypeModel,
-			Zone:                    zoneIdentityModel,
+			Keys:                     []vpcv1.KeyIdentityIntf{keyIdentityModel},
+			Name:                     &[]string{config.VSIName}[0],
+			Profile:                  instanceProfileIdentityModel,
+			VPC:                      vpcIdentityModel,
+			BootVolumeAttachment:     bootVolumeAttachment,
+			PrimaryNetworkAttachment: primaryNetworkAttachment,
+			Zone:                     zoneIdentityModel,
 		}
 		instancePrototypeModel.VolumeAttachments = dataVolumeAttachments(&config)
 
