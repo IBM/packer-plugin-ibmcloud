@@ -186,7 +186,9 @@ iam_access_token | string | Required (or `api_key`) | An existing IBM Cloud acce
 iam_desired_iam_id | string | Required with `iam_access_token` | The CRN of the service identity the exchanged token should be scoped to (e.g. `crn:v1:bluemix:public:cloud-object-storage:global:a/<account>:<instance>::`).
 | |
 region | string | Required | IBM Cloud region where VPC is deployed.
-subnet_id | string | Required | The VPC Subnet identifier. Required.
+subnet_id | string | Required* | The VPC Subnet identifier. Provide exactly one of `subnet_id` or `subnet_ids`.
+| OR |
+subnet_ids | list(string) | Required* | Candidate VPC Subnets. The builder tries them in a random order and falls through to the next when a zone cannot place the builder instance for a capacity reason (e.g. `cannot_start_capacity`). All subnets must belong to the same VPC. Provide exactly one of `subnet_id` or `subnet_ids`.
 | |
 resource_group_id | string | Optional | The resource group identifier to use. If not specified, IBM packer plugin uses `default` resource group.
 | OR |

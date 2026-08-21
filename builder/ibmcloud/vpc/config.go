@@ -32,6 +32,7 @@ type Config struct {
 	Zone                      string `mapstructure-to-hcl2:",skip"`
 	VPCID                     string `mapstructure-to-hcl2:",skip"`
 	SubnetID                  string `mapstructure:"subnet_id"`
+  SubnetIDs                 []string `mapstructure:"subnet_ids"`
 	SshKeyType                string `mapstructure:"ssh_key_type"`
 	CatalogOfferingCRN        string `mapstructure:"catalog_offering_crn"`
 	CatalogOfferingVersionCRN string `mapstructure:"catalog_offering_version_crn"`
@@ -130,8 +131,26 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		c.RCEndpoint = "https://resource-controller.cloud.ibm.com"
 	}
 
-	if c.SubnetID == "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("a subnet_id must be specified"))
+	// Exactly one of subnet_id / subnet_ids. subnet_ids is the multi-zone form:
+	// the builder tries each subnet in turn, falling through to the next when a
+	// zone has no host capacity for the profile (see capacityStatusReasonCodes).
+	// subnet_id remains the single-subnet form.
+	switch {
+	case len(c.SubnetIDs) > 0 && c.SubnetID != "":
+		errs = packer.MultiErrorAppend(errs, errors.New("only one of subnet_id or subnet_ids can be specified"))
+	case len(c.SubnetIDs) == 0 && c.SubnetID == "":
+		errs = packer.MultiErrorAppend(errs, errors.New("a subnet_id or subnet_ids must be specified"))
+	}
+	for _, id := range c.SubnetIDs {
+		if id == "" {
+			errs = packer.MultiErrorAppend(errs, errors.New("subnet_ids must not contain empty entries"))
+			break
+		}
+	}
+	// Normalize to the list form: the build steps read SubnetIDs exclusively.
+	// subnet_id is left set for config round-tripping but is no longer read.
+	if len(c.SubnetIDs) == 0 && c.SubnetID != "" {
+		c.SubnetIDs = []string{c.SubnetID}
 	}
 
 	if c.VSIBootCapacity != 0 && (c.VSIBootCapacity < 10 || c.VSIBootCapacity > 32000) {

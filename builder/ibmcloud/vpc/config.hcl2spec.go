@@ -78,6 +78,7 @@ type FlatConfig struct {
 	EncryptionKeyCRN                   *string           `mapstructure:"encryption_key_crn" cty:"encryption_key_crn" hcl:"encryption_key_crn"`
 	IAMEndpoint                        *string           `mapstructure:"iam_url" cty:"iam_url" hcl:"iam_url"`
 	SubnetID                           *string           `mapstructure:"subnet_id" cty:"subnet_id" hcl:"subnet_id"`
+	SubnetIDs                          []string          `mapstructure:"subnet_ids" cty:"subnet_ids" hcl:"subnet_ids"`
 	SshKeyType                         *string           `mapstructure:"ssh_key_type" cty:"ssh_key_type" hcl:"ssh_key_type"`
 	CatalogOfferingCRN                 *string           `mapstructure:"catalog_offering_crn" cty:"catalog_offering_crn" hcl:"catalog_offering_crn"`
 	CatalogOfferingVersionCRN          *string           `mapstructure:"catalog_offering_version_crn" cty:"catalog_offering_version_crn" hcl:"catalog_offering_version_crn"`
@@ -197,6 +198,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"encryption_key_crn":                      &hcldec.AttrSpec{Name: "encryption_key_crn", Type: cty.String, Required: false},
 		"iam_url":                                 &hcldec.AttrSpec{Name: "iam_url", Type: cty.String, Required: false},
 		"subnet_id":                               &hcldec.AttrSpec{Name: "subnet_id", Type: cty.String, Required: false},
+		"subnet_ids":                              &hcldec.AttrSpec{Name: "subnet_ids", Type: cty.List(cty.String), Required: false},
 		"ssh_key_type":                            &hcldec.AttrSpec{Name: "ssh_key_type", Type: cty.String, Required: false},
 		"catalog_offering_crn":                    &hcldec.AttrSpec{Name: "catalog_offering_crn", Type: cty.String, Required: false},
 		"catalog_offering_version_crn":            &hcldec.AttrSpec{Name: "catalog_offering_version_crn", Type: cty.String, Required: false},
