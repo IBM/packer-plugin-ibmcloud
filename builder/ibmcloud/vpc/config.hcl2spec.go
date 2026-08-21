@@ -68,6 +68,9 @@ type FlatConfig struct {
 	WinRMInsecure                      *bool             `mapstructure:"winrm_insecure" cty:"winrm_insecure" hcl:"winrm_insecure"`
 	WinRMUseNTLM                       *bool             `mapstructure:"winrm_use_ntlm" cty:"winrm_use_ntlm" hcl:"winrm_use_ntlm"`
 	IBMApiKey                          *string           `mapstructure:"api_key" cty:"api_key" hcl:"api_key"`
+	IAMAccessToken                     *string           `mapstructure:"iam_access_token" cty:"iam_access_token" hcl:"iam_access_token"`
+	IAMDesiredIAMID                    *string           `mapstructure:"iam_desired_iam_id" cty:"iam_desired_iam_id" hcl:"iam_desired_iam_id"`
+	IAMTokenExchangeURL                *string           `mapstructure:"iam_token_exchange_url" cty:"iam_token_exchange_url" hcl:"iam_token_exchange_url"`
 	Region                             *string           `mapstructure:"region" cty:"region" hcl:"region"`
 	Endpoint                           *string           `mapstructure:"vpc_endpoint_url" cty:"vpc_endpoint_url" hcl:"vpc_endpoint_url"`
 	RCEndpoint                         *string           `mapstructure:"rc_endpoint_url" cty:"rc_endpoint_url" hcl:"rc_endpoint_url"`
@@ -185,6 +188,9 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"winrm_insecure":                          &hcldec.AttrSpec{Name: "winrm_insecure", Type: cty.Bool, Required: false},
 		"winrm_use_ntlm":                          &hcldec.AttrSpec{Name: "winrm_use_ntlm", Type: cty.Bool, Required: false},
 		"api_key":                                 &hcldec.AttrSpec{Name: "api_key", Type: cty.String, Required: false},
+		"iam_access_token":                        &hcldec.AttrSpec{Name: "iam_access_token", Type: cty.String, Required: false},
+		"iam_desired_iam_id":                      &hcldec.AttrSpec{Name: "iam_desired_iam_id", Type: cty.String, Required: false},
+		"iam_token_exchange_url":                  &hcldec.AttrSpec{Name: "iam_token_exchange_url", Type: cty.String, Required: false},
 		"region":                                  &hcldec.AttrSpec{Name: "region", Type: cty.String, Required: false},
 		"vpc_endpoint_url":                        &hcldec.AttrSpec{Name: "vpc_endpoint_url", Type: cty.String, Required: false},
 		"rc_endpoint_url":                         &hcldec.AttrSpec{Name: "rc_endpoint_url", Type: cty.String, Required: false},

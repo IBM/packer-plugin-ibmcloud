@@ -19,39 +19,42 @@ type Config struct {
 	common.PackerConfig `mapstructure:",squash"`
 	Comm                communicator.Config `mapstructure:",squash"`
 
-	IBMApiKey                 string   `mapstructure:"api_key"`
-	Region                    string   `mapstructure:"region"`
-	Endpoint                  string   `mapstructure:"vpc_endpoint_url"`
-	RCEndpoint                string   `mapstructure:"rc_endpoint_url"`
-	GhostEndpoint             string   `mapstructure:"ghost_endpoint_url"`
-	EncryptionKeyCRN          string   `mapstructure:"encryption_key_crn"`
-	IAMEndpoint               string   `mapstructure:"iam_url"`
-	Zone                      string   `mapstructure-to-hcl2:",skip"`
-	VPCID                     string   `mapstructure-to-hcl2:",skip"`
-	SubnetID                  string   `mapstructure:"subnet_id"`
-	SubnetIDs                 []string `mapstructure:"subnet_ids"`
-	SshKeyType                string   `mapstructure:"ssh_key_type"`
-	CatalogOfferingCRN        string   `mapstructure:"catalog_offering_crn"`
-	CatalogOfferingVersionCRN string   `mapstructure:"catalog_offering_version_crn"`
-	ResourceGroupID           string   `mapstructure:"resource_group_id"`
-	ResourceGroupName         string   `mapstructure:"resource_group_name"`
-	SecurityGroupID           string   `mapstructure:"security_group_id"`
-	VSIBaseImageID            string   `mapstructure:"vsi_base_image_id"`
-	VSIBaseImageName          string   `mapstructure:"vsi_base_image_name"`
-	VSIBootCapacity           int      `mapstructure:"vsi_boot_vol_capacity"`
-	VSIBootProfile            string   `mapstructure:"vsi_boot_vol_profile"`
-	VSIBootIops               int      `mapstructure:"vsi_boot_vol_iops"`
-	VSIBootBandwidth          int      `mapstructure:"vsi_boot_vol_bandwidth"`
-	VSIBootVolumeID           string   `mapstructure:"vsi_boot_volume_id"`
-	VSIBootSnapshotID         string   `mapstructure:"vsi_boot_snapshot_id"`
-	VSIDataCapacity           int      `mapstructure:"vsi_data_vol_capacity"`
-	VSIDataProfile            string   `mapstructure:"vsi_data_vol_profile"`
-	VSIDataIops               int      `mapstructure:"vsi_data_vol_iops"`
-	VSIDataBandwidth          int      `mapstructure:"vsi_data_vol_bandwidth"`
-	VSIProfile                string   `mapstructure:"vsi_profile"`
-	VSIInterface              string   `mapstructure:"vsi_interface"`
-	VSIUserDataFile           string   `mapstructure:"vsi_user_data_file"`
-	VSIUserDataString         string   `mapstructure:"vsi_user_data"`
+	IBMApiKey            string `mapstructure:"api_key"`
+	IAMAccessToken       string `mapstructure:"iam_access_token"`
+	IAMDesiredIAMID      string `mapstructure:"iam_desired_iam_id"`
+	IAMTokenExchangeURL  string `mapstructure:"iam_token_exchange_url"`
+	Region               string `mapstructure:"region"`
+	Endpoint                  string `mapstructure:"vpc_endpoint_url"`
+	RCEndpoint                string `mapstructure:"rc_endpoint_url"`
+	GhostEndpoint             string `mapstructure:"ghost_endpoint_url"`
+	EncryptionKeyCRN          string `mapstructure:"encryption_key_crn"`
+	IAMEndpoint               string `mapstructure:"iam_url"`
+	Zone                      string `mapstructure-to-hcl2:",skip"`
+	VPCID                     string `mapstructure-to-hcl2:",skip"`
+	SubnetID                  string `mapstructure:"subnet_id"`
+  SubnetIDs                 []string `mapstructure:"subnet_ids"`
+	SshKeyType                string `mapstructure:"ssh_key_type"`
+	CatalogOfferingCRN        string `mapstructure:"catalog_offering_crn"`
+	CatalogOfferingVersionCRN string `mapstructure:"catalog_offering_version_crn"`
+	ResourceGroupID           string `mapstructure:"resource_group_id"`
+	ResourceGroupName         string `mapstructure:"resource_group_name"`
+	SecurityGroupID           string `mapstructure:"security_group_id"`
+	VSIBaseImageID            string `mapstructure:"vsi_base_image_id"`
+	VSIBaseImageName          string `mapstructure:"vsi_base_image_name"`
+	VSIBootCapacity           int    `mapstructure:"vsi_boot_vol_capacity"`
+	VSIBootProfile            string `mapstructure:"vsi_boot_vol_profile"`
+	VSIBootIops               int    `mapstructure:"vsi_boot_vol_iops"`
+	VSIBootBandwidth          int    `mapstructure:"vsi_boot_vol_bandwidth"`
+	VSIBootVolumeID           string `mapstructure:"vsi_boot_volume_id"`
+	VSIBootSnapshotID         string `mapstructure:"vsi_boot_snapshot_id"`
+	VSIDataCapacity           int    `mapstructure:"vsi_data_vol_capacity"`
+	VSIDataProfile            string `mapstructure:"vsi_data_vol_profile"`
+	VSIDataIops               int    `mapstructure:"vsi_data_vol_iops"`
+	VSIDataBandwidth          int    `mapstructure:"vsi_data_vol_bandwidth"`
+	VSIProfile                string `mapstructure:"vsi_profile"`
+	VSIInterface              string `mapstructure:"vsi_interface"`
+	VSIUserDataFile           string `mapstructure:"vsi_user_data_file"`
+	VSIUserDataString         string `mapstructure:"vsi_user_data"`
 
 	ImageName string   `mapstructure:"image_name"`
 	ImageTags []string `mapstructure:"tags"`
@@ -101,8 +104,19 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	var errs *packer.MultiError
 	errs = packer.MultiErrorAppend(errs, c.Comm.Prepare(&c.ctx)...)
 
-	if c.IBMApiKey == "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("an ibm_api_key must be specified"))
+	// Exactly one of api_key or iam_access_token must be provided.
+	if c.IBMApiKey != "" && c.IAMAccessToken != "" {
+		errs = packer.MultiErrorAppend(errs, errors.New("api_key and iam_access_token are mutually exclusive; specify only one"))
+	} else if c.IBMApiKey == "" && c.IAMAccessToken == "" {
+		errs = packer.MultiErrorAppend(errs, errors.New("one of api_key or iam_access_token must be specified"))
+	}
+	// iam_access_token requires iam_desired_iam_id for the token exchange POST.
+	if c.IAMAccessToken != "" && c.IAMDesiredIAMID == "" {
+		errs = packer.MultiErrorAppend(errs, errors.New("iam_desired_iam_id is required when iam_access_token is set"))
+	}
+	// iam_desired_iam_id without iam_access_token has no effect.
+	if c.IAMDesiredIAMID != "" && c.IAMAccessToken == "" {
+		errs = packer.MultiErrorAppend(errs, errors.New("iam_desired_iam_id requires iam_access_token to be set"))
 	}
 
 	if c.Region == "" {
