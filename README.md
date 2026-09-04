@@ -249,6 +249,7 @@ winrm_use_ssl | bool | Optional | If true, use HTTPS for WinRM.
 | |
 timeout | string | Optional | The amount of time to wait before considering that the provisioner failed. Optional.
 logging | string | Optional | to turn debug log on, pass "debug" as value. Optional.
+resource_track_file | string | Optional | Path to a JSON file where the plugin writes the IBM Cloud resource IDs created during the build (SSH key, instance, floating IP, security group, image, etc.). The file is updated incrementally as resources are created and external tooling can read this file to clean up dangling resources if Packer exits unexpectedly. Optionally, set `PACKER_RESOURCE_TRACKING=1` instead — the file is written as `packer-resources.json` in the working directory.
 
 ***********
 

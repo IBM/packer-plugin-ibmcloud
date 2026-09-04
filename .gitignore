@@ -5,3 +5,4 @@
 packer-plugin-ibmcloud
 packerlog/packerlog.txt
 provisioner/hosts
+packer-resources.json

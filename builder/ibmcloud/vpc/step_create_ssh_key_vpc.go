@@ -31,6 +31,12 @@ func (s *stepCreateSshKeyVPC) Run(_ context.Context, state multistep.StateBag) m
 	state.Put("vpc_ssh_key_id", VPCSSHKeyID)
 	VPCSSHKeyName := *VPCSSHKeyData.Name
 	state.Put("vpc_ssh_key_name", VPCSSHKeyName)
+	if err := writeTrackedResources(state); err != nil {
+		err := fmt.Errorf("[ERROR] Error writing tracked resources file: %s", err)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return multistep.ActionHalt
+	}
 
 	ui.Say("SSH Key for VPC successfully created!")
 	ui.Say(fmt.Sprintf("SSH Key for VPC's Name: %s", VPCSSHKeyName))

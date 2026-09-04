@@ -78,9 +78,10 @@ type Config struct {
 	StorageBucketName string `mapstructure:"storage_bucket_name"`
 	StorageBucketCRN  string `mapstructure:"storage_bucket_crn"`
 	//The format to use for the exported image. If the image is encrypted, only qcow2 is supported.
-	Format     string `mapstructure:"format"`
-	SkipReboot bool   `mapstructure:"skip_reboot"`
-	VPCLog     string `mapstructure:"logging"`
+	Format            string `mapstructure:"format"`
+	SkipReboot        bool   `mapstructure:"skip_reboot"`
+	VPCLog            string `mapstructure:"logging"`
+	ResourceTrackFile string `mapstructure:"resource_track_file"`
 }
 
 // Prepare processes the build configuration parameters.
@@ -115,6 +116,11 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	}
 	if c.RCEndpoint == "" {
 		c.RCEndpoint = "https://resource-controller.cloud.ibm.com"
+	}
+	// Only default the tracker file when the user has opted in via the
+	// PACKER_RESOURCE_TRACKING=1 environment variable (analogous to PACKER_LOG=1)
+	if c.ResourceTrackFile == "" && os.Getenv("PACKER_RESOURCE_TRACKING") == "1" {
+		c.ResourceTrackFile = "packer-resources.json"
 	}
 
 	// Exactly one of subnet_id / subnet_ids. subnet_ids is the multi-zone form:
