@@ -14,6 +14,39 @@ plugin:
 	cd ..; go mod vendor
 	cd ..; go build .
 
+test-release:
+	make plugin
+	@echo "==> 1. Running pre-release tests (matching .goreleaser.yml hooks)..."
+	cd ..; go test -mod=mod ./...
+	@echo "==> 2. Describing plugin and resolving API_VERSION (matching release.yml)..."
+	cd ..; API_VERSION=$$(go run -mod=mod . describe | jq -r '.api_version'); \
+	echo "Resolved API_VERSION: $${API_VERSION}"; \
+	if [ -z "$${API_VERSION}" ] || [ "$${API_VERSION}" = "null" ]; then \
+		echo "ERROR: Failed to retrieve api_version from plugin descriptor"; exit 1; \
+	fi; \
+	echo "==> 3. Running plugin compatibility check (make plugin-check)..." && \
+	packer-sdc plugin-check packer-plugin-ibmcloud && \
+	echo "==> 4. Cross-compiling all release target binaries with GoReleaser flags (matching .goreleaser.yml)..." && \
+	MODULE_PATH=$$(go list -m) && \
+	VERSION=$$(git describe --tags --abbrev=0 2>/dev/null || echo "v3.7.0") && \
+	LDFLAGS="-s -w -X $${MODULE_PATH}/version.Version=$${VERSION} -X $${MODULE_PATH}/version.VersionPrerelease=" && \
+	echo "Using MODULE_PATH=$${MODULE_PATH}, VERSION=$${VERSION}, API_VERSION=$${API_VERSION}" && \
+	CGO_ENABLED=0 GOOS=linux   GOARCH=amd64 go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null . && \
+	CGO_ENABLED=0 GOOS=linux   GOARCH=386   go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null . && \
+	CGO_ENABLED=0 GOOS=linux   GOARCH=arm   go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null . && \
+	CGO_ENABLED=0 GOOS=linux   GOARCH=arm64 go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null . && \
+	CGO_ENABLED=0 GOOS=darwin  GOARCH=amd64 go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null . && \
+	CGO_ENABLED=0 GOOS=darwin  GOARCH=arm64 go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null . && \
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null . && \
+	CGO_ENABLED=0 GOOS=windows GOARCH=386   go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null . && \
+	CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null . && \
+	CGO_ENABLED=0 GOOS=freebsd GOARCH=386   go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null . && \
+	CGO_ENABLED=0 GOOS=freebsd GOARCH=arm   go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null . && \
+	CGO_ENABLED=0 GOOS=freebsd GOARCH=arm64 go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null .
+	@echo "==> 5. Testing smallest validation set..."
+	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
+	@echo "==> Release pre-check test succeeded!"
+
 validate-all:
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos.pkr.hcl
 	cd ..; packer validate -var-file="developer/variables.pkrvars.hcl" developer/examples/build.vpc.centos-ansible.pkr.hcl
