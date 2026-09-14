@@ -39,6 +39,7 @@ test-release:
 	CGO_ENABLED=0 GOOS=darwin  GOARCH=arm64 go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null . && \
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null . && \
 	CGO_ENABLED=0 GOOS=windows GOARCH=386   go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null . && \
+	CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null . && \
 	CGO_ENABLED=0 GOOS=freebsd GOARCH=amd64 go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null . && \
 	CGO_ENABLED=0 GOOS=freebsd GOARCH=386   go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null . && \
 	CGO_ENABLED=0 GOOS=freebsd GOARCH=arm   go build -mod=mod -trimpath -ldflags "$${LDFLAGS}" -o /dev/null . && \
