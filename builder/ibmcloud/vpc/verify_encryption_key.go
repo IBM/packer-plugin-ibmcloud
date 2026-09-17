@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -35,9 +36,20 @@ func parseEncryptionKeyCRN(crn string) (endpoint, instanceID, keyID string, err 
 	}
 	switch service {
 	case "hs-crypto": // Hyper Protect Crypto Services: per-instance endpoint
-		endpoint = fmt.Sprintf("https://%s.api.%s.hs-crypto.appdomain.cloud", instanceID, region)
+		// IC_HPCS_URL overrides the base host for non-production environments.
+		// The per-instance path suffix (/api/v2/keys etc.) is always appended by the caller.
+		if base := os.Getenv("IC_HPCS_URL"); base != "" {
+			endpoint = base
+		} else {
+			endpoint = fmt.Sprintf("https://%s.api.%s.hs-crypto.appdomain.cloud", instanceID, region)
+		}
 	case "kms": // Key Protect: regional endpoint
-		endpoint = fmt.Sprintf("https://%s.kms.cloud.ibm.com", region)
+		// IC_KMS_URL overrides the base host for non-production environments.
+		if base := os.Getenv("IC_KMS_URL"); base != "" {
+			endpoint = base
+		} else {
+			endpoint = fmt.Sprintf("https://%s.kms.cloud.ibm.com", region)
+		}
 	default:
 		return "", "", "", fmt.Errorf("unsupported KMS service %q in encryption key CRN: %q", service, crn)
 	}
