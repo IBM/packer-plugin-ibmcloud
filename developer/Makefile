@@ -4,7 +4,7 @@ setup:
 	cd ..; go install github.com/hashicorp/packer-plugin-sdk/cmd/packer-sdc@latest
 	cd ..; go get github.com/hashicorp/hcl/v2/hcldec@latest
 	cd ..; go get golang.org/x/crypto/ssh@latest
-	cd ..; go get github.com/zclconf/go-cty/cty@v1.9.1
+	cd ..; go get github.com/zclconf/go-cty/cty@v1.16.3
 
 plugin:
 	cd ..; go mod tidy
@@ -13,6 +13,10 @@ plugin:
 	cd ..; go generate ./post-processor/ibmcloud-export-image/...
 	cd ..; go mod vendor
 	cd ..; go build .
+
+install-local:
+	cd ..; go build -o packer-plugin-ibmcloud .
+	cd ..; packer plugins install --force --path ./packer-plugin-ibmcloud github.com/IBM/ibmcloud
 
 test-release:
 	make plugin
