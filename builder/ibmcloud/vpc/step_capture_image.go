@@ -105,6 +105,12 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 	imageId := *imageData.ID
 
 	state.Put("image_id", imageId)
+	if err := writeTrackedResources(state); err != nil {
+		err := fmt.Errorf("[ERROR] Error writing tracked resources file: %s", err)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return multistep.ActionHalt
+	}
 
 	ui.Say("Image Successfully created!")
 	ui.Say(fmt.Sprintf("Image's Name: %s", config.ImageName))
@@ -153,16 +159,6 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 		}
 	}
 
-	ui.Say("Waiting for the Image to become AVAILABLE...")
-	err2 := client.waitForResourceReady(imageId, "images", config.StateTimeout, state)
-	if err2 != nil {
-		err := fmt.Errorf("[ERROR] Error waiting for the Image to become AVAILABLE: %s", err2)
-		state.Put("error", err)
-		ui.Error(err.Error())
-		// log.Fatalf(err.Error())
-		return multistep.ActionHalt
-	}
-	ui.Say("Image is now AVAILABLE!")
 	return multistep.ActionContinue
 }
 
@@ -177,3 +173,27 @@ func (s *stepCaptureImage) Cleanup(state multistep.StateBag) {
 	ui.Say("****************************************************************************")
 	ui.Say("")
 }
+
+// stepWaitforImage polls until the newly created image reaches AVAILABLE status.
+type stepWaitforImage struct{}
+
+func (s *stepWaitforImage) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
+	client := state.Get("client").(*IBMCloudClient)
+	config := state.Get("config").(Config)
+	ui := state.Get("ui").(packer.Ui)
+
+	imageId := state.Get("image_id").(string)
+
+	ui.Say("Waiting for the Image to become AVAILABLE...")
+	if err := client.waitForResourceReady(imageId, "images", config.StateTimeout, state); err != nil {
+		err := fmt.Errorf("[ERROR] Error waiting for the Image to become AVAILABLE: %s", err)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		// log.Fatalf(err.Error())
+		return multistep.ActionHalt
+	}
+	ui.Say("Image is now AVAILABLE!")
+	return multistep.ActionContinue
+}
+
+func (s *stepWaitforImage) Cleanup(state multistep.StateBag) {}

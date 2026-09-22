@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/communicator"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
-	"github.com/hashicorp/packer-plugin-sdk/multistep/commonsteps"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
 
@@ -90,8 +89,8 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 			new(stepGetBaseImageID),
 			new(stepCreateSshKeyPair),
 			new(stepCreateSshKeyVPC),
-			new(stepCreateInstance),
-			new(stepWaitforInstance),
+			withStage(StageCreateInstance, new(stepCreateInstance)),
+			withStage(StageWaitInstance, new(stepWaitforInstance)),
 			new(stepGetIP),
 			new(stepCreateSecurityGroupRules),
 			new(stepWaitWinRM),
@@ -100,10 +99,11 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 				Host:        winRMCommHost,
 				WinRMConfig: winRMConfig,
 			},
-			new(commonsteps.StepProvision),
+			withStage(StageInstallingComponents, new(stepInstallComponents)),
 			new(StepCreateVPCServiceInstance),
 			new(stepRebootInstance),
-			new(stepCaptureImage),
+			withStage(StageCaptureImage, new(stepCaptureImage)),
+			withStage(StageWaitImage, new(stepWaitforImage)),
 		}
 	} else if b.config.Comm.Type == "ssh" {
 		steps = []multistep.Step{
@@ -114,8 +114,8 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 			new(stepGetBaseImageID),
 			new(stepCreateSshKeyPair),
 			new(stepCreateSshKeyVPC),
-			new(stepCreateInstance),
-			new(stepWaitforInstance),
+			withStage(StageCreateInstance, new(stepCreateInstance)),
+			withStage(StageWaitInstance, new(stepWaitforInstance)),
 			new(stepGetIP),
 			new(stepCreateSecurityGroupRules),
 			&communicator.StepConnect{
@@ -123,10 +123,11 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 				Host:      sshCommHost,
 				SSHConfig: sshConfig,
 			},
-			new(commonsteps.StepProvision),
+			withStage(StageInstallingComponents, new(stepInstallComponents)),
 			new(StepCreateVPCServiceInstance),
 			new(stepRebootInstance),
-			new(stepCaptureImage),
+			withStage(StageCaptureImage, new(stepCaptureImage)),
+			withStage(StageWaitImage, new(stepWaitforImage)),
 		}
 	}
 

@@ -45,6 +45,12 @@ func (step *stepGetIP) Run(_ context.Context, state multistep.StateBag) multiste
 		ui.Say("Waiting for the Floating IP to become ACTIVE...")
 		floatingIPID := *floatingIPData.ID
 		state.Put("floating_ip_id", floatingIPID)
+		if err := writeTrackedResources(state); err != nil {
+			err := fmt.Errorf("[ERROR] Error writing tracked resources file: %s", err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
 
 		err := client.waitForResourceReady(floatingIPID, "floating_ips", config.StateTimeout, state)
 		if err != nil {
@@ -59,6 +65,12 @@ func (step *stepGetIP) Run(_ context.Context, state multistep.StateBag) multiste
 	}
 
 	state.Put("floating_ip", ipAddress)
+	if err := writeTrackedResources(state); err != nil {
+		err := fmt.Errorf("[ERROR] Error writing tracked resources file: %s", err)
+		state.Put("error", err)
+		ui.Error(err.Error())
+		return multistep.ActionHalt
+	}
 
 	///// Update the Communicator with the ipAddres value /////
 	if config.Comm.Type == "winrm" {

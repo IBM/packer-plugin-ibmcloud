@@ -7,3 +7,4 @@ packerlog/packerlog.txt
 provisioner/hosts
 packerlog.txt
 developer/packerlog.txt
+packer-resources.json

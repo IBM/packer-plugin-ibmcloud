@@ -53,6 +53,12 @@ func (s *stepCreateSecurityGroupRules) Run(_ context.Context, state multistep.St
 		state.Put("security_group_id", securityGroupID)
 		securityGroupName := *SecurityGroupData.Name
 		state.Put("security_group_name", securityGroupName)
+		if err := writeTrackedResources(state); err != nil {
+			err := fmt.Errorf("[ERROR] Error writing tracked resources file: %s", err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
 		ui.Say("Temp Security Group on VPC successfully created!")
 		ui.Say(fmt.Sprintf("Security Group's Name: %s", securityGroupName))
 		ui.Say(fmt.Sprintf("Security Group's ID: %s", securityGroupID))
@@ -166,6 +172,12 @@ func (s *stepCreateSecurityGroupRules) Run(_ context.Context, state multistep.St
 			// Store the first rule ID for backward compatibility
 			if i == 0 {
 				state.Put("security_group_rule_id", ruleID)
+				if err := writeTrackedResources(state); err != nil {
+					err := fmt.Errorf("[ERROR] Error writing tracked resources file: %s", err)
+					state.Put("error", err)
+					ui.Error(err.Error())
+					return multistep.ActionHalt
+				}
 			}
 			ui.Say(fmt.Sprintf("Security Group's rule to allow %s connection from %s %s successfully created (ID: %s)", config.Comm.Type, remote.remoteType, remote.value, ruleID))
 		}
