@@ -3,6 +3,8 @@ package vpc
 import (
 	"fmt"
 	"log"
+
+	registryimage "github.com/hashicorp/packer-plugin-sdk/packer/registry/image"
 )
 
 // Artifact represents a Image volume as the result of a Packer build.
@@ -36,7 +38,27 @@ func (a *Artifact) String() string {
 }
 
 func (a *Artifact) State(name string) interface{} {
-	return a.StateData[name]
+	if value, ok := a.StateData[name]; ok {
+		return value
+	}
+
+	switch name {
+	case registryimage.ArtifactStateURI:
+		return a.stateHCPPackerRegistryMetadata()
+	default:
+		return nil
+	}
+}
+
+// stateHCPPackerRegistryMetadata constructs HCP Packer registry metadata for the built image
+func (a *Artifact) stateHCPPackerRegistryMetadata() interface{} {
+	image := &registryimage.Image{
+		ImageID:        a.imageId,
+		ProviderName:   "ibmcloud-vpc",
+		ProviderRegion: a.StateData["region"].(string),
+		SourceImageID:  a.StateData["source_image_id"].(string),
+	}
+	return []*registryimage.Image{image}
 }
 
 // Destroy destroys the VPC image represented by the artifact.
