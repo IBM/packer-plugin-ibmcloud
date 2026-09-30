@@ -273,8 +273,8 @@ resource_track_file | string | Optional | Path to a JSON file where the plugin w
 ### Example — targeting a test environment
 
 ```bash
-export IC_IAM_URL="https://iam.test.cloud.ibm.com/identity/token"
-export IC_VPC_URL="https://us-south.iaas.test.cloud.ibm.com/v1/"
+export IC_IAM_URL="https://iam.test.cloud.ibm.com"
+export IC_VPC_URL="https://us-south-stage01.iaasdev.cloud.ibm.com/v1/"
 export IC_RC_URL="https://resource-controller.test.cloud.ibm.com"
 export IC_GHOST_URL="https://api.global-search-tagging.test.cloud.ibm.com/v2/"
 export IC_KMS_URL="https://us-south.kms.test.cloud.ibm.com"

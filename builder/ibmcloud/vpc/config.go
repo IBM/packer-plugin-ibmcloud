@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/packer-plugin-sdk/common"
@@ -143,7 +144,7 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	}
 	if c.IAMTokenExchangeURL == "" {
 		if v := os.Getenv("IC_IAM_URL"); v != "" {
-			c.IAMTokenExchangeURL = v
+			c.IAMTokenExchangeURL = strings.TrimRight(v, "/") + "/identity/token"
 		}
 	}
 	if c.Endpoint == "" {
