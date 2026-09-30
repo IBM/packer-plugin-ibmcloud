@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -310,9 +311,12 @@ func (client IBMCloudClient) createFloatingIP(state multistep.StateBag) (*vpcv1.
 	networkInterfaces := instanceData.NetworkInterfaces
 	instanceNetworkInterface := networkInterfaces[0]
 	networkInterfaceID := *instanceNetworkInterface.ID
-
+	var vniId string
+	if instanceData.PrimaryNetworkAttachment != nil && instanceData.PrimaryNetworkAttachment.VirtualNetworkInterface != nil && instanceData.PrimaryNetworkAttachment.VirtualNetworkInterface.ID != nil {
+		vniId = *instanceData.PrimaryNetworkAttachment.VirtualNetworkInterface.ID
+	}
 	options := &vpcv1.CreateFloatingIPOptions{}
-	options.SetFloatingIPPrototype(&vpcv1.FloatingIPPrototype{
+	prototype := &vpcv1.FloatingIPPrototype{
 		Name: &config.FloatingIPName,
 		Target: &vpcv1.FloatingIPTargetPrototype{
 			ID: &networkInterfaceID,
@@ -320,13 +324,30 @@ func (client IBMCloudClient) createFloatingIP(state multistep.StateBag) (*vpcv1.
 		ResourceGroup: &vpcv1.ResourceGroupIdentityByID{
 			ID: &instanceResourceGroupID,
 		},
-	})
+	}
+	options.FloatingIPPrototype = prototype
 	floatingIP, _, err := vpcService.CreateFloatingIP(options)
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Failed creating Floating IP Request. Error: %s", err)
-		ui.Error(err.Error())
-		log.Println(err.Error())
-		return nil, err
+	if err != nil && (vniId != "") {
+		if strings.Contains(err.Error(), "target is a network attachment") {
+			// retry with vniId instead of networkInterfaceID
+			prototype.Target = &vpcv1.FloatingIPTargetPrototype{
+				ID: &vniId,
+			}
+			options.FloatingIPPrototype = prototype
+			floatingIP, _, err = vpcService.CreateFloatingIP(options)
+
+			if err != nil && (vniId != "") {
+				err := fmt.Errorf("[ERROR] Failed creating Floating IP Request. Error: %s", err)
+				ui.Error(err.Error())
+				log.Println(err.Error())
+				return nil, err
+			}
+		} else {
+			err := fmt.Errorf("[ERROR] Failed creating Floating IP Request. Error: %s", err)
+			ui.Error(err.Error())
+			log.Println(err.Error())
+			return nil, err
+		}
 	}
 	return floatingIP, err
 }
@@ -488,9 +509,11 @@ func (client IBMCloudClient) createRule(rule vpcv1.CreateSecurityGroupRuleOption
 	return securityGroupRule, nil
 }
 
-func (client IBMCloudClient) addNetworkInterfaceToSecurityGroup(securityGroupID string, networkInterfaceID string, state multistep.StateBag) (*vpcv1.SecurityGroupTargetReference, error) {
+func (client IBMCloudClient) addNetworkInterfaceToSecurityGroup(securityGroupID string, networkInterfaceID string, vniId string, state multistep.StateBag) (*vpcv1.SecurityGroupTargetReference, error) {
 	ui := state.Get("ui").(packer.Ui)
 	var vpcService *vpcv1.VpcV1
+	var securityGroupTargetReferenceIntf vpcv1.SecurityGroupTargetReferenceIntf
+	var vnierr, err error
 	if state.Get("vpcService") != nil {
 		vpcService = state.Get("vpcService").(*vpcv1.VpcV1)
 	}
@@ -498,12 +521,27 @@ func (client IBMCloudClient) addNetworkInterfaceToSecurityGroup(securityGroupID 
 		securityGroupID,
 		networkInterfaceID,
 	)
-	securityGroupTargetReferenceIntf, _, err := vpcService.CreateSecurityGroupTargetBinding(options)
+	securityGroupTargetReferenceIntf, _, err = vpcService.CreateSecurityGroupTargetBinding(options)
 	if err != nil {
-		err := fmt.Errorf("[ERROR] Error sending the HTTP request that Add the VSI's network interface to the Security Group. Error: %s", err)
-		ui.Error(err.Error())
-		log.Println(err.Error())
-		return nil, err
+		if strings.Contains(err.Error(), "cannot be a network attachment") && vniId != "" {
+			// retry with vniId instead of networkInterfaceID
+			vnioptions := vpcService.NewCreateSecurityGroupTargetBindingOptions(
+				securityGroupID,
+				vniId,
+			)
+			securityGroupTargetReferenceIntf, _, vnierr = vpcService.CreateSecurityGroupTargetBinding(vnioptions)
+			if vnierr != nil {
+				vnierr := fmt.Errorf("[ERROR] Error sending the HTTP request that Add the VSI's VNI to the Security Group. Error: %s", err)
+				ui.Error(vnierr.Error())
+				log.Println(vnierr.Error())
+				return nil, vnierr
+			}
+		} else {
+			err := fmt.Errorf("[ERROR] Error sending the HTTP request that Add the VSI's network interface to the Security Group. Error: %s", err)
+			ui.Error(err.Error())
+			log.Println(err.Error())
+			return nil, err
+		}
 	}
 	securityGroupTargetReference := securityGroupTargetReferenceIntf.(*vpcv1.SecurityGroupTargetReference)
 
