@@ -141,6 +141,11 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 			c.IAMEndpoint = v
 		}
 	}
+	if c.IAMTokenExchangeURL == "" {
+		if v := os.Getenv("IC_IAM_URL"); v != "" {
+			c.IAMTokenExchangeURL = v
+		}
+	}
 	if c.Endpoint == "" {
 		if v := os.Getenv("IC_VPC_URL"); v != "" {
 			c.Endpoint = v
