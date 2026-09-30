@@ -253,6 +253,34 @@ winrm_use_ssl | bool | Optional | If true, use HTTPS for WinRM.
 | |
 timeout | string | Optional | The amount of time to wait before considering that the provisioner failed. Optional.
 logging | string | Optional | to turn debug log on, pass "debug" as value. Optional.
+resource_track_file | string | Optional | Path to a JSON file where the plugin writes the IBM Cloud resource IDs created during the build (SSH key, instance, floating IP, security group, image, etc.). The file is updated incrementally as resources are created and external tooling can read this file to clean up dangling resources if Packer exits unexpectedly. Optionally, set `PACKER_RESOURCE_TRACKING=1` instead — the file is written as `packer-resources.json` in the working directory.
+
+***********
+
+## Non-Production Environment Variables
+
+### Endpoint overrides
+
+| Environment variable | HCL field equivalent | Service overridden |
+| --- | --- | --- |
+| `IC_IAM_URL` | `iam_url` | IAM token endpoint |
+| `IC_VPC_URL` | `vpc_endpoint_url` | VPC API endpoint |
+| `IC_RC_URL` | `rc_endpoint_url` | Resource Controller endpoint |
+| `IC_GHOST_URL` | `ghost_endpoint_url` | Global Tagging (Ghost) endpoint |
+| `IC_KMS_URL` | Key Protect | Value used as-is |
+| `IC_HPCS_URL` | Hyper Protect Crypto Services | Value used as-is |
+
+### Example — targeting a test environment
+
+```bash
+export IC_IAM_URL="https://iam.test.cloud.ibm.com"
+export IC_VPC_URL="https://us-south.iaas.test.cloud.ibm.com/v1/"
+export IC_RC_URL="https://resource-controller.test.cloud.ibm.com"
+export IC_GHOST_URL="https://api.global-search-tagging.test.cloud.ibm.com/v2/"
+export IC_KMS_URL="https://us-south.kms.test.cloud.ibm.com"
+export IC_HPCS_URL="https://cfb04451-404c-4ecb-ac78-0ed1f0458daa.api.us-south.hs-crypto.test.cloud.ibm.com"
+
+```
 
 ***********
 

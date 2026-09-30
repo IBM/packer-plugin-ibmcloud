@@ -81,9 +81,10 @@ type Config struct {
 	StorageBucketName string `mapstructure:"storage_bucket_name"`
 	StorageBucketCRN  string `mapstructure:"storage_bucket_crn"`
 	//The format to use for the exported image. If the image is encrypted, only qcow2 is supported.
-	Format     string `mapstructure:"format"`
-	SkipReboot bool   `mapstructure:"skip_reboot"`
-	VPCLog     string `mapstructure:"logging"`
+	Format            string `mapstructure:"format"`
+	SkipReboot        bool   `mapstructure:"skip_reboot"`
+	VPCLog            string `mapstructure:"logging"`
+	ResourceTrackFile string `mapstructure:"resource_track_file"`
 }
 
 // Prepare processes the build configuration parameters.
@@ -123,12 +124,46 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 		errs = packer.MultiErrorAppend(errs, errors.New("a region must be specified"))
 	}
 
-	// Configure IBM Cloud Endpoint and other IBM Cloud API constants
+	// Configure IBM Cloud Endpoint and other IBM Cloud API constants.
+	// Priority for each URL (highest to lowest):
+	//  1. HCL field in the Packer template (vpc_endpoint_url / rc_endpoint_url / iam_url / ghost_endpoint_url)
+	//  2. Environment variable — for targeting non-production IBM Cloud environments:
+	//       IC_IAM_URL    sets the IAM token endpoint
+	//       IC_VPC_URL    sets the VPC API endpoint
+	//       IC_RC_URL     sets the Resource Controller endpoint
+	//       IC_GHOST_URL  sets the Global Tagging (Ghost) endpoint
+	//  3. Hardcoded IBM Cloud production default
+	//
+	// The env var checks below are only reached when the HCL field was not set (== ""),
+	// so an HCL value always wins over any environment variable.
+	if c.IAMEndpoint == "" {
+		if v := os.Getenv("IC_IAM_URL"); v != "" {
+			c.IAMEndpoint = v
+		}
+	}
 	if c.Endpoint == "" {
-		c.Endpoint = "https://" + c.Region + ".iaas.cloud.ibm.com/v1/"
+		if v := os.Getenv("IC_VPC_URL"); v != "" {
+			c.Endpoint = v
+		} else {
+			c.Endpoint = "https://" + c.Region + ".iaas.cloud.ibm.com/v1/"
+		}
 	}
 	if c.RCEndpoint == "" {
-		c.RCEndpoint = "https://resource-controller.cloud.ibm.com"
+		if v := os.Getenv("IC_RC_URL"); v != "" {
+			c.RCEndpoint = v
+		} else {
+			c.RCEndpoint = "https://resource-controller.cloud.ibm.com"
+		}
+	}
+	if c.GhostEndpoint == "" {
+		if v := os.Getenv("IC_GHOST_URL"); v != "" {
+			c.GhostEndpoint = v
+		}
+	}
+	// Only default the tracker file when the user has opted in via the
+	// PACKER_RESOURCE_TRACKING=1 environment variable (analogous to PACKER_LOG=1)
+	if c.ResourceTrackFile == "" && os.Getenv("PACKER_RESOURCE_TRACKING") == "1" {
+		c.ResourceTrackFile = "packer-resources.json"
 	}
 
 	// Exactly one of subnet_id / subnet_ids. subnet_ids is the multi-zone form:

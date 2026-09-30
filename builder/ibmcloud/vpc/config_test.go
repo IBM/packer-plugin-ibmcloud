@@ -670,3 +670,105 @@ func TestPrepareSubnetSelection(t *testing.T) {
 		})
 	}
 }
+
+func TestEndpointEnvVarFallback(t *testing.T) {
+	const (
+		envIAM = "IC_IAM_URL"
+		envVPC = "IC_VPC_URL"
+		envRC  = "IC_RC_URL"
+
+		testIAM = "https://iam.test.cloud.ibm.com"
+		testVPC = "https://us-east.iaas.test.cloud.ibm.com/v1/"
+		testRC  = "https://resource-controller.test.cloud.ibm.com"
+
+		hclIAM = "https://iam.hcl.example.com"
+		hclVPC = "https://vpc.hcl.example.com/v1/"
+		hclRC  = "https://rc.hcl.example.com"
+	)
+
+	cases := []struct {
+		name      string
+		envIAMVal string
+		envVPCVal string
+		envRCVal  string
+		hclIAMVal string
+		hclVPCVal string
+		hclRCVal  string
+		wantIAM   string
+		wantVPC   string
+		wantRC    string
+	}{
+		{
+			name:      "all three env vars used when HCL fields empty",
+			envIAMVal: testIAM, envVPCVal: testVPC, envRCVal: testRC,
+			wantIAM: testIAM, wantVPC: testVPC, wantRC: testRC,
+		},
+		// When both HCL field and env var are set, the if c.Field == "" block is
+		// skipped entirely, so the HCL value is used unchanged. Each field is
+		// tested independently so a regression in one is easy to identify.
+		{
+			name:      "HCL iam_url wins over IC_IAM_URL",
+			envIAMVal: testIAM, envVPCVal: testVPC, envRCVal: testRC,
+			hclIAMVal: hclIAM,
+			wantIAM: hclIAM, wantVPC: testVPC, wantRC: testRC,
+		},
+		{
+			name:      "HCL vpc_endpoint_url wins over IC_VPC_URL",
+			envIAMVal: testIAM, envVPCVal: testVPC, envRCVal: testRC,
+			hclVPCVal: hclVPC,
+			wantIAM: testIAM, wantVPC: hclVPC, wantRC: testRC,
+		},
+		{
+			name:      "HCL rc_endpoint_url wins over IC_RC_URL",
+			envIAMVal: testIAM, envVPCVal: testVPC, envRCVal: testRC,
+			hclRCVal: hclRC,
+			wantIAM: testIAM, wantVPC: testVPC, wantRC: hclRC,
+		},
+		{
+			name:      "all HCL fields win over all env vars",
+			envIAMVal: testIAM, envVPCVal: testVPC, envRCVal: testRC,
+			hclIAMVal: hclIAM, hclVPCVal: hclVPC, hclRCVal: hclRC,
+			wantIAM: hclIAM, wantVPC: hclVPC, wantRC: hclRC,
+		},
+		{
+			name:    "hardcoded defaults used when no env var and no HCL field",
+			wantIAM: "",
+			wantVPC: "https://us-east.iaas.cloud.ibm.com/v1/",
+			wantRC:  "https://resource-controller.cloud.ibm.com",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.envIAMVal != "" {
+				t.Setenv(envIAM, tc.envIAMVal)
+			}
+			if tc.envVPCVal != "" {
+				t.Setenv(envVPC, tc.envVPCVal)
+			}
+			if tc.envRCVal != "" {
+				t.Setenv(envRC, tc.envRCVal)
+			}
+
+			c := validVPCConfig()
+			c.Comm.SSHUsername = "root"
+			c.IAMEndpoint = tc.hclIAMVal
+			c.Endpoint = tc.hclVPCVal
+			c.RCEndpoint = tc.hclRCVal
+
+			if _, err := c.Prepare(); err != nil {
+				t.Fatalf("Prepare() unexpected error: %v", err)
+			}
+
+			if c.IAMEndpoint != tc.wantIAM {
+				t.Errorf("IAMEndpoint = %q, want %q", c.IAMEndpoint, tc.wantIAM)
+			}
+			if c.Endpoint != tc.wantVPC {
+				t.Errorf("Endpoint = %q, want %q", c.Endpoint, tc.wantVPC)
+			}
+			if c.RCEndpoint != tc.wantRC {
+				t.Errorf("RCEndpoint = %q, want %q", c.RCEndpoint, tc.wantRC)
+			}
+		})
+	}
+}

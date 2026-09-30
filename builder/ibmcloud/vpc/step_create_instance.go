@@ -44,6 +44,12 @@ func (step *stepCreateInstance) Run(_ context.Context, state multistep.StateBag)
 		// Record the instance immediately so Cleanup can delete it if the wait
 		// below fails on the final attempt.
 		state.Put("instance_data", instanceData)
+		if err := writeTrackedResources(state); err != nil {
+			err := fmt.Errorf("[ERROR] Error writing tracked resources file: %s", err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
 		ui.Say(fmt.Sprintf("Instance created: %s (%s). Waiting for it to start...", *instanceData.Name, *instanceData.ID))
 
 		waitErr := client.waitForResourceReady(*instanceData.ID, "instances", config.StateTimeout, state)

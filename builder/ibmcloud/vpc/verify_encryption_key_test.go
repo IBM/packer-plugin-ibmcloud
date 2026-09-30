@@ -12,6 +12,7 @@ func TestParseEncryptionKeyCRN(t *testing.T) {
 		name, crn                 string
 		endpoint, instance, keyID string
 		wantErr                   bool
+		envKey, envVal            string
 	}{
 		{
 			name:     "key protect uses the regional endpoint",
@@ -23,12 +24,27 @@ func TestParseEncryptionKeyCRN(t *testing.T) {
 			crn:      "crn:v1:bluemix:public:hs-crypto:us-east:a/acc:inst-2:key:key-2",
 			endpoint: "https://inst-2.api.us-east.hs-crypto.appdomain.cloud", instance: "inst-2", keyID: "key-2",
 		},
+		{
+			name:     "IC_KMS_URL overrides key protect endpoint",
+			crn:      "crn:v1:bluemix:public:kms:us-east:a/acc:inst-1:key:key-1",
+			envKey:   "IC_KMS_URL", envVal: "https://kms.test.example.com",
+			endpoint: "https://kms.test.example.com", instance: "inst-1", keyID: "key-1",
+		},
+		{
+			name:     "IC_HPCS_URL overrides hyper protect endpoint",
+			crn:      "crn:v1:bluemix:public:hs-crypto:us-east:a/acc:inst-2:key:key-2",
+			envKey:   "IC_HPCS_URL", envVal: "https://hpcs.test.example.com",
+			endpoint: "https://hpcs.test.example.com", instance: "inst-2", keyID: "key-2",
+		},
 		{name: "instance crn (not a key) is rejected", crn: "crn:v1:bluemix:public:kms:us-east:a/acc:inst-1::", wantErr: true},
 		{name: "unsupported service is rejected", crn: "crn:v1:bluemix:public:cloud-object-storage:us-east:a/acc:inst:key:k", wantErr: true},
 		{name: "garbage is rejected", crn: "not-a-crn", wantErr: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.envKey != "" {
+				t.Setenv(tt.envKey, tt.envVal)
+			}
 			endpoint, instance, keyID, err := parseEncryptionKeyCRN(tt.crn)
 			if tt.wantErr {
 				if err == nil {
