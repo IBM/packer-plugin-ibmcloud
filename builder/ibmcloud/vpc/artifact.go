@@ -52,11 +52,16 @@ func (a *Artifact) State(name string) interface{} {
 
 // stateHCPPackerRegistryMetadata constructs HCP Packer registry metadata for the built image
 func (a *Artifact) stateHCPPackerRegistryMetadata() interface{} {
+	// Missing or non-string values yield an empty string rather than a panic,
+	// since HCP metadata is best-effort and must never fail a finished build.
+	region, _ := a.StateData["region"].(string)
+	sourceImageID, _ := a.StateData["source_image_id"].(string)
+
 	image := &registryimage.Image{
 		ImageID:        a.imageId,
 		ProviderName:   "ibmcloud-vpc",
-		ProviderRegion: a.StateData["region"].(string),
-		SourceImageID:  a.StateData["source_image_id"].(string),
+		ProviderRegion: region,
+		SourceImageID:  sourceImageID,
 	}
 	return []*registryimage.Image{image}
 }
