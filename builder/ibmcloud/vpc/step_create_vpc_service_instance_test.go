@@ -19,7 +19,7 @@ func TestStepCreateVPCServiceInstanceEnablesRetries(t *testing.T) {
 	state := new(multistep.BasicStateBag)
 	state.Put("ui", packer.TestUi(t))
 	state.Put("client", &IBMCloudClient{IBMApiKey: "dummy-key"})
-	state.Put("config", Config{})
+	state.Put("config", Config{IBMApiKey: "dummy-key"})
 
 	step := &StepCreateVPCServiceInstance{}
 	if action := step.Run(context.Background(), state); action != multistep.ActionContinue {

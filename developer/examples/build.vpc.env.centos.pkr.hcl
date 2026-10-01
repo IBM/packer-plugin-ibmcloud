@@ -8,7 +8,7 @@
 // }
 
 variable "IBM_API_KEY" {
-  type = string
+  type    = string
   default = "${env("IC_API_KEY")}"
 }
 

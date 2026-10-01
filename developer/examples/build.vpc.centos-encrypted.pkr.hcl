@@ -36,11 +36,11 @@ locals {
 }
 
 source "ibmcloud-vpc" "centos-encrypted-image" {
-  api_key           = var.IBM_API_KEY
-  region            = var.REGION
-  subnet_id         = var.SUBNET_ID
-  resource_group_id = var.RESOURCE_GROUP_ID
-  security_group_id = var.SECURITY_GROUP_ID
+  api_key            = var.IBM_API_KEY
+  region             = var.REGION
+  subnet_id          = var.SUBNET_ID
+  resource_group_id  = var.RESOURCE_GROUP_ID
+  security_group_id  = var.SECURITY_GROUP_ID
   encryption_key_crn = var.ENCRYPTION_KEY_CRN
 
   vsi_base_image_name = "ibm-centos-stream-10-amd64-2"

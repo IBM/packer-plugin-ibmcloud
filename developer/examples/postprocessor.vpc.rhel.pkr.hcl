@@ -70,16 +70,16 @@ build {
   post-processors {
     post-processor "ibmcloud-export-image" {
       /* image_export_job_name = "packer-image-export-job-${local.timestamp}" */
-      storage_bucket_name     = "cli-bucket-1"
+      storage_bucket_name = "cli-bucket-1"
       /* format                  = "qcow2" */
     }
     post-processor "ibmcloud-export-image" {
-      image_id              = "r006-e6599838-666e-4036-8840-a8b979db6fba"
-      api_key               = var.IBM_API_KEY
-      region                = var.REGION
-      storage_bucket_name   = "cli-bucket-1"
-      format                = "qcow2"
-      export_timeout          = "12m"
+      image_id            = "r006-e6599838-666e-4036-8840-a8b979db6fba"
+      api_key             = var.IBM_API_KEY
+      region              = var.REGION
+      storage_bucket_name = "cli-bucket-1"
+      format              = "qcow2"
+      export_timeout      = "12m"
     }
   }
 }

@@ -7,7 +7,24 @@
 //   }
 // }
 
-variable "IBM_API_KEY" {
+// IAM token exchange example — use this when you have an existing IBM Cloud
+// access token (e.g. from a CI/CD system or federated login) and cannot supply
+// an API key directly.
+//
+// The plugin exchanges your access token for a scoped token tied to the
+// desired_iam_id CRN on every VPC service initialisation, so the token is
+// refreshed automatically mid-build without any manual intervention.
+//
+// Pass credentials via the vars file:
+//   packer build -var-file=developer/variables-access-token.pkrvars.hcl \
+//     developer/examples/build.vpc.access-token.centos.pkr.hcl
+
+variable "IAM_ACCESS_TOKEN" {
+  type      = string
+  sensitive = true
+}
+
+variable "IAM_DESIRED_IAM_ID" {
   type = string
 }
 
@@ -20,11 +37,13 @@ variable "REGION" {
 }
 
 variable "RESOURCE_GROUP_ID" {
-  type = string
+  type    = string
+  default = ""
 }
 
 variable "SECURITY_GROUP_ID" {
-  type = string
+  type    = string
+  default = ""
 }
 
 locals {
@@ -32,8 +51,11 @@ locals {
 }
 
 source "ibmcloud-vpc" "centos" {
-  api_key = var.IBM_API_KEY
-  region  = var.REGION
+  # Authentication — token exchange path (no api_key).
+  iam_access_token   = var.IAM_ACCESS_TOKEN
+  iam_desired_iam_id = var.IAM_DESIRED_IAM_ID
+
+  region = var.REGION
 
   subnet_id         = var.SUBNET_ID
   resource_group_id = var.RESOURCE_GROUP_ID
@@ -42,7 +64,6 @@ source "ibmcloud-vpc" "centos" {
   vsi_base_image_name = "ibm-centos-stream-10-amd64-2"
   vsi_profile         = "bx2-2x8"
   vsi_interface       = "public"
-  vsi_user_data_file  = "scripts/postscript.sh"
 
   image_name = "packer-${local.timestamp}"
 
@@ -62,13 +83,8 @@ build {
   provisioner "shell" {
     execute_command = "{{.Vars}} bash '{{.Path}}'"
     inline = [
-      "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure'",
+      "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure (token exchange auth)'",
       "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure' >> /hello.txt"
     ]
   }
-
-  provisioner "ansible" {
-    playbook_file = "provisioner/centos-playbook.yml"
-  }
-
 }
