@@ -477,10 +477,15 @@ func (client IBMCloudClient) createRule(rule vpcv1.CreateSecurityGroupRuleOption
 	}
 
 	securityGroupRuleIntf, _, err := vpcService.CreateSecurityGroupRule(&rule)
-	securityGroupRule := securityGroupRuleIntf.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
-
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error sending the HTTP request that creates a Security Group's rule. Error: %s", err)
+		ui.Error(err.Error())
+		log.Println(err.Error())
+		return nil, err
+	}
+	securityGroupRule, ok := securityGroupRuleIntf.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
+	if !ok || securityGroupRule == nil {
+		err := fmt.Errorf("[ERROR] unexpected type returned for security group rule: %T", securityGroupRuleIntf)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return nil, err
@@ -505,7 +510,12 @@ func (client IBMCloudClient) addNetworkInterfaceToSecurityGroup(securityGroupID 
 		log.Println(err.Error())
 		return nil, err
 	}
-	securityGroupTargetReference := securityGroupTargetReferenceIntf.(*vpcv1.SecurityGroupTargetReference)
-
+	securityGroupTargetReference, ok := securityGroupTargetReferenceIntf.(*vpcv1.SecurityGroupTargetReference)
+	if !ok || securityGroupTargetReference == nil {
+		err := fmt.Errorf("[ERROR] unexpected type returned for security group target reference: %T", securityGroupTargetReferenceIntf)
+		ui.Error(err.Error())
+		log.Println(err.Error())
+		return nil, err
+	}
 	return securityGroupTargetReference, nil
 }

@@ -84,7 +84,7 @@ build {
     execute_command = "{{.Vars}} bash '{{.Path}}'"
     inline = [
       "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure (token exchange auth)'",
-      "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure' >> /hello.txt"
+      "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure' >> /tmp/hello.txt"
     ]
   }
 }
