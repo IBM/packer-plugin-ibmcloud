@@ -180,11 +180,11 @@ Variable | Type  | Required | Description
 **builder variables** |
 type | string |  | Set it as "ibmcloud"
 | |
-api_key | string | Required (or `iam_access_token`) | The IBM Cloud platform API key. Mutually exclusive with `iam_access_token`.
+api_key | string | Required (or `iam_service_api_key`) | The IBM Cloud platform API key. Mutually exclusive with `iam_service_api_key`.
 | OR |
-iam_access_token | string | Required (or `api_key`) | An existing IBM Cloud access token to exchange for a scoped token via IAM. Mutually exclusive with `api_key`.
-iam_desired_iam_id | string | Required with `iam_access_token` | The CRN of the service identity the exchanged token should be scoped to (e.g. `crn:v1:bluemix:public:cloud-object-storage:global:a/<account>:<instance>::`).
+iam_service_api_key | string | Required (or `api_key`) | A Service ID API key.
 | |
+desired_iam_id | string | Required with `iam_service_api_key` | The CRN of the service identity the exchanged token should be scoped to.
 region | string | Required | IBM Cloud region where VPC is deployed.
 subnet_id | string | Required* | The VPC Subnet identifier. Provide exactly one of `subnet_id` or `subnet_ids`.
 | OR |

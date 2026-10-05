@@ -732,7 +732,7 @@ func TestEndpointEnvVarFallback(t *testing.T) {
 		},
 		{
 			name:    "hardcoded defaults used when no env var and no HCL field",
-			wantIAM: "",
+			wantIAM: "https://iam.cloud.ibm.com",
 			wantVPC: "https://us-east.iaas.cloud.ibm.com/v1/",
 			wantRC:  "https://resource-controller.cloud.ibm.com",
 		},
@@ -773,51 +773,3 @@ func TestEndpointEnvVarFallback(t *testing.T) {
 	}
 }
 
-func TestIAMTokenExchangeURLFromEnv(t *testing.T) {
-	cases := []struct {
-		name        string
-		envIAMVal   string
-		hclExchange string
-		wantExchange string
-	}{
-		{
-			name:         "IC_IAM_URL base URL gets /identity/token appended",
-			envIAMVal:    "https://iam.test.cloud.ibm.com",
-			wantExchange: "https://iam.test.cloud.ibm.com/identity/token",
-		},
-		{
-			name:         "IC_IAM_URL with trailing slash gets /identity/token appended cleanly",
-			envIAMVal:    "https://iam.test.cloud.ibm.com/",
-			wantExchange: "https://iam.test.cloud.ibm.com/identity/token",
-		},
-		{
-			name:         "HCL iam_token_exchange_url wins over IC_IAM_URL",
-			envIAMVal:    "https://iam.test.cloud.ibm.com",
-			hclExchange:  "https://custom.example.com/identity/token",
-			wantExchange: "https://custom.example.com/identity/token",
-		},
-		{
-			name:         "no env var leaves IAMTokenExchangeURL empty (defaults in fetchAccessToken)",
-			wantExchange: "",
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			if tc.envIAMVal != "" {
-				t.Setenv("IC_IAM_URL", tc.envIAMVal)
-			}
-			c := validVPCConfig()
-			c.Comm.SSHUsername = "root"
-			c.IAMTokenExchangeURL = tc.hclExchange
-
-			if _, err := c.Prepare(); err != nil {
-				t.Fatalf("Prepare() unexpected error: %v", err)
-			}
-
-			if c.IAMTokenExchangeURL != tc.wantExchange {
-				t.Errorf("IAMTokenExchangeURL = %q, want %q", c.IAMTokenExchangeURL, tc.wantExchange)
-			}
-		})
-	}
-}

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"slices"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/packer-plugin-sdk/common"
@@ -20,10 +19,9 @@ type Config struct {
 	common.PackerConfig `mapstructure:",squash"`
 	Comm                communicator.Config `mapstructure:",squash"`
 
-	IBMApiKey            string `mapstructure:"api_key"`
-	IAMAccessToken       string `mapstructure:"iam_access_token"`
-	IAMDesiredIAMID      string `mapstructure:"iam_desired_iam_id"`
-	IAMTokenExchangeURL  string `mapstructure:"iam_token_exchange_url"`
+	IBMApiKey           string `mapstructure:"api_key"`
+	IAMServiceAPIKey    string `mapstructure:"iam_service_api_key"`
+	DesiredIAMID        string `mapstructure:"desired_iam_id"`
 	Region               string `mapstructure:"region"`
 	Endpoint                  string `mapstructure:"vpc_endpoint_url"`
 	RCEndpoint                string `mapstructure:"rc_endpoint_url"`
@@ -106,19 +104,26 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	var errs *packer.MultiError
 	errs = packer.MultiErrorAppend(errs, c.Comm.Prepare(&c.ctx)...)
 
-	// Exactly one of api_key or iam_access_token must be provided.
-	if c.IBMApiKey != "" && c.IAMAccessToken != "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("api_key and iam_access_token are mutually exclusive; specify only one"))
-	} else if c.IBMApiKey == "" && c.IAMAccessToken == "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("one of api_key or iam_access_token must be specified"))
+	// Exactly one of api_key or iam_service_api_key must be provided.
+	authCount := 0
+	if c.IBMApiKey != "" {
+		authCount++
 	}
-	// iam_access_token requires iam_desired_iam_id for the token exchange POST.
-	if c.IAMAccessToken != "" && c.IAMDesiredIAMID == "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("iam_desired_iam_id is required when iam_access_token is set"))
+	if c.IAMServiceAPIKey != "" {
+		authCount++
 	}
-	// iam_desired_iam_id without iam_access_token has no effect.
-	if c.IAMDesiredIAMID != "" && c.IAMAccessToken == "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("iam_desired_iam_id requires iam_access_token to be set"))
+	if authCount > 1 {
+		errs = packer.MultiErrorAppend(errs, errors.New("api_key and iam_service_api_key are mutually exclusive; specify only one"))
+	} else if authCount == 0 {
+		errs = packer.MultiErrorAppend(errs, errors.New("one of api_key or iam_service_api_key must be specified"))
+	}
+	// iam_service_api_key requires desired_iam_id for the two-step token exchange.
+	if c.IAMServiceAPIKey != "" && c.DesiredIAMID == "" {
+		errs = packer.MultiErrorAppend(errs, errors.New("desired_iam_id is required when iam_service_api_key is set"))
+	}
+	// desired_iam_id without iam_service_api_key has no effect.
+	if c.DesiredIAMID != "" && c.IAMServiceAPIKey == "" {
+		errs = packer.MultiErrorAppend(errs, errors.New("desired_iam_id requires iam_service_api_key to be set"))
 	}
 
 	if c.Region == "" {
@@ -140,11 +145,8 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	if c.IAMEndpoint == "" {
 		if v := os.Getenv("IC_IAM_URL"); v != "" {
 			c.IAMEndpoint = v
-		}
-	}
-	if c.IAMTokenExchangeURL == "" {
-		if v := os.Getenv("IC_IAM_URL"); v != "" {
-			c.IAMTokenExchangeURL = strings.TrimRight(v, "/") + "/identity/token"
+		} else {
+			c.IAMEndpoint = "https://iam.cloud.ibm.com"
 		}
 	}
 	if c.Endpoint == "" {

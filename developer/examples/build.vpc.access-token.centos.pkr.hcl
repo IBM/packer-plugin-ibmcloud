@@ -7,24 +7,15 @@
 //   }
 // }
 
-// IAM token exchange example — use this when you have an existing IBM Cloud
-// access token (e.g. from a CI/CD system or federated login) and cannot supply
-// an API key directly.
-//
-// The plugin exchanges your access token for a scoped token tied to the
-// desired_iam_id CRN on every VPC service initialisation, so the token is
-// refreshed automatically mid-build without any manual intervention.
-//
-// Pass credentials via the vars file:
-//   packer build -var-file=developer/variables-access-token.pkrvars.hcl \
-//     developer/examples/build.vpc.access-token.centos.pkr.hcl
+// IAM Service API Key authentication example — use this when you have a Service
+// ID API key and need the plugin to perform both token-exchange steps internally.
 
-variable "IAM_ACCESS_TOKEN" {
+variable "IAM_SERVICE_API_KEY" {
   type      = string
   sensitive = true
 }
 
-variable "IAM_DESIRED_IAM_ID" {
+variable "DESIRED_IAM_ID" {
   type = string
 }
 
@@ -51,9 +42,9 @@ locals {
 }
 
 source "ibmcloud-vpc" "centos" {
-  # Authentication — token exchange path (no api_key).
-  iam_access_token   = var.IAM_ACCESS_TOKEN
-  iam_desired_iam_id = var.IAM_DESIRED_IAM_ID
+
+  iam_service_api_key = var.IAM_SERVICE_API_KEY
+  desired_iam_id      = var.DESIRED_IAM_ID
 
   region = var.REGION
 
@@ -83,7 +74,7 @@ build {
   provisioner "shell" {
     execute_command = "{{.Vars}} bash '{{.Path}}'"
     inline = [
-      "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure (token exchange auth)'",
+      "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure'",
       "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure' >> /tmp/hello.txt"
     ]
   }
