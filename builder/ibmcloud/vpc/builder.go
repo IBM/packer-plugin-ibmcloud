@@ -154,6 +154,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 			"iam_url":          b.config.IAMEndpoint,
 			"image_id":         state.Get("image_id").(string),
 			"image_name":       b.config.ImageName,
+			"source_image_id":  state.Get("baseImageID").(string),
 		},
 	}
 	return artifact, nil
