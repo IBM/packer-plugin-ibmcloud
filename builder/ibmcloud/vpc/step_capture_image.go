@@ -6,7 +6,6 @@ import (
 	"log"
 	"regexp"
 
-	"github.com/IBM/go-sdk-core/v5/core"
 	globaltaggingv1 "github.com/IBM/platform-services-go-sdk/globaltaggingv1"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
@@ -119,10 +118,7 @@ func (s *stepCaptureImage) Run(_ context.Context, state multistep.StateBag) mult
 	if config.ImageTags != nil && len(config.ImageTags) > 0 {
 
 		optGlbTag := globaltaggingv1.GlobalTaggingV1Options{
-			Authenticator: &core.IamAuthenticator{
-				ApiKey: client.IBMApiKey,
-				URL:    config.IAMEndpoint,
-			},
+			Authenticator: vpcService.Service.Options.Authenticator,
 		}
 		if config.GhostEndpoint != "" {
 			optGlbTag.URL = config.GhostEndpoint

@@ -732,7 +732,7 @@ func TestEndpointEnvVarFallback(t *testing.T) {
 		},
 		{
 			name:    "hardcoded defaults used when no env var and no HCL field",
-			wantIAM: "",
+			wantIAM: "https://iam.cloud.ibm.com",
 			wantVPC: "https://us-east.iaas.cloud.ibm.com/v1/",
 			wantRC:  "https://resource-controller.cloud.ibm.com",
 		},
@@ -772,3 +772,4 @@ func TestEndpointEnvVarFallback(t *testing.T) {
 		})
 	}
 }
+

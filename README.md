@@ -180,7 +180,11 @@ Variable | Type  | Required | Description
 **builder variables** |
 type | string |  | Set it as "ibmcloud"
 | |
-api_key | string | Required | The IBM Cloud platform API key.
+api_key | string | Required (or `iam_service_api_key`) | The IBM Cloud platform API key. Mutually exclusive with `iam_service_api_key`.
+| OR |
+iam_service_api_key | string | Required (or `api_key`) | A Service ID API key.
+| |
+desired_iam_id | string | Required with `iam_service_api_key` | The CRN of the service identity the exchanged token should be scoped to.
 region | string | Required | IBM Cloud region where VPC is deployed.
 subnet_id | string | Required* | The VPC Subnet identifier. Provide exactly one of `subnet_id` or `subnet_ids`.
 | OR |
@@ -270,7 +274,7 @@ resource_track_file | string | Optional | Path to a JSON file where the plugin w
 
 ```bash
 export IC_IAM_URL="https://iam.test.cloud.ibm.com"
-export IC_VPC_URL="https://us-south.iaas.test.cloud.ibm.com/v1/"
+export IC_VPC_URL="https://us-south-stage01.iaasdev.cloud.ibm.com/v1/"
 export IC_RC_URL="https://resource-controller.test.cloud.ibm.com"
 export IC_GHOST_URL="https://api.global-search-tagging.test.cloud.ibm.com/v2/"
 export IC_KMS_URL="https://us-south.kms.test.cloud.ibm.com"

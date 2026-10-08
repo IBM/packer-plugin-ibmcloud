@@ -72,6 +72,15 @@ func newKMSKeyVerifier(apiKey, iamURL string) kmsKeyVerifier {
 	}
 }
 
+// newKMSKeyVerifierFromAuth builds a kmsKeyVerifier using a pre-built authenticator,
+// supporting both the api_key and iam_access_token auth paths.
+func newKMSKeyVerifierFromAuth(auth core.Authenticator) kmsKeyVerifier {
+	return kmsKeyVerifier{
+		authenticator: auth,
+		client:        &http.Client{Timeout: 30 * time.Second},
+	}
+}
+
 // keyExists reports whether a key with keyID is present in the KMS instance. It LISTs the
 // instance's keys (GET /api/v2/keys) and matches by id rather than GET /api/v2/keys/{id}: reading
 // a specific key requires a higher privilege than listing, and the build identity only needs to

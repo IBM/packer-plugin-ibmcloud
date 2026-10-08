@@ -17,7 +17,6 @@ import (
 type stepVerifyInput struct{}
 
 func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
-	client := state.Get("client").(*IBMCloudClient)
 	ui := state.Get("ui").(packer.Ui)
 	config := state.Get("config").(Config)
 	// vpc service
@@ -45,12 +44,16 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 		return multistep.ActionHalt
 	} else if config.ResourceGroupID != "" || config.ResourceGroupName != "" {
 		rcUrl := config.RCEndpoint
+		rcAuthenticator, err := newAuthenticator(config)
+		if err != nil {
+			err := fmt.Errorf("[ERROR] Authentication setup failed for resource group lookup: %s", err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
 		serviceClientOptions := &resourcemanagerv2.ResourceManagerV2Options{
-			Authenticator: &core.IamAuthenticator{
-				ApiKey: client.IBMApiKey,
-				URL:    config.IAMEndpoint,
-			},
-			URL: rcUrl,
+			Authenticator: rcAuthenticator,
+			URL:           rcUrl,
 		}
 		serviceClient, err := resourcemanagerv2.NewResourceManagerV2(serviceClientOptions)
 		if err != nil {
@@ -237,7 +240,14 @@ func (s *stepVerifyInput) Run(_ context.Context, state multistep.StateBag) multi
 	// Hyper Protect Crypto Services instances, so the encryption key cannot be verified that way;
 	// read it from the KMS GET key endpoint (derived from the CRN's service) instead.
 	if config.EncryptionKeyCRN != "" {
-		if err := verifyEncryptionKeyCRN(config.EncryptionKeyCRN, newKMSKeyVerifier(client.IBMApiKey, config.IAMEndpoint)); err != nil {
+		kmsAuth, err := newAuthenticator(config)
+		if err != nil {
+			err := fmt.Errorf("[ERROR] Authentication setup failed for encryption key verification: %s", err)
+			state.Put("error", err)
+			ui.Error(err.Error())
+			return multistep.ActionHalt
+		}
+		if err := verifyEncryptionKeyCRN(config.EncryptionKeyCRN, newKMSKeyVerifierFromAuth(kmsAuth)); err != nil {
 			err := fmt.Errorf("[ERROR] Encryption crn (%s) information could not be retrieved: %s", config.EncryptionKeyCRN, err)
 			state.Put("error", err)
 			ui.Error(err.Error())

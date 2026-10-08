@@ -52,7 +52,7 @@ source "ibmcloud-vpc" "rhel" {
   ssh_port     = 22
   ssh_timeout  = "15m"
   skip_reboot  = true
-  timeout = "30m"
+  timeout      = "30m"
 }
 
 build {

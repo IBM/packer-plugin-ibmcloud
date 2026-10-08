@@ -64,10 +64,14 @@ type FlatConfig struct {
 	WinRMNoProxy                       *bool             `mapstructure:"winrm_no_proxy" cty:"winrm_no_proxy" hcl:"winrm_no_proxy"`
 	WinRMPort                          *int              `mapstructure:"winrm_port" cty:"winrm_port" hcl:"winrm_port"`
 	WinRMTimeout                       *string           `mapstructure:"winrm_timeout" cty:"winrm_timeout" hcl:"winrm_timeout"`
+	WinRMRetryInterval                 *string           `mapstructure:"winrm_retry_interval" cty:"winrm_retry_interval" hcl:"winrm_retry_interval"`
+	WinRMConnectTimeout                *string           `mapstructure:"winrm_connect_timeout" cty:"winrm_connect_timeout" hcl:"winrm_connect_timeout"`
 	WinRMUseSSL                        *bool             `mapstructure:"winrm_use_ssl" cty:"winrm_use_ssl" hcl:"winrm_use_ssl"`
 	WinRMInsecure                      *bool             `mapstructure:"winrm_insecure" cty:"winrm_insecure" hcl:"winrm_insecure"`
 	WinRMUseNTLM                       *bool             `mapstructure:"winrm_use_ntlm" cty:"winrm_use_ntlm" hcl:"winrm_use_ntlm"`
 	IBMApiKey                          *string           `mapstructure:"api_key" cty:"api_key" hcl:"api_key"`
+	IAMServiceAPIKey                   *string           `mapstructure:"iam_service_api_key" cty:"iam_service_api_key" hcl:"iam_service_api_key"`
+	DesiredIAMID                       *string           `mapstructure:"desired_iam_id" cty:"desired_iam_id" hcl:"desired_iam_id"`
 	Region                             *string           `mapstructure:"region" cty:"region" hcl:"region"`
 	Endpoint                           *string           `mapstructure:"vpc_endpoint_url" cty:"vpc_endpoint_url" hcl:"vpc_endpoint_url"`
 	RCEndpoint                         *string           `mapstructure:"rc_endpoint_url" cty:"rc_endpoint_url" hcl:"rc_endpoint_url"`
@@ -182,10 +186,14 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"winrm_no_proxy":                          &hcldec.AttrSpec{Name: "winrm_no_proxy", Type: cty.Bool, Required: false},
 		"winrm_port":                              &hcldec.AttrSpec{Name: "winrm_port", Type: cty.Number, Required: false},
 		"winrm_timeout":                           &hcldec.AttrSpec{Name: "winrm_timeout", Type: cty.String, Required: false},
+		"winrm_retry_interval":                    &hcldec.AttrSpec{Name: "winrm_retry_interval", Type: cty.String, Required: false},
+		"winrm_connect_timeout":                   &hcldec.AttrSpec{Name: "winrm_connect_timeout", Type: cty.String, Required: false},
 		"winrm_use_ssl":                           &hcldec.AttrSpec{Name: "winrm_use_ssl", Type: cty.Bool, Required: false},
 		"winrm_insecure":                          &hcldec.AttrSpec{Name: "winrm_insecure", Type: cty.Bool, Required: false},
 		"winrm_use_ntlm":                          &hcldec.AttrSpec{Name: "winrm_use_ntlm", Type: cty.Bool, Required: false},
 		"api_key":                                 &hcldec.AttrSpec{Name: "api_key", Type: cty.String, Required: false},
+		"iam_service_api_key":                     &hcldec.AttrSpec{Name: "iam_service_api_key", Type: cty.String, Required: false},
+		"desired_iam_id":                          &hcldec.AttrSpec{Name: "desired_iam_id", Type: cty.String, Required: false},
 		"region":                                  &hcldec.AttrSpec{Name: "region", Type: cty.String, Required: false},
 		"vpc_endpoint_url":                        &hcldec.AttrSpec{Name: "vpc_endpoint_url", Type: cty.String, Required: false},
 		"rc_endpoint_url":                         &hcldec.AttrSpec{Name: "rc_endpoint_url", Type: cty.String, Required: false},

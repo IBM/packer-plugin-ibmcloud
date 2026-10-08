@@ -7,7 +7,15 @@
 //   }
 // }
 
-variable "IBM_API_KEY" {
+// IAM Service API Key authentication example — use this when you have a Service
+// ID API key and need the plugin to perform both token-exchange steps internally.
+
+variable "IAM_SERVICE_API_KEY" {
+  type      = string
+  sensitive = true
+}
+
+variable "DESIRED_IAM_ID" {
   type = string
 }
 
@@ -20,11 +28,13 @@ variable "REGION" {
 }
 
 variable "RESOURCE_GROUP_ID" {
-  type = string
+  type    = string
+  default = ""
 }
 
 variable "SECURITY_GROUP_ID" {
-  type = string
+  type    = string
+  default = ""
 }
 
 locals {
@@ -32,8 +42,11 @@ locals {
 }
 
 source "ibmcloud-vpc" "centos" {
-  api_key = var.IBM_API_KEY
-  region  = var.REGION
+
+  iam_service_api_key = var.IAM_SERVICE_API_KEY
+  desired_iam_id      = var.DESIRED_IAM_ID
+
+  region = var.REGION
 
   subnet_id         = var.SUBNET_ID
   resource_group_id = var.RESOURCE_GROUP_ID
@@ -42,7 +55,6 @@ source "ibmcloud-vpc" "centos" {
   vsi_base_image_name = "ibm-centos-stream-10-amd64-2"
   vsi_profile         = "bx2-2x8"
   vsi_interface       = "public"
-  vsi_user_data_file  = "scripts/postscript.sh"
 
   image_name = "packer-${local.timestamp}"
 
@@ -63,12 +75,7 @@ build {
     execute_command = "{{.Vars}} bash '{{.Path}}'"
     inline = [
       "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure'",
-      "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure' >> /hello.txt"
+      "echo 'Hello from IBM Cloud Packer Plugin - VPC Infrastructure' >> /tmp/hello.txt"
     ]
   }
-
-  provisioner "ansible" {
-    playbook_file = "provisioner/centos-playbook.yml"
-  }
-
 }
