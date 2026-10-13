@@ -174,7 +174,8 @@ func (s SoftlayerClient) hasErrors(body map[string]interface{}) error {
 
 func (s SoftlayerClient) doRawHttpRequest(path string, requestType string, requestBody *bytes.Buffer) ([]byte, error) {
 	url := fmt.Sprintf("https://%s:%s@%s/%s", s.user, s.apiKey, SOFTLAYER_API_URL, path)
-	log.Printf("Sending new request to softlayer: %s", url)
+	// Log only the path — the full URL embeds the username and API key.
+	log.Printf("Sending new %s request to softlayer: %s", requestType, path)
 
 	// Create the request object
 	var lastResponse http.Response
@@ -210,7 +211,8 @@ func (s SoftlayerClient) doRawHttpRequest(path string, requestType string, reque
 		return nil, err
 	}
 
-	log.Printf("Received response from SoftLayer: %s", responseBody)
+	// Do not log the body — responses can contain instance passwords.
+	log.Printf("Received response from SoftLayer for %s (%d bytes)", path, len(responseBody))
 	return responseBody, nil
 }
 
@@ -220,7 +222,6 @@ func (s SoftlayerClient) doHttpRequest(path string, requestType string, requestB
 		err := fmt.Errorf("[ERROR] Failed to get proper HTTP response from SoftLayer API. Error: %s", err)
 		return nil, err
 	}
-	log.Printf("ResponseBody: %s", responseBody)
 
 	var decodedResponse interface{}
 	err = json.Unmarshal(responseBody, &decodedResponse)
@@ -254,7 +255,6 @@ func (s SoftlayerClient) doModifiedHttpRequest(path string, requestType string, 
 		err := fmt.Errorf("[Error] Failed to get proper HTTP response from SoftLayer API")
 		return nil, err
 	}
-	log.Printf("ResponseBody: %s", responseBody)
 
 	var decodedResponse interface{}
 	err = json.Unmarshal(responseBody, &decodedResponse)
@@ -262,7 +262,6 @@ func (s SoftlayerClient) doModifiedHttpRequest(path string, requestType string, 
 		err := fmt.Errorf("[Error] Failed to decode JSON response from SoftLayer: %s | %s", responseBody, err)
 		return nil, err
 	}
-	log.Printf("response Unmarshal: %s", err)
 
 	switch v := decodedResponse.(type) {
 	case []interface{}:

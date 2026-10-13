@@ -33,7 +33,7 @@ func winRMConfig(state multistep.StateBag) (*communicator.WinRMConfig, error) {
 		Password: password,
 	}
 
-	ui.Say(fmt.Sprintf("Created WinRMConfig with Username: %s, Password: %s", comm.Username, comm.Password))
+	ui.Say(fmt.Sprintf("Created WinRMConfig with Username: %s", comm.Username))
 
 	// Make sure to update WinRMUser and WinRMPassword in config and shared state
 	config.Comm.WinRMUser = username
