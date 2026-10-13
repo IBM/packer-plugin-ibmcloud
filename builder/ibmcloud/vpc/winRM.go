@@ -50,7 +50,7 @@ func winRMConfig(state multistep.StateBag) (*communicator.WinRMConfig, error) {
 	state.Put("config", config)
 	state.Put("winrm_password", password)
 
-	ui.Say(fmt.Sprintf("Attempting WinRM communication... Instance credentials (Username: %s, Password: %s)", comm.Username, comm.Password))
+	ui.Say(fmt.Sprintf("Attempting WinRM communication... Instance credentials (Username: %s)", comm.Username))
 	return &comm, nil
 }
 
