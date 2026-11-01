@@ -1,7 +1,11 @@
 package classic
 
 import (
+	"bytes"
 	"fmt"
+	"log"
+	"net"
+	"sync"
 
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"golang.org/x/crypto/ssh"
@@ -26,6 +30,46 @@ func sshConfig(state multistep.StateBag) (*ssh.ClientConfig, error) {
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		HostKeyCallback: pinnedHostKeyCallback(state),
 	}, nil
+}
+
+const hostKeysStateKey = "ssh_host_keys"
+
+var hostKeysMu sync.Mutex
+
+// pinnedHostKeyCallback pins the host key presented on the first connection to
+// each host (trust on first use) and rejects a different key for the same host
+// later in the build. The first connection is not authenticated, so this does
+// not protect against an attacker who is on the path at first contact.
+func pinnedHostKeyCallback(state multistep.StateBag) ssh.HostKeyCallback {
+	return func(hostname string, remote net.Addr, key ssh.PublicKey) error {
+		hostKeysMu.Lock()
+		defer hostKeysMu.Unlock()
+
+		pins, _ := state.Get(hostKeysStateKey).(map[string][]byte)
+		if pins == nil {
+			pins = map[string][]byte{}
+			state.Put(hostKeysStateKey, pins)
+		}
+
+		presented := key.Marshal()
+		pinned, seen := pins[hostname]
+		if !seen {
+			pins[hostname] = presented
+			log.Printf("Pinned SSH host key for %s: %s", hostname, ssh.FingerprintSHA256(key))
+			return nil
+		}
+		if !bytes.Equal(pinned, presented) {
+			pinnedKey, err := ssh.ParsePublicKey(pinned)
+			pinnedFP := "unknown"
+			if err == nil {
+				pinnedFP = ssh.FingerprintSHA256(pinnedKey)
+			}
+			return fmt.Errorf("SSH host key mismatch for %s: expected %s, got %s "+
+				"(commonly caused by host key regeneration on boot or a man-in-the-middle)",
+				hostname, pinnedFP, ssh.FingerprintSHA256(key))
+		}
+		return nil
+	}
 }
