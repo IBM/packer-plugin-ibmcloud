@@ -45,7 +45,7 @@ func (s *stepCreateSshKey) Run(_ context.Context, state multistep.StateBag) mult
 	}
 
 	// Creating new RSA Private key
-	rsaKey, err := rsa.GenerateKey(rand.Reader, 2014)
+	rsaKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error, cannot generate Private SSH Key: %s", err)
 		state.Put("error", err)
