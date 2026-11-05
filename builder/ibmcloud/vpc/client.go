@@ -394,17 +394,15 @@ func (client IBMCloudClient) createSSHKeyVPC(state multistep.StateBag) (*vpcv1.K
 	ui := state.Get("ui").(packer.Ui)
 	config := state.Get("config").(Config)
 
-	file := state.Get("PUBLIC_KEY").(string)
-	content, err := os.ReadFile(file)
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Error reading SSH Public Key. Error: %s", err)
+	publicKeyBytes := state.Get("ssh_public_key").([]byte)
+	if publicKeyBytes == nil {
+		err := fmt.Errorf("[ERROR] SSH public key not found in state")
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return nil, err
 	}
 
-	publicKey := string(content)
-	state.Put("ssh_public_key", publicKey)
+	publicKey := string(publicKeyBytes)
 
 	options := &vpcv1.CreateKeyOptions{}
 	if config.SshKeyType != "" && config.SshKeyType == "ed25519" {
