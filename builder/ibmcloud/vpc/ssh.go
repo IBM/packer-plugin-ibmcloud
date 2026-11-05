@@ -2,7 +2,6 @@ package vpc
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
@@ -19,19 +18,18 @@ func sshConfig(state multistep.StateBag) (*ssh.ClientConfig, error) {
 	config := state.Get("config").(Config)
 	ui := state.Get("ui").(packer.Ui)
 
-	file := state.Get("PRIVATE_KEY").(string)
-	content, err := ioutil.ReadFile(file)
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Error loading SSH Private Key: %s", err)
+	privateKeyBytes := state.Get("ssh_private_key_pem").([]byte)
+	if privateKeyBytes == nil {
+		err := fmt.Errorf("[ERROR] SSH private key not found in state")
 		state.Put("error", err)
 		ui.Error(err.Error())
 		log.Fatalf("error loading ssh private key: %v", err)
 		return nil, err
 	}
 
-	privateKey := string(content)
+	privateKey := string(privateKeyBytes)
 	state.Put("ssh_private_key", privateKey)
-	signer, err := ssh.ParsePrivateKey([]byte(privateKey))
+	signer, err := ssh.ParsePrivateKey(privateKeyBytes)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error setting up SSH config: %s", err)
 		state.Put("error", err)
