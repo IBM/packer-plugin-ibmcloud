@@ -125,7 +125,7 @@ func (step *StepCreateVPCServiceInstance) Run(_ context.Context, state multistep
 	ui := state.Get("ui").(packer.Ui)
 	config := state.Get("config").(Config)
 
-	ui.Say("Creating VPC service...")
+	ui.Say("Initializing IBM Cloud VPC client...")
 
 	// Enable logging for IBM Cloud Go SDK core based on logging configuration
 	if config.VPCLog != "" {
@@ -173,7 +173,7 @@ func (step *StepCreateVPCServiceInstance) Run(_ context.Context, state multistep
 	vpcService.EnableRetries(vpcRetryMaxAttempts, vpcRetryMaxInterval)
 
 	state.Put("vpcService", vpcService)
-	ui.Say("VPC service creation successful!")
+	ui.Say("VPC client configured.")
 	return multistep.ActionContinue
 }
 
