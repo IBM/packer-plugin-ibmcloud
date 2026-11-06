@@ -29,14 +29,19 @@ const (
 	vpcRetryMaxInterval = 30 * time.Second
 )
 
+const requestIDHeader = "X-Request-ID"
+
 // iamPost is the shared helper for both IAM token grant types. It POSTs body
 // to exchangeURL and returns the access_token field from the JSON response.
-func iamPost(body url.Values, exchangeURL, errPrefix string) (string, error) {
+func iamPost(body url.Values, exchangeURL, errPrefix, requestID string) (string, error) {
 	req, err := http.NewRequest(http.MethodPost, exchangeURL, strings.NewReader(body.Encode()))
 	if err != nil {
 		return "", fmt.Errorf("%s: building request: %w", errPrefix, err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	if requestID != "" {
+		req.Header.Set(requestIDHeader, requestID)
+	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -67,21 +72,21 @@ func iamPost(body url.Values, exchangeURL, errPrefix string) (string, error) {
 // fetchTokenFromAPIKey exchanges a Service ID API key for a plain IBM Cloud
 // access token using the apikey grant type (Step 1 of the two-step delegation
 // flow). The resulting token is passed to fetchDelegationToken (Step 2).
-func fetchTokenFromAPIKey(apiKey, exchangeURL string) (string, error) {
+func fetchTokenFromAPIKey(apiKey, exchangeURL, requestID string) (string, error) {
 	body := url.Values{}
 	body.Set("grant_type", "urn:ibm:params:oauth:grant-type:apikey")
 	body.Set("apikey", apiKey)
-	return iamPost(body, exchangeURL, "apikey token fetch")
+	return iamPost(body, exchangeURL, "apikey token fetch", requestID)
 }
 
 // fetchDelegationToken exchanges an intermediate access token for a scoped
 // delegation token tied to desiredIAMID using the iam-authz grant (Step 2).
-func fetchDelegationToken(accessToken, desiredIAMID, exchangeURL string) (string, error) {
+func fetchDelegationToken(accessToken, desiredIAMID, exchangeURL, requestID string) (string, error) {
 	body := url.Values{}
 	body.Set("grant_type", "urn:ibm:params:oauth:grant-type:iam-authz")
 	body.Set("access_token", accessToken)
 	body.Set("desired_iam_id", desiredIAMID)
-	return iamPost(body, exchangeURL, "iam-authz token exchange")
+	return iamPost(body, exchangeURL, "iam-authz token exchange", requestID)
 }
 // exchangeURLFromIAMEndpoint derives the /identity/token endpoint from the
 // configured IAM base URL (iam_url). IAMEndpoint is always set by Prepare(),
@@ -101,21 +106,25 @@ func newAuthenticator(config Config) (core.Authenticator, error) {
 	if config.IAMServiceAPIKey != "" {
 		exchangeURL := exchangeURLFromIAMEndpoint(config.IAMEndpoint)
 		// Step 1: Service ID API key → intermediate access token.
-		accessToken, err := fetchTokenFromAPIKey(config.IAMServiceAPIKey, exchangeURL)
+		accessToken, err := fetchTokenFromAPIKey(config.IAMServiceAPIKey, exchangeURL, config.XRequestID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to obtain access token from iam_service_api_key: %w", err)
 		}
 		// Step 2: intermediate access token → scoped delegation token.
-		token, err := fetchDelegationToken(accessToken, config.DesiredIAMID, exchangeURL)
+		token, err := fetchDelegationToken(accessToken, config.DesiredIAMID, exchangeURL, config.XRequestID)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to obtain delegation token for desired_iam_id: %w", err)
 		}
 		return &core.BearerTokenAuthenticator{BearerToken: token}, nil
 	}
-	return &core.IamAuthenticator{
+	iamAuth := &core.IamAuthenticator{
 		ApiKey: config.IBMApiKey,
 		URL:    config.IAMEndpoint,
-	}, nil
+	}
+	if config.XRequestID != "" {
+		iamAuth.Headers = map[string]string{requestIDHeader: config.XRequestID}
+	}
+	return iamAuth, nil
 }
 
 type StepCreateVPCServiceInstance struct {
@@ -170,6 +179,9 @@ func (step *StepCreateVPCServiceInstance) Run(_ context.Context, state multistep
 		return multistep.ActionHalt
 	}
 
+	if config.XRequestID != "" {
+		vpcService.SetDefaultHeaders(http.Header{requestIDHeader: []string{config.XRequestID}})
+	}
 	vpcService.EnableRetries(vpcRetryMaxAttempts, vpcRetryMaxInterval)
 
 	state.Put("vpcService", vpcService)
