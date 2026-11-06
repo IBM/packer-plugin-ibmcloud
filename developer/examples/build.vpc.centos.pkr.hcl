@@ -59,6 +59,7 @@ source "ibmcloud-vpc" "centos" {
   ssh_timeout  = "15m"
 
   timeout = "30m"
+  x_request_id = "3f2b8c1e-5a7d-4e9a-9c3b-1d2e4f6a8b0c"
 }
 
 build {
