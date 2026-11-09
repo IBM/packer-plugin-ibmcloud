@@ -347,6 +347,12 @@ func (client IBMCloudClient) GrabCredentials(instanceID string, state multistep.
 		log.Println(err.Error())
 		return "", "", err
 	}
+	if instanceCredentials == nil || instanceCredentials.Password == nil || instanceCredentials.Password.EncryptedPassword == nil {
+		err := fmt.Errorf("[ERROR] Failed getting instance initialization data. Error: no encrypted password returned for instance %s", instanceID)
+		ui.Error(err.Error())
+		log.Println(err.Error())
+		return "", "", err
+	}
 	password := *instanceCredentials.Password.EncryptedPassword
 	windowsPassword, err := client.DecryptPassword(password, state)
 	if err != nil {

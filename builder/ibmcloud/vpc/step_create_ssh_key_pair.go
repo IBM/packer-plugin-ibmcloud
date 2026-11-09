@@ -53,7 +53,7 @@ func (s *stepCreateSshKeyPair) Run(_ context.Context, state multistep.StateBag) 
 			Bytes: marshalED25519PrivateKey(privKey), // converts a ed25519 private key to openssh format
 		}
 		privateKey := pem.EncodeToMemory(pemKey)
-		authorizedKey := ssh.MarshalAuthorizedKey(publicKey)
+		authorizedKey := withKeyComment(ssh.MarshalAuthorizedKey(publicKey), config.Comm.SSHTemporaryKeyPairName)
 		privatefilepath = keysDirectory + "id_ed25519"
 		publicfilepath = keysDirectory + "id_ed25519.pub"
 
@@ -123,7 +123,7 @@ func (s *stepCreateSshKeyPair) Run(_ context.Context, state multistep.StateBag) 
 			ui.Error(err.Error())
 			return multistep.ActionHalt
 		}
-		publicKey := strings.TrimSpace(string(ssh.MarshalAuthorizedKey(pub)))
+		publicKey := strings.TrimSpace(string(withKeyComment(ssh.MarshalAuthorizedKey(pub), config.Comm.SSHTemporaryKeyPairName)))
 
 		// Writing Public key to file
 		if publicfilepath != "" {
@@ -170,6 +170,15 @@ func (s *stepCreateSshKeyPair) Cleanup(state multistep.StateBag) {
 	ui.Say("********************************************************************")
 	ui.Say("* Thank you for using IBM Cloud Packer Plugin - VPC Infrastructure *")
 	ui.Say("********************************************************************")
+}
+
+// withKeyComment appends comment as the trailing comment field of an
+// authorized_keys line. It returns the line unchanged when comment is empty.
+func withKeyComment(authorizedKey []byte, comment string) []byte {
+	if comment == "" {
+		return authorizedKey
+	}
+	return []byte(strings.TrimSpace(string(authorizedKey)) + " " + comment + "\n")
 }
 
 func marshalED25519PrivateKey(key ed25519.PrivateKey) []byte {

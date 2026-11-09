@@ -3,7 +3,6 @@ package vpc
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
@@ -15,6 +14,11 @@ func sshCommHost(state multistep.StateBag) (string, error) {
 	return config.Comm.SSHHost, nil
 }
 
+// sshConfig is a communicator.StepConnect callback that StepConnect calls on
+// every retry and only logs the returned error at debug level. It must not
+// record "error" in state: a stale error would fail an otherwise successful
+// build if a later attempt succeeds. StepConnect sets "error" itself when it
+// gives up.
 func sshConfig(state multistep.StateBag) (*ssh.ClientConfig, error) {
 	config := state.Get("config").(Config)
 	ui := state.Get("ui").(packer.Ui)
@@ -23,9 +27,7 @@ func sshConfig(state multistep.StateBag) (*ssh.ClientConfig, error) {
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error loading SSH Private Key: %s", err)
-		state.Put("error", err)
 		ui.Error(err.Error())
-		log.Fatalf("error loading ssh private key: %v", err)
 		return nil, err
 	}
 
@@ -34,9 +36,7 @@ func sshConfig(state multistep.StateBag) (*ssh.ClientConfig, error) {
 	signer, err := ssh.ParsePrivateKey([]byte(privateKey))
 	if err != nil {
 		err := fmt.Errorf("[ERROR] Error setting up SSH config: %s", err)
-		state.Put("error", err)
 		ui.Error(err.Error())
-		log.Fatalf("error setting up ssh config: %v", err)
 		return nil, err
 	}
 
