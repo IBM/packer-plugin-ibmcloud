@@ -9,6 +9,11 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
 
+// winRMConfig is a communicator.StepConnect callback that StepConnect calls on
+// every retry and only logs the returned error at debug level. It must not
+// record "error" in state: the password may not be available yet on early
+// attempts, and a stale error would fail an otherwise successful build.
+// StepConnect sets "error" itself when it gives up.
 func winRMConfig(state multistep.StateBag) (*communicator.WinRMConfig, error) {
 	client := state.Get("client").(*IBMCloudClient)
 	config := state.Get("config").(Config)
@@ -29,10 +34,8 @@ func winRMConfig(state multistep.StateBag) (*communicator.WinRMConfig, error) {
 		username, password, err = client.GrabCredentials(instanceID, state)
 		if err != nil {
 			err := fmt.Errorf("[ERROR] Error grabbing credentials: %s", err)
-			state.Put("error", err)
 			ui.Error(err.Error())
-			// log.Fatalf(err.Error())
-			return nil, nil
+			return nil, err
 		}
 		ui.Say(fmt.Sprintf("Successfully grabbed credentials for instance (ID: %s, IP: %s)", instanceID, config.Comm.WinRMHost))
 

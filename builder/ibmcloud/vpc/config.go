@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 	"github.com/hashicorp/packer-plugin-sdk/template/config"
 	"github.com/hashicorp/packer-plugin-sdk/template/interpolate"
+	"github.com/hashicorp/packer-plugin-sdk/uuid"
 )
 
 type Config struct {
@@ -319,6 +320,12 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	} else if c.Comm.Type == "ssh" {
 		if c.Comm.SSHUsername == "" {
 			c.Comm.SSHUsername = "root"
+		}
+		// commonsteps.StepCleanupTempKeys removes the authorized_keys line that
+		// ends with this name, so the generated public key is tagged with it
+		// (see stepCreateSshKeyPair).
+		if c.Comm.SSHClearAuthorizedKeys && c.Comm.SSHTemporaryKeyPairName == "" {
+			c.Comm.SSHTemporaryKeyPairName = fmt.Sprintf("packer_%s", uuid.TimeOrderedUUID())
 		}
 	}
 

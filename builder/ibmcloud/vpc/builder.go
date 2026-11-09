@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/communicator"
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
+	"github.com/hashicorp/packer-plugin-sdk/multistep/commonsteps"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
 )
 
@@ -124,6 +125,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 				SSHConfig: sshConfig,
 			},
 			withStage(StageInstallingComponents, new(stepInstallComponents)),
+			&commonsteps.StepCleanupTempKeys{Comm: &b.config.Comm},
 			new(StepCreateVPCServiceInstance),
 			new(stepRebootInstance),
 			withStage(StageCaptureImage, new(stepCaptureImage)),
