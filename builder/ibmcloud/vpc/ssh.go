@@ -18,8 +18,8 @@ func sshConfig(state multistep.StateBag) (*ssh.ClientConfig, error) {
 	config := state.Get("config").(Config)
 	ui := state.Get("ui").(packer.Ui)
 
-	privateKeyBytes := state.Get("ssh_private_key_pem").([]byte)
-	if privateKeyBytes == nil {
+	privateKeyBytes, ok := state.Get("ssh_private_key_pem").([]byte)
+	if !ok || len(privateKeyBytes) == 0 {
 		err := fmt.Errorf("[ERROR] SSH private key not found in state")
 		state.Put("error", err)
 		ui.Error(err.Error())

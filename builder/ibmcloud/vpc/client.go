@@ -1,11 +1,12 @@
 package vpc
 
 import (
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"os/exec"
 	"time"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -359,43 +360,44 @@ func (client IBMCloudClient) GrabCredentials(instanceID string, state multistep.
 	return "Administrator", windowsPassword, nil
 }
 
-// Decrypt Password - Following documentation https://cloud.ibm.com/docs/vpc?topic=vpc-vsi_is_connecting_windows
+// DecryptPassword decrypts the instance's RSA-encrypted (PKCS#1 v1.5) Windows
+// password using the in-memory SSH private key. Following documentation
+// https://cloud.ibm.com/docs/vpc?topic=vpc-vsi_is_connecting_windows
 func (client IBMCloudClient) DecryptPassword(encryptedPwd []byte, state multistep.StateBag) (string, error) {
 	ui := state.Get("ui").(packer.Ui)
 
-	///// Step 1: Create working folder "data" and store bas64 password on data/decoded_pwd.txt
-	_ = os.Mkdir("data", 0755)
-	file, err := os.Create("data/decoded_pwd.txt")
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Failed writing decoded password. Error: %s", err)
-		ui.Error(err.Error())
-		log.Println(err.Error())
-		return "", err
-	}
-	file.Write(encryptedPwd)
-	file.Close()
-
-	///// Step 2: Decrypt the decoded password using the RSA private key
-	pathPrivateKey := state.Get("PRIVATE_KEY").(string)
-	password, err := exec.Command("openssl", "pkeyutl", "-in", "data/decoded_pwd.txt", "-decrypt", "-inkey", pathPrivateKey).Output()
-	if err != nil {
-		err := fmt.Errorf("[ERROR] Failed decrypting the decoded password. Error: %s", err)
+	fail := func(format string, args ...interface{}) (string, error) {
+		err := fmt.Errorf(format, args...)
 		ui.Error(err.Error())
 		log.Println(err.Error())
 		return "", err
 	}
 
-	///// Step 3: Delete working dir
-	defer os.RemoveAll("data")
-	return string(password), err
+	privateKeyPEM, ok := state.Get("ssh_private_key_pem").([]byte)
+	if !ok || len(privateKeyPEM) == 0 {
+		return fail("[ERROR] Failed decrypting the password. SSH private key not found in state")
+	}
+	block, _ := pem.Decode(privateKeyPEM)
+	if block == nil {
+		return fail("[ERROR] Failed decrypting the password. SSH private key is not valid PEM")
+	}
+	rsaKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		return fail("[ERROR] Failed decrypting the password. An RSA private key is required: %s", err)
+	}
+	password, err := rsa.DecryptPKCS1v15(nil, rsaKey, encryptedPwd)
+	if err != nil {
+		return fail("[ERROR] Failed decrypting the decoded password. Error: %s", err)
+	}
+	return string(password), nil
 }
 
 func (client IBMCloudClient) createSSHKeyVPC(state multistep.StateBag) (*vpcv1.Key, error) {
 	ui := state.Get("ui").(packer.Ui)
 	config := state.Get("config").(Config)
 
-	publicKeyBytes := state.Get("ssh_public_key").([]byte)
-	if publicKeyBytes == nil {
+	publicKeyBytes, ok := state.Get("ssh_public_key").([]byte)
+	if !ok || len(publicKeyBytes) == 0 {
 		err := fmt.Errorf("[ERROR] SSH public key not found in state")
 		ui.Error(err.Error())
 		log.Println(err.Error())
