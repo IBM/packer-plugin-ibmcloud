@@ -22,7 +22,7 @@ type Config struct {
 	IBMApiKey           string `mapstructure:"api_key"`
 	IAMServiceAPIKey    string `mapstructure:"iam_service_api_key"`
 	DesiredIAMID        string `mapstructure:"desired_iam_id"`
-	Region               string `mapstructure:"region"`
+	Region              string `mapstructure:"region"`
 	Endpoint                  string `mapstructure:"vpc_endpoint_url"`
 	RCEndpoint                string `mapstructure:"rc_endpoint_url"`
 	GhostEndpoint             string `mapstructure:"ghost_endpoint_url"`
@@ -54,7 +54,7 @@ type Config struct {
 	VSIInterface              string `mapstructure:"vsi_interface"`
 	VSIUserDataFile           string `mapstructure:"vsi_user_data_file"`
 	VSIUserDataString         string `mapstructure:"vsi_user_data"`
-
+    VSIBootAllowedUseInstance string `mapstructure:"boot_volume_allowed_use_instance"`
 	ImageName string   `mapstructure:"image_name"`
 	ImageTags []string `mapstructure:"tags"`
 

@@ -102,6 +102,7 @@ type FlatConfig struct {
 	VSIInterface                       *string           `mapstructure:"vsi_interface" cty:"vsi_interface" hcl:"vsi_interface"`
 	VSIUserDataFile                    *string           `mapstructure:"vsi_user_data_file" cty:"vsi_user_data_file" hcl:"vsi_user_data_file"`
 	VSIUserDataString                  *string           `mapstructure:"vsi_user_data" cty:"vsi_user_data" hcl:"vsi_user_data"`
+	VSIBootAllowedUseInstance          *string           `mapstructure:"boot_volume_allowed_use_instance" cty:"boot_volume_allowed_use_instance" hcl:"boot_volume_allowed_use_instance"`
 	ImageName                          *string           `mapstructure:"image_name" cty:"image_name" hcl:"image_name"`
 	ImageTags                          []string          `mapstructure:"tags" cty:"tags" hcl:"tags"`
 	SkipCreateDefaultSecurityGroupRule *bool             `mapstructure:"skip_create_default_security_group_rule" cty:"skip_create_default_security_group_rule" hcl:"skip_create_default_security_group_rule"`
@@ -224,6 +225,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"vsi_interface":                           &hcldec.AttrSpec{Name: "vsi_interface", Type: cty.String, Required: false},
 		"vsi_user_data_file":                      &hcldec.AttrSpec{Name: "vsi_user_data_file", Type: cty.String, Required: false},
 		"vsi_user_data":                           &hcldec.AttrSpec{Name: "vsi_user_data", Type: cty.String, Required: false},
+		"boot_volume_allowed_use_instance":        &hcldec.AttrSpec{Name: "boot_volume_allowed_use_instance", Type: cty.String, Required: false},
 		"image_name":                              &hcldec.AttrSpec{Name: "image_name", Type: cty.String, Required: false},
 		"tags":                                    &hcldec.AttrSpec{Name: "tags", Type: cty.List(cty.String), Required: false},
 		"skip_create_default_security_group_rule": &hcldec.AttrSpec{Name: "skip_create_default_security_group_rule", Type: cty.Bool, Required: false},

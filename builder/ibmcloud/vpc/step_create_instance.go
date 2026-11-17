@@ -147,7 +147,7 @@ func (step *stepCreateInstance) createInstance(state multistep.StateBag, subnetI
 			PrimaryNetworkInterface: networkInterfacePrototypeModel,
 			Zone:                    zoneIdentityModel,
 		}
-		if int64(vsiCapacity) != 0 {
+		if vsiCapacity != 0 || config.VSIBootAllowedUseInstance != "" {
 			instancePrototypeModel.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
 				Volume: bootVolumePrototype(&config),
 			}
@@ -177,7 +177,7 @@ func (step *stepCreateInstance) createInstance(state multistep.StateBag, subnetI
 			PrimaryNetworkInterface: networkInterfacePrototypeModel,
 			Zone:                    zoneIdentityModel,
 		}
-		if int64(vsiCapacity) != 0 {
+		if vsiCapacity != 0 || config.VSIBootAllowedUseInstance != "" {
 			instancePrototypeModel.BootVolumeAttachment = &vpcv1.VolumeAttachmentPrototypeInstanceByImageContext{
 				Volume: bootVolumePrototype(&config),
 			}
@@ -460,15 +460,28 @@ func deleteInstanceAndWait(svc *vpcv1.VpcV1, ui packer.Ui, instanceID string, ti
 	}
 }
 
+func bootVolumeAllowedUse(config *Config) *vpcv1.VolumeAllowedUsePrototype {
+	if config.VSIBootAllowedUseInstance == "" {
+		return nil
+	}
+	expr := config.VSIBootAllowedUseInstance
+	return &vpcv1.VolumeAllowedUsePrototype{
+		Instance: &expr,
+	}
+}
+
 func bootVolumePrototype(config *Config) *vpcv1.VolumePrototypeInstanceByImageContext {
-	capacity := int64(config.VSIBootCapacity)
 	profile := "general-purpose"
 	if config.VSIBootProfile != "" {
 		profile = config.VSIBootProfile
 	}
 	vol := &vpcv1.VolumePrototypeInstanceByImageContext{
-		Capacity: &capacity,
-		Profile:  &vpcv1.VolumeProfileIdentity{Name: &profile},
+		Profile:    &vpcv1.VolumeProfileIdentity{Name: &profile},
+		AllowedUse: bootVolumeAllowedUse(config),
+	}
+	if config.VSIBootCapacity != 0 {
+		capacity := int64(config.VSIBootCapacity)
+		vol.Capacity = &capacity
 	}
 	// iops/bandwidth are passed through whenever set; Config.Prepare is the gate
 	// that restricts iops to the custom/sdp profiles and bandwidth to sdp, the
@@ -538,6 +551,7 @@ func snapshotBootVolumePrototype(config *Config, sourceSnapshot vpcv1.SnapshotId
 	vol := &vpcv1.VolumePrototypeInstanceBySourceSnapshotContext{
 		Profile:        &vpcv1.VolumeProfileIdentity{Name: &profile},
 		SourceSnapshot: sourceSnapshot,
+		AllowedUse:     bootVolumeAllowedUse(config),
 	}
 	if config.VSIBootCapacity != 0 {
 		capacity := int64(config.VSIBootCapacity)
