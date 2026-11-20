@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/packer-plugin-sdk/common"
@@ -14,6 +16,9 @@ import (
 	"github.com/hashicorp/packer-plugin-sdk/template/config"
 	"github.com/hashicorp/packer-plugin-sdk/template/interpolate"
 )
+
+// uuidV4Pattern matches a version 4 UUID in canonical 8-4-4-4-12 form.
+var uuidV4Pattern = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$`)
 
 type Config struct {
 	common.PackerConfig `mapstructure:",squash"`
@@ -84,6 +89,7 @@ type Config struct {
 	SkipReboot        bool   `mapstructure:"skip_reboot"`
 	VPCLog            string `mapstructure:"logging"`
 	ResourceTrackFile string `mapstructure:"resource_track_file"`
+	XRequestID string `mapstructure:"x_request_id"`
 }
 
 // Prepare processes the build configuration parameters.
@@ -124,6 +130,14 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, error) {
 	// desired_iam_id without iam_service_api_key has no effect.
 	if c.DesiredIAMID != "" && c.IAMServiceAPIKey == "" {
 		errs = packer.MultiErrorAppend(errs, errors.New("desired_iam_id requires iam_service_api_key to be set"))
+	}
+
+	if c.XRequestID != "" {
+		if uuidV4Pattern.MatchString(c.XRequestID) {
+			c.XRequestID = strings.ToLower(c.XRequestID)
+		} else {
+			errs = packer.MultiErrorAppend(errs, errors.New("x_request_id must be a valid version 4 UUID (e.g. 3f2b8c1e-5a7d-4e9a-9c3b-1d2e4f6a8b0c)"))
+		}
 	}
 
 	if c.Region == "" {

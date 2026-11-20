@@ -118,6 +118,7 @@ type FlatConfig struct {
 	SkipReboot                         *bool             `mapstructure:"skip_reboot" cty:"skip_reboot" hcl:"skip_reboot"`
 	VPCLog                             *string           `mapstructure:"logging" cty:"logging" hcl:"logging"`
 	ResourceTrackFile                  *string           `mapstructure:"resource_track_file" cty:"resource_track_file" hcl:"resource_track_file"`
+	XRequestID                         *string           `mapstructure:"x_request_id" cty:"x_request_id" hcl:"x_request_id"`
 }
 
 // FlatMapstructure returns a new FlatConfig.
@@ -240,6 +241,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"skip_reboot":                             &hcldec.AttrSpec{Name: "skip_reboot", Type: cty.Bool, Required: false},
 		"logging":                                 &hcldec.AttrSpec{Name: "logging", Type: cty.String, Required: false},
 		"resource_track_file":                     &hcldec.AttrSpec{Name: "resource_track_file", Type: cty.String, Required: false},
+		"x_request_id":                            &hcldec.AttrSpec{Name: "x_request_id", Type: cty.String, Required: false},
 	}
 	return s
 }
